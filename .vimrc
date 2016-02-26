@@ -48,6 +48,8 @@ Plugin 'tomtom/tcomment_vim'
 Plugin 'vim-airline/vim-airline'
 Plugin 'airblade/vim-gitgutter'
 
+Plugin 'scrooloose/nerdtree'
+
 " Color Themes
 Plugin 'flazz/vim-colorschemes'
 "colorscheme Monokai
@@ -93,9 +95,13 @@ set showcmd
 " Map C-K, C-J to Up and Down key
 inoremap <C-K> <C-R>=pumvisible() ? "\<lt>C-P>" : "\<lt>Up>"<CR>
 inoremap <C-J> <C-R>=pumvisible() ? "\<lt>C-N>" : "\<lt>Down>"<CR>
+"imap <Tab> <C-R>=pumvisible() ? "\<lt>Down>\<lt>C-Y>" : "\<lt>Tab>"<CR>
 " inoremap <C-H> <C-R>="\<lt>Left>"<CR>
 " inoremap <C-L> <C-R>="\<lt>Right>"<CR>
 map // <Leader>c | "Map C-/ not work, instead map to C-_, it's same
+
+
+map <Leader>k :NERDTreeToggle<CR>
 
 
 " jump to all visible opening tags after the cursor position
@@ -117,6 +123,8 @@ nmap <C-B> <Plug>(breeze-prev-tag)
 nmap <C-A> <Plug>(breeze-next-attribute)
 " move to the previous attribute
 nmap <C-S> <Plug>(breeze-prev-attribute)
+
+
 
 
 
