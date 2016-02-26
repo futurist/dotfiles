@@ -22,7 +22,7 @@ Plugin 'VundleVim/Vundle.vim'
 "Plugin 'genutils'
 "Plugin 'multiselect'
 
-Plugin 'pangloss/vim-javascript'
+"Plugin 'pangloss/vim-javascript'
 
 "https://github.com/terryma/vim-multiple-cursors#installation
 Plugin 'terryma/vim-multiple-cursors'
@@ -36,7 +36,7 @@ Plugin 'scrooloose/nerdcommenter'
 Plugin 'Valloric/YouCompleteMe'
 
 
-Plugin 'JavaScript-Indent'
+"Plugin 'JavaScript-Indent'
 
 " from https://github.com/grigio/vim-sublime/blob/master/vimrc
 Plugin 'tpope/vim-sensible'
@@ -49,6 +49,12 @@ Plugin 'vim-airline/vim-airline'
 Plugin 'airblade/vim-gitgutter'
 
 Plugin 'scrooloose/nerdtree'
+Plugin 'Raimondi/delimitMate'
+Plugin 'Valloric/MatchTagAlways'
+Plugin 'alvan/vim-closetag'
+
+" Plugin auto-pares
+" https://github.com/jiangmiao/auto-pairs
 
 " Color Themes
 Plugin 'flazz/vim-colorschemes'
@@ -95,7 +101,7 @@ set showcmd
 " Map C-K, C-J to Up and Down key
 inoremap <C-K> <C-R>=pumvisible() ? "\<lt>C-P>" : "\<lt>Up>"<CR>
 inoremap <C-J> <C-R>=pumvisible() ? "\<lt>C-N>" : "\<lt>Down>"<CR>
-"imap <Tab> <C-R>=pumvisible() ? "\<lt>Down>\<lt>C-Y>" : "\<lt>Tab>"<CR>
+imap <CR> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>CR>"<CR>
 " inoremap <C-H> <C-R>="\<lt>Left>"<CR>
 " inoremap <C-L> <C-R>="\<lt>Right>"<CR>
 map // <Leader>c | "Map C-/ not work, instead map to C-_, it's same
@@ -105,24 +111,24 @@ map <Leader>k :NERDTreeToggle<CR>
 
 
 " jump to all visible opening tags after the cursor position
-nmap <leader>j <Plug>(breeze-jump-tag-forward)
-" jump to all visible opening tags before the cursor position
-nmap <leader>J <Plug>(breeze-jump-tag-backward)
+"nmap <leader>j <Plug>(breeze-jump-tag-forward)
+ ""jump to all visible opening tags before the cursor position
+"nmap <leader>J <Plug>(breeze-jump-tag-backward)
 
-" jump to all visible HTML attributes after the cursor position
-nmap <leader>a <Plug>(breeze-jump-attribute-forward)
-" jump to all visible HTML attributes before the cursor position
-nmap <leader>A <Plug>(breeze-jump-attribute-backward)
+"" jump to all visible HTML attributes after the cursor position
+"nmap <leader>a <Plug>(breeze-jump-attribute-forward)
+"" jump to all visible HTML attributes before the cursor position
+"nmap <leader>A <Plug>(breeze-jump-attribute-backward)
 
 " move to the next tag
-nmap <C-N> <Plug>(breeze-next-tag)
+nmap <leader>n <Plug>(breeze-next-tag)
 " move to the previous tag
-nmap <C-B> <Plug>(breeze-prev-tag)
+nmap <leader>b <Plug>(breeze-prev-tag)
 
 " move to the next attribute
-nmap <C-A> <Plug>(breeze-next-attribute)
+nmap <leader>N <Plug>(breeze-next-attribute)
 " move to the previous attribute
-nmap <C-S> <Plug>(breeze-prev-attribute)
+nmap <leader>B <Plug>(breeze-prev-attribute)
 
 
 
