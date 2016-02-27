@@ -109,22 +109,31 @@ map // <Leader>c | "Map C-/ not work, instead map to C-_, it's same
 nmap tt gt<CR>
 
 function! g:M5FormatBrackets()
+  let action = "i\<CR>\<Esc>l%a\<CR>"
   let pos = getcurpos()
-  let line = getline('.')
+  "let line = getline('.')
+  "let char = line[pos[2]-1]
   " if current char is ([{, then match it
-  if match("([{", line[pos[2]-1])>-1
-    :normal %
-    exec ":normal i\<CR>\<Esc>l%a\<CR>"
+  "if match("([{", char)>-1
+    ":normal %
+    "exec action
+    "return
+  "endif
+
+  let [row1, col1] = searchpos('[(\[{]','bcnW')
+  if pos[1]==row1
+    let off1 = (pos[2]-col1)
+    let offstr = off1>0?off1."h%" : ""
+    exec ":normal ". offstr .action
     return
   endif
 
   let [row1, col1] = searchpos('[\)\]\}]','cnW')
-  echo row1
   if pos[1]==row1
     "call setpos('.', [0,row1,col1-1,0])
     let off1 = (col1-pos[2])
     let offstr = off1>0? off1."l" : ""
-    exec ":normal ". offstr ."i\<CR>\<Esc>l%a\<CR>"
+    exec ":normal ". offstr .action
   endif
 endfunction
 
