@@ -108,32 +108,39 @@ map // <Leader>c | "Map C-/ not work, instead map to C-_, it's same
 
 nmap tt gt<CR>
 
+function! GetCurChar()
+  return getline('.')[col('.')-1]
+endfunction
+
 function! g:M5FormatBrackets()
   let action = "i\<CR>\<Esc>l%a\<CR>"
-  let pos = getcurpos()
-  "let line = getline('.')
-  "let char = line[pos[2]-1]
-  " if current char is ([{, then match it
-  "if match("([{", char)>-1
-    ":normal %
-    "exec action
-    "return
-  "endif
-
-  let [row1, col1] = searchpos('[(\[{]','bcnW')
-  if pos[1]==row1
-    let off1 = (pos[2]-col1)
-    let offstr = off1>0?off1."h%" : ""
-    exec ":normal ". offstr .action
+  
+  if match("([{", GetCurChar())>-1
+    :norm %
+  endif
+  if match(")]}", GetCurChar())>-1
+    exec ":norm ".action
     return
   endif
+
+  let pos = getcurpos()
+
+  let [row1, col1] = searchpos('[(\[{]','bcnW')
+  while pos[1]==row1 && col1<pos[2] && col1>0
+    call setreg('s', " ".col1, 'av')
+    call cursor(row1, col1)
+    :normal %
+    if getcurpos()[2]>pos[2] | break | endif
+    call cursor(row1, col1-1)
+    let [row1, col1] = searchpos('[(\[{]','bcnW')
+  endwhile
 
   let [row1, col1] = searchpos('[\)\]\}]','cnW')
   if pos[1]==row1
     "call setpos('.', [0,row1,col1-1,0])
-    let off1 = (col1-pos[2])
-    let offstr = off1>0? off1."l" : ""
-    exec ":normal ". offstr .action
+    call cursor(row1, col1)
+    call setreg('d', action.' '.col1)
+    exec ":normal ". action
   endif
 endfunction
 
