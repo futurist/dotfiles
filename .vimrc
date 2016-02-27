@@ -112,6 +112,21 @@ function! GetCurChar()
   return getline('.')[col('.')-1]
 endfunction
 
+function! g:M5IndentBrackets()
+  if match(")]}", GetCurChar())>-1
+    normal %
+  endif
+  if match("([{", GetCurChar())>-1
+    if col('.') == col('$')-1
+      return
+    endif
+    normal l
+  endif
+  let pos = searchpairpos('[(\[{]', '', '[\)\]\}]', 'bW') 
+  let action = "%i\<CR>\<Esc>". (pos[1]==1 ? '' : 'l') ."%a\<CR>"
+  exec ":norm ".action
+endfunction
+
 function! g:M5FormatBrackets()
   let action = "i\<CR>\<Esc>l%a\<CR>"
   
@@ -153,7 +168,7 @@ function! g:M5FormatBrackets()
   endif
 endfunction
 
-nnoremap ]] :call g:M5FormatBrackets()<cr>
+nnoremap ]] :call g:M5IndentBrackets()<cr>
 
 
 map <Leader>k :NERDTreeToggle<CR>
