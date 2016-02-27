@@ -116,9 +116,16 @@ function! g:M5FormatBrackets()
   let action = "i\<CR>\<Esc>l%a\<CR>"
   
   if match("([{", GetCurChar())>-1
+    let pos=col('.')
     :norm %
   endif
   if match(")]}", GetCurChar())>-1
+    :norm %
+    let pos=col('.')
+    if pos==1
+      let action = substitute(action, "l", "", "")
+    endif
+    :norm %
     exec ":norm ".action
     return
   endif
@@ -127,7 +134,9 @@ function! g:M5FormatBrackets()
 
   let [row1, col1] = searchpos('[(\[{]','bcnW')
   while pos[1]==row1 && col1<pos[2] && col1>0
-    call setreg('s', " ".col1, 'av')
+    if col1==1
+      let action = substitute(action, "l", "", "")
+    endif
     call cursor(row1, col1)
     :normal %
     if getcurpos()[2]>pos[2] | break | endif
