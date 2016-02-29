@@ -36,7 +36,6 @@ Plugin 'tomtom/tcomment_vim'
 " Plugin 'Valloric/YouCompleteMe'
 
 
-"Plugin 'JavaScript-Indent'
 
 " from https://github.com/grigio/vim-sublime/blob/master/vimrc
 Plugin 'tpope/vim-sensible'
@@ -70,8 +69,12 @@ Plugin 'Raimondi/delimitMate'
 Plugin 'Valloric/MatchTagAlways'
 
 Plugin 'pangloss/vim-javascript'
-set regexpengine=1
-syntax enable
+"***** regexpengine=1 will cause problem
+" set regexpengine=1
+" syntax enable
+
+Plugin 'JavaScript-Indent'
+
 
 " Auto close (X)HTML tags
 Plugin 'alvan/vim-closetag'
@@ -122,13 +125,17 @@ set wildmode=longest:list,full
 " display incomplete commands
 set showcmd
 
-
+" Switch paste mode
 set pastetoggle=<F2>
+
+" Insert mode helper key
 " Map C-K, C-J to Up and Down key
 inoremap <C-K> <C-R>=pumvisible() ? "\<lt>C-P>" : "\<lt>Up>"<CR>
 inoremap <C-J> <C-R>=pumvisible() ? "\<lt>C-N>" : "\<lt>Down>"<CR>
 imap <CR> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>CR>"<CR>
 imap <C-I> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>Tab>"<CR>
+" imap {} {<C-G>u<CR><CR><Up><C-I>
+
 " inoremap <C-H> <C-R>="\<lt>Left>"<CR>
 " inoremap <C-L> <C-R>="\<lt>Right>"<CR>
 " map // <Leader>c | "Map C-/ not work, instead map to C-_, it's same
@@ -136,9 +143,14 @@ imap <C-I> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>Tab>"<CR>
 " Switch tab
 nmap tt gt<CR>
 
+" Move line up/down
+nmap <C-S-J> ddpk<CR>
+nmap <C-S-K> ddkPk<CR>
+
 function! GetCurChar()
   return getline('.')[col('.')-1]
 endfunction
+
 
 function! g:M5IndentBrackets()
   if match(")]}", GetCurChar())>-1
@@ -148,14 +160,14 @@ function! g:M5IndentBrackets()
     if col('.') == col('$')-1
       return
     endif
-    normal l
   endif
-  let pos = searchpairpos('[(\[{]', '', '[\)\]\}]', 'bW') 
-  let action = "%i\<CR>\<Esc>". (pos[1]==1 ? '' : "l") ."%a\<CR>\<Esc>"
-  exec ":norm ".action
+  let pos = searchpairpos('[(\[{]', '', '[\)\]\}]', 'bcW') 
+  let action = "%i\<CR>\<C-O>%\<C-O>a\<CR>"
+  call feedkeys(action)
 endfunction
 
-nnoremap ]] :call g:M5IndentBrackets()<cr>
+map ]] :call g:M5IndentBrackets()<cr>
+imap ]] <Esc>:call g:M5IndentBrackets()<cr>
 
 
 map <Leader>k :NERDTreeToggle<CR>
