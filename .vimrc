@@ -22,7 +22,6 @@ Plugin 'VundleVim/Vundle.vim'
 "Plugin 'genutils'
 "Plugin 'multiselect'
 
-"Plugin 'pangloss/vim-javascript'
 
 "https://github.com/terryma/vim-multiple-cursors#installation
 Plugin 'terryma/vim-multiple-cursors'
@@ -42,7 +41,6 @@ Plugin 'tomtom/tcomment_vim'
 " from https://github.com/grigio/vim-sublime/blob/master/vimrc
 Plugin 'tpope/vim-sensible'
 Plugin 'tpope/vim-surround'
-Plugin 'gcmt/breeze.vim'
 "Plugin 'kien/ctrlp.vim'
 
 
@@ -72,9 +70,13 @@ Plugin 'Raimondi/delimitMate'
 Plugin 'Valloric/MatchTagAlways'
 
 Plugin 'pangloss/vim-javascript'
+set regexpengine=1
+syntax enable
 
 " Auto close (X)HTML tags
 Plugin 'alvan/vim-closetag'
+" Quick (X)HTML tag motion
+Plugin 'gcmt/breeze.vim'
 
 " Plugin auto-pares
 " https://github.com/jiangmiao/auto-pairs
@@ -129,8 +131,9 @@ imap <CR> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>CR>"<CR>
 imap <C-I> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>Tab>"<CR>
 " inoremap <C-H> <C-R>="\<lt>Left>"<CR>
 " inoremap <C-L> <C-R>="\<lt>Right>"<CR>
-map // <Leader>c | "Map C-/ not work, instead map to C-_, it's same
+" map // <Leader>c | "Map C-/ not work, instead map to C-_, it's same
 
+" Switch tab
 nmap tt gt<CR>
 
 function! GetCurChar()
