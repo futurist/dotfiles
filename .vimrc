@@ -32,8 +32,9 @@ let g:multi_cursor_prev_key='<C-p>'
 let g:multi_cursor_skip_key='<C-x>'
 let g:multi_cursor_quit_key='<Esc>'
 
-Plugin 'scrooloose/nerdcommenter'
-Plugin 'Valloric/YouCompleteMe'
+" Plugin 'scrooloose/nerdcommenter'
+Plugin 'tomtom/tcomment_vim'
+" Plugin 'Valloric/YouCompleteMe'
 
 
 "Plugin 'JavaScript-Indent'
@@ -42,15 +43,37 @@ Plugin 'Valloric/YouCompleteMe'
 Plugin 'tpope/vim-sensible'
 Plugin 'tpope/vim-surround'
 Plugin 'gcmt/breeze.vim'
-Plugin 'kien/ctrlp.vim'
+"Plugin 'kien/ctrlp.vim'
+
+
 Plugin 'SirVer/ultisnips'
-Plugin 'tomtom/tcomment_vim'
+
+" Snippets are separated from the engine. Add this if you want them:
+Plugin 'honza/vim-snippets'
+
+" Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+" If you want :UltiSnipsEdit to split your window.
+let g:UltiSnipsEditSplit="vertical"
+
+Plugin 'ternjs/tern_for_vim'
+
+
 Plugin 'vim-airline/vim-airline'
 Plugin 'airblade/vim-gitgutter'
 
 Plugin 'scrooloose/nerdtree'
+
 Plugin 'Raimondi/delimitMate'
+
 Plugin 'Valloric/MatchTagAlways'
+
+Plugin 'pangloss/vim-javascript'
+
+" Auto close (X)HTML tags
 Plugin 'alvan/vim-closetag'
 
 " Plugin auto-pares
@@ -98,10 +121,12 @@ set wildmode=longest:list,full
 set showcmd
 
 
+set pastetoggle=<F2>
 " Map C-K, C-J to Up and Down key
 inoremap <C-K> <C-R>=pumvisible() ? "\<lt>C-P>" : "\<lt>Up>"<CR>
 inoremap <C-J> <C-R>=pumvisible() ? "\<lt>C-N>" : "\<lt>Down>"<CR>
 imap <CR> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>CR>"<CR>
+imap <C-I> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>Tab>"<CR>
 " inoremap <C-H> <C-R>="\<lt>Left>"<CR>
 " inoremap <C-L> <C-R>="\<lt>Right>"<CR>
 map // <Leader>c | "Map C-/ not work, instead map to C-_, it's same
@@ -123,49 +148,8 @@ function! g:M5IndentBrackets()
     normal l
   endif
   let pos = searchpairpos('[(\[{]', '', '[\)\]\}]', 'bW') 
-  let action = "%i\<CR>\<Esc>". (pos[1]==1 ? '' : 'l') ."%a\<CR>"
+  let action = "%i\<CR>\<Esc>". (pos[1]==1 ? '' : "l") ."%a\<CR>\<Esc>"
   exec ":norm ".action
-endfunction
-
-function! g:M5FormatBrackets()
-  let action = "i\<CR>\<Esc>l%a\<CR>"
-  
-  if match("([{", GetCurChar())>-1
-    let pos=col('.')
-    :norm %
-  endif
-  if match(")]}", GetCurChar())>-1
-    :norm %
-    let pos=col('.')
-    if pos==1
-      let action = substitute(action, "l", "", "")
-    endif
-    :norm %
-    exec ":norm ".action
-    return
-  endif
-
-  let pos = getcurpos()
-
-  let [row1, col1] = searchpos('[(\[{]','bcnW')
-  while pos[1]==row1 && col1<pos[2] && col1>0
-    if col1==1
-      let action = substitute(action, "l", "", "")
-    endif
-    call cursor(row1, col1)
-    :normal %
-    if getcurpos()[2]>pos[2] | break | endif
-    call cursor(row1, col1-1)
-    let [row1, col1] = searchpos('[(\[{]','bcnW')
-  endwhile
-
-  let [row1, col1] = searchpos('[\)\]\}]','cnW')
-  if pos[1]==row1
-    "call setpos('.', [0,row1,col1-1,0])
-    call cursor(row1, col1)
-    call setreg('d', action.' '.col1)
-    exec ":normal ". action
-  endif
 endfunction
 
 nnoremap ]] :call g:M5IndentBrackets()<cr>
