@@ -96,6 +96,9 @@ Plugin 'pangloss/vim-javascript'
 
 Plugin 'JavaScript-Indent'
 
+" Search for selected text
+Plugin 'thinca/vim-visualstar'
+
 
 " Auto close (X)HTML tags
 Plugin 'alvan/vim-closetag'
@@ -165,8 +168,8 @@ imap <C-I> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>Tab>"<CR>
 nmap tt gt<CR>
 
 " Move line up/down
-nmap <C-S-J> ddpk<CR>
-nmap <C-S-K> ddkPk<CR>
+nmap <C-S-J> dd]pk<CR>
+nmap <C-S-K> ddk]Pk<CR>
 
 function! GetCurChar()
   return getline('.')[col('.')-1]
@@ -183,12 +186,14 @@ function! g:M5IndentBrackets()
     endif
   endif
   let pos = searchpairpos('[(\[{]', '', '[\)\]\}]', 'bcW') 
-  let action = "%i\<CR>\<C-O>%\<C-O>a\<CR>"
+  let action = "\<C-O>%\<CR>\<C-O>%\<C-O>a\<CR>"
   call feedkeys(action)
 endfunction
 
-map ]] :call g:M5IndentBrackets()<cr>
-imap ]] <Esc>:call g:M5IndentBrackets()<cr>
+map '' i<c-o>:call g:M5IndentBrackets()<cr>
+imap '' <c-o>:call g:M5IndentBrackets()<cr>
+
+inoremap ;; <c-o>:call feedkeys("\<c-o>a")<cr>
 
 
 map <Leader>k :NERDTreeToggle<CR>
