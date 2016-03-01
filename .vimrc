@@ -43,6 +43,9 @@ Plugin 'tpope/vim-surround'
 "Plugin 'kien/ctrlp.vim'
 
 
+
+Plugin 'ervandew/supertab'
+
 Plugin 'SirVer/ultisnips'
 
 " Snippets are separated from the engine. Add this if you want them:
