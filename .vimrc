@@ -22,8 +22,24 @@ Plugin 'VundleVim/Vundle.vim'
 "Plugin 'genutils'
 "Plugin 'multiselect'
 
+Plugin 'kana/vim-textobj-user'
+Plugin 'kana/vim-textobj-indent'
+Plugin 'kana/vim-textobj-function'
+Plugin 'kana/vim-textobj-syntax'
+Plugin 'kana/vim-textobj-lastpat'
+Plugin 'kana/vim-textobj-line'
+Plugin 'kana/vim-smartword'
+Plugin 'kana/vim-smartinput'
+Plugin 'kana/vim-niceblock'
+map w  <Plug>(smartword-w)
+map b  <Plug>(smartword-b)
+map e  <Plug>(smartword-e)
+map ge  <Plug>(smartword-ge)
+
+
 
 "https://github.com/terryma/vim-multiple-cursors#installation
+Plugin 'terryma/vim-expand-region'
 Plugin 'terryma/vim-multiple-cursors'
 " Default mapping
 let g:multi_cursor_next_key='<C-d>'
@@ -34,6 +50,8 @@ let g:multi_cursor_quit_key='<Esc>'
 " Plugin 'scrooloose/nerdcommenter'
 Plugin 'tomtom/tcomment_vim'
 " Plugin 'Valloric/YouCompleteMe'
+
+
 
 
 
@@ -67,7 +85,7 @@ Plugin 'airblade/vim-gitgutter'
 
 Plugin 'scrooloose/nerdtree'
 
-Plugin 'Raimondi/delimitMate'
+" Plugin 'Raimondi/delimitMate'
 
 Plugin 'Valloric/MatchTagAlways'
 
