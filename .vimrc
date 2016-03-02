@@ -186,13 +186,12 @@ function! g:M5IndentBrackets()
     endif
   endif
   let pos = searchpairpos('[(\[{]', '', '[\)\]\}]', 'bcW') 
-  let action = "\<C-O>%\<CR>\<C-O>%\<C-O>a\<CR>"
+  let action = "%i\<CR>\<C-O>%\<C-O>a\<CR>"
   call feedkeys(action)
 endfunction
 
-map '' i<c-o>:call g:M5IndentBrackets()<cr>
-imap '' <c-o>:call g:M5IndentBrackets()<cr>
-
+map ;' :call g:M5IndentBrackets()<cr>
+imap ;' <Esc>:call g:M5IndentBrackets()<cr>
 inoremap ;; <c-o>:call feedkeys("\<c-o>a")<cr>
 
 
@@ -236,4 +235,13 @@ set list listchars=tab:\|\
 "Invisible character colors 
 "highlight NonText guifg=#fa4a59
 "highlight SpecialKey guifg=#fa4a59
+
+if &term =~ "xterm"
+	let &t_SI = "\<Esc>]12;purple\x7"
+	let &t_EI = "\<Esc>]12;blue\x7"
+endif
+
+" For MacVim in iTerm2
+" let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+" let &t_EI = "\<Esc>]50;CursorShape=0\x7"
 

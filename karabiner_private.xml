@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<root>
+	<appdef>
+		<appname>MACVIM</appname>
+		<equal>org.vim.MacVim</equal>
+	</appdef>
+	<item>
+		<!-- Warning: set mission control in Mac Preference instead of Alt+Tab, e.g. CTRL+3 -->
+		<name>Change COMMAND_L to Esc in MacVim</name>
+		<identifier>private.macvimdef</identifier>
+		<only>MACVIM</only>
+		<autogen>__KeyToKey__  KeyCode::COMMAND_L, KeyCode::ESCAPE</autogen>
+		<autogen>__KeyToKey__  KeyCode::OPTION_L,  KeyCode::COMMAND_L</autogen>
+	</item>
+</root>
