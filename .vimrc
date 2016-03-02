@@ -26,7 +26,8 @@ Plugin 'kana/vim-textobj-user'
 Plugin 'kana/vim-textobj-indent'
 Plugin 'kana/vim-textobj-function'
 Plugin 'kana/vim-textobj-syntax'
-Plugin 'kana/vim-textobj-lastpat'
+" ** Below is already in 7.4 as gn/gN
+" Plugin 'kana/vim-textobj-lastpat'
 Plugin 'kana/vim-textobj-line'
 Plugin 'kana/vim-smartword'
 Plugin 'kana/vim-smartinput'
@@ -165,7 +166,13 @@ imap <C-I> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>Tab>"<CR>
 " map // <Leader>c | "Map C-/ not work, instead map to C-_, it's same
 
 " Switch tab
-nmap tt gt<CR>
+nmap <c-s-d> YP
+nmap tt gt
+
+" Using pppp continuesly
+vnoremap <silent> y y`]
+vnoremap <silent> p p`]
+nnoremap <silent> p p`]
 
 " Move line up/down
 nmap <C-S-J> dd]pk<CR>
