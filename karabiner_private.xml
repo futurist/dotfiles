@@ -8,8 +8,15 @@
 		<!-- Warning: set mission control in Mac Preference instead of Alt+Tab, e.g. CTRL+3 -->
 		<name>Change COMMAND_L to Esc in MacVim</name>
 		<identifier>private.macvimdef</identifier>
-		<only>MACVIM</only>
+		<only>MACVIM,TERMINAL</only>
 		<autogen>__KeyToKey__  KeyCode::COMMAND_L, KeyCode::ESCAPE</autogen>
 		<autogen>__KeyToKey__  KeyCode::OPTION_L,  KeyCode::COMMAND_L</autogen>
 	</item>
+  <item>
+    <name>Change COMMAND_L to OPTION_L for Terminal-Emacs</name>
+    <identifier>private.emacsdef</identifier>
+    <only>TERMINAL</only>
+    <autogen>__KeyToKey__ KeyCode::COMMAND_L, KeyCode::OPTION_L</autogen>
+    <autogen>__KeyToKey__  KeyCode::OPTION_L,  KeyCode::COMMAND_L</autogen>
+  </item>
 </root>

@@ -113,6 +113,8 @@ Plugin 'gcmt/breeze.vim'
 Plugin 'flazz/vim-colorschemes'
 "colorscheme Monokai
 
+Plugin 'guns/xterm-color-table.vim'
+
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
@@ -155,18 +157,31 @@ set pastetoggle=<F2>
 
 " Insert mode helper key
 " Map C-K, C-J to Up and Down key
-inoremap <C-K> <C-R>=pumvisible() ? "\<lt>C-P>" : "\<lt>Up>"<CR>
-inoremap <C-J> <C-R>=pumvisible() ? "\<lt>C-N>" : "\<lt>Down>"<CR>
+" let VI move cursor as Emacs
+inoremap <C-k> <C-R>=pumvisible() ? "\<lt>C-P>" : "\<lt>Up>"<CR>
+inoremap <C-j> <C-R>=pumvisible() ? "\<lt>C-N>" : "\<lt>Down>"<CR>
+imap <C-p> <C-k>
+imap <C-n> <C-j>
+imap <C-f> <Right>
+imap <C-b> <Left>
+
 imap <CR> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>CR>"<CR>
 imap <C-I> <C-R>=pumvisible() ? "\<lt>C-Y>" : "\<lt>Tab>"<CR>
 " imap {} {<C-G>u<CR><CR><Up><C-I>
+
+
+
 
 " inoremap <C-H> <C-R>="\<lt>Left>"<CR>
 " inoremap <C-L> <C-R>="\<lt>Right>"<CR>
 " map // <Leader>c | "Map C-/ not work, instead map to C-_, it's same
 
+" Duplicate line
+" ** MUST ** .zshrc add line
+" stty -ixon
+" to prevent Ctrl-S act as ScrollLock
+nmap <c-s>d YP
 " Switch tab
-nmap <c-s-d> YP
 nmap tt gt
 
 " Using pppp continuesly
@@ -175,8 +190,8 @@ vnoremap <silent> p p`]
 nnoremap <silent> p p`]
 
 " Move line up/down
-nmap <C-S-J> dd]pk<CR>
-nmap <C-S-K> ddk]Pk<CR>
+nmap <C-J> dd]pk<CR>
+nmap <C-K> ddk]Pk<CR>
 
 function! GetCurChar()
   return getline('.')[col('.')-1]
@@ -226,9 +241,6 @@ nmap <leader>N <Plug>(breeze-next-attribute)
 nmap <leader>B <Plug>(breeze-prev-attribute)
 
 
-
-
-
 " http://vimcasts.org/episodes/show-invisibles/
 " http://stackoverflow.com/questions/1675688/make-vim-show-all-white-spaces-as-a-character
 " Shortcut to rapidly toggle `set list`
@@ -243,6 +255,7 @@ set list listchars=tab:\|\
 "highlight NonText guifg=#fa4a59
 "highlight SpecialKey guifg=#fa4a59
 
+
 if &term =~ "xterm"
 	let &t_SI = "\<Esc>]12;purple\x7"
 	let &t_EI = "\<Esc>]12;blue\x7"
@@ -251,4 +264,11 @@ endif
 " For MacVim in iTerm2
 " let &t_SI = "\<Esc>]50;CursorShape=1\x7"
 " let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+
+
+" http://www.calmar.ws/vim/256-xterm-24bit-rgb-color-chart.html
+set cursorline
+autocmd InsertEnter * set nocursorline "| highlight CursorLine ctermbg=233
+autocmd InsertLeave * set cursorline "| highlight CursorLine ctermbg=16
+
 
