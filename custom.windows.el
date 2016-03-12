@@ -1,9 +1,12 @@
+(setq-default tab-width 4)
+(setq-default indent-tabs-mode nil)
+
 (defcustom gnutls-trustfiles "./cacert.pem"
   "gnutls-trustfiles location of cacert.pem."
   :type '(string)
-  :group 'user
+  :group 'tools
   )
-;; (customize-option 'gnutls-trustfiles)
+(customize-option 'gnutls-trustfiles)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -45,9 +48,31 @@
     )
   )
 
-(define-key global-map "\C-x\C-u" 'undo)
+(defun delete-backword-or-ws ()
+  (interactive)
+  (let (
+        (start (point))
+        (end (save-excursion (skip-syntax-backward "^ ") (+ 1 (point))))
+        )
+    ;; (message "%s, %s" start end)
+    (if (or (not ( thing-at-point 'whitespace)) (<= start end))
+        (paredit-backward-kill-word)
+      (delete-region start end)
+      )
+    )
+  )
 
-(global-set-key (kbd "M-/") 'comment-or-uncomment-line-or-region)
+
+(global-set-key (kbd "C-x C-;") 'comment-or-uncomment-line-or-region)
+(define-key global-map "\C-x\C-u" 'undo)
+(global-set-key (kbd "C-z") 'undo)
+(global-set-key (kbd "C-S-z") 'redo )
+(global-set-key (kbd "C-M-j") 'delete-indentation)
+
+(global-set-key (kbd "<C-backspace>") 'delete-backword-or-ws)
+(global-set-key (kbd "M-[ [") 'paredit-wrap-square)
+(global-set-key (kbd "M-[ {") 'paredit-wrap-curly)
+
 
 (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-kill-word)
@@ -63,4 +88,3 @@
 (setq initial-frame-alist '((top . 0) (left . 0) (width . 120) (height . 34)))
 
 (setq default-frame-alist '((top . 0) (left . 0) (width . 120) (height . 34)))
-
