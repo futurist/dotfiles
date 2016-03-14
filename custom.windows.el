@@ -1,3 +1,6 @@
+(defconst *is-a-windows* (eq system-type 'windows-nt))
+
+
 (setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
 
@@ -81,7 +84,7 @@
 
 (global-set-key (kbd "<M-RET>") 'sanityinc/newline-at-end-of-line)
 
-(set-fontset-font "fontset-default" 'gb18030 '("Microsoft YaHei" . "unicode-bmp"))
+
 
 (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
 
@@ -90,19 +93,23 @@
 ;; (setq default-frame-alist '((top . 0) (left . 0) (width . 120) (height . 34)))
 
 
-(defun e-maximize ()
-  "Maximize emacs window in windows os"
-  (interactive)
-  (w32-send-sys-command 61488))        ; WM_SYSCOMMAND #xf030 maximize
-(defun e-minimize ()
-  "Minimize emacs window in windows os"
-  (interactive)
-  (w32-send-sys-command #xf020))    ; #xf020 minimize
-(defun e-normal ()
-  "Normal emacs window in windows os"
-  (interactive)
-  (w32-send-sys-command #xf120))    ; #xf120 normalimize
+(when *is-a-windows*
+  (set-fontset-font "fontset-default" 'gb18030 '("Microsoft YaHei" . "unicode-bmp"))
 
-(e-maximize)
+  (defun e-maximize ()
+    "Maximize emacs window in windows os"
+    (interactive)
+    (w32-send-sys-command 61488))        ; WM_SYSCOMMAND #xf030 maximize
+  (defun e-minimize ()
+    "Minimize emacs window in windows os"
+    (interactive)
+    (w32-send-sys-command #xf020))    ; #xf020 minimize
+  (defun e-normal ()
+    "Normal emacs window in windows os"
+    (interactive)
+    (w32-send-sys-command #xf120))    ; #xf120 normalimize
 
-;; (global-set-key (kbd "M-SPC M-x") 'emacs-maximize)
+  (e-maximize)
+  ;; (global-set-key (kbd "M-SPC M-x") 'emacs-maximize)
+
+  )
