@@ -6,7 +6,7 @@
   :type '(string)
   :group 'tools
   )
-(customize-option 'gnutls-trustfiles)
+;; (customize-option 'gnutls-trustfiles)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -63,7 +63,7 @@
   )
 
 
-(global-set-key (kbd "C-x C-;") 'comment-or-uncomment-line-or-region)
+(global-set-key (kbd "C-c C-;") 'comment-or-uncomment-line-or-region)
 (define-key global-map "\C-x\C-u" 'undo)
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-S-z") 'redo )
@@ -85,6 +85,24 @@
 
 (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
 
-(setq initial-frame-alist '((top . 0) (left . 0) (width . 120) (height . 34)))
+;; (setq initial-frame-alist '((top . 0) (left . 0) (width . 120) (height . 34)))
 
-(setq default-frame-alist '((top . 0) (left . 0) (width . 120) (height . 34)))
+;; (setq default-frame-alist '((top . 0) (left . 0) (width . 120) (height . 34)))
+
+
+(defun e-maximize ()
+  "Maximize emacs window in windows os"
+  (interactive)
+  (w32-send-sys-command 61488))        ; WM_SYSCOMMAND #xf030 maximize
+(defun e-minimize ()
+  "Minimize emacs window in windows os"
+  (interactive)
+  (w32-send-sys-command #xf020))    ; #xf020 minimize
+(defun e-normal ()
+  "Normal emacs window in windows os"
+  (interactive)
+  (w32-send-sys-command #xf120))    ; #xf120 normalimize
+
+(e-maximize)
+
+;; (global-set-key (kbd "M-SPC M-x") 'emacs-maximize)
