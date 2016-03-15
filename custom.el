@@ -1,6 +1,22 @@
+;; Disable below line in purcell's init.el
+
+;; (require 'init-themes)
+;; (require 'init-flycheck)
+;; (require 'init-sessions)
+;; (require 'init-paredit)
+;; (require 'init-lisp)
+
+
+
 (setq debug-on-error t)
+
 (require-package 'yasnippet)
 (yas-global-mode 1)
+
+(require-package 'smartparens)
+(require 'smartparens-config)
+(add-hook 'js-mode #'smartparens-mode)
+(add-hook 'js2-mode #'smartparens-mode)
 
 
 (defconst *is-a-windows* (eq system-type 'windows-nt))
@@ -103,9 +119,9 @@
             (delete-region start end)
           (if (= start end)
               (delete-char -1)
-            (paredit-backward-kill-word))
+            (backward-kill-word 1))
           )
-      (paredit-backward-kill-word)
+      (backward-kill-word 1)
       )
     )
   )
@@ -118,6 +134,81 @@
     (insert "-")
     ))
 
+(defun ac-move-next-item ()
+  (interactive)
+  (if (ac-menu-live-p)
+      (ac-next)
+    (forward-line 1)
+    )
+  )
+(defun ac-move-prev-item ()
+  (interactive)
+  (if (ac-menu-live-p)
+      (ac-previous)
+    (forward-line -1)
+    )
+  )
+
+
+(defun mark-current-sentence ()
+  "Mark current sentence where point is"
+  (interactive)
+  (forward-sentence)
+  (set-mark-command nil)
+  (backward-sentence)
+  )
+
+
+
+(defun move-line (n)
+  "Move the current line up or down by N lines."
+  (interactive "p")
+  (let ((col nil) (start nil) (end nil))
+    (setq col (current-column))
+    (beginning-of-line) (setq start (point))
+    (end-of-line) (forward-char) (setq end (point))
+    (let ((line-text (delete-and-extract-region start end)))
+      (forward-line n)
+      (insert line-text)
+      ;; restore point to original column in moved line
+      (forward-line -1)
+      (forward-char col))
+    )
+  )
+
+(defun move-line-up (n)
+  "Move the current line up by N lines."
+  (interactive "p")
+  (move-line (if (null n) -1 (- n))))
+
+(defun move-line-down (n)
+  "Move the current line down by N lines."
+  (interactive "p")
+  (move-line (if (null n) 1 n)))
+
+(defun kill-line-or-region ()
+  (interactive)
+  (if (use-region-p)
+      (kill-region (region-beginning) (region-end))
+    (kill-line)
+    )
+  )
+
+(defun highlight-next-line()
+  "highlight next line"
+  (interactive)
+  (if (region-active-p)()
+    (set-mark-command nil))
+  (forward-line 1)
+)
+(defun highlight-prev-line()
+  "highlight prev line"
+  (interactive)
+  (if (region-active-p)()
+    (set-mark-command nil))
+  (forward-line -1)
+)
+
 
 ;; setting for auto-complete
 ;; press - to trigger isearch
@@ -127,25 +218,40 @@
 
 ;; multiple-cursors keybinding
 (global-set-key (kbd "C-S-d") 'mc/mark-next-like-this-symbol)
-(global-set-key (kbd "C-S-n") 'mc/skip-to-next-like-this)
-(global-set-key (kbd "C-S-p") 'mc/skip-to-previous-like-this)
+(global-set-key (kbd "C-S-s") 'mc/skip-to-next-like-this)
+
 
 ;; custom functions
 (global-set-key (kbd "C-S-j") 'duplicate-line-or-region)
 (global-set-key (kbd "<C-backspace>") 'delete-backword-or-ws)
 (global-set-key (kbd "<M-backspace>") 'delete-backword-or-ws)
 (global-set-key (kbd "C-c C-;") 'comment-or-uncomment-line-or-region)
-
+(global-set-key (kbd "C-S-l") 'mark-current-sentence)
+;; move lines
+(global-set-key (kbd "C-x C-n") 'move-line-down)
+(global-set-key (kbd "C-x C-p") 'move-line-up)
+(global-set-key (kbd "C-S-n") 'highlight-next-line)
+(global-set-key (kbd "C-S-p") 'highlight-prev-line)
+(global-set-key (kbd "C-n") 'ac-move-next-item)
+(global-set-key (kbd "C-p") 'ac-move-prev-item)
 
 
 ;; some short keys for default
 (define-key global-map "\C-x\C-u" 'undo)
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-S-z") 'redo )
+(global-set-key (kbd "M-z") 'zap-up-to-char)
+(global-set-key (kbd "M-Z") 'zap-to-char)
 (global-set-key (kbd "C-M-j") 'delete-indentation)
 (global-set-key (kbd "C-S-h") 'backward-kill-sentence)
-(global-unset-key (kbd "C-S-k"))
+;; restore 'kill-sentence and bind 'paredit-kill to C-k
+;; (after-load 'paredit
+;;   (define-key paredit-everywhere-mode-map [remap kill-sentence] nil)
+;;   (define-key paredit-mode-map [remap kill-sentence] nil)
+;;   )
 (global-set-key (kbd "C-S-k") 'kill-sentence)
+(global-set-key (kbd "C-k") 'kill-line-or-region)
+
 
 
 (global-set-key (kbd "M-] ]") 'paredit-wrap-square)
@@ -163,10 +269,10 @@
 
 ;; (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
 
-;; (setq initial-frame-alist '((top . 0) (left . 0) (width . 120) (height . 34)))
-
-;; (setq default-frame-alist '((top . 0) (left . 0) (width . 120) (height . 34)))
-
+(when *is-a-mac*
+  (setq initial-frame-alist '((top . 0) (left . 280) (width . 120) (height . 46)))
+  (setq default-frame-alist '((top . 0) (left . 280) (width . 120) (height . 46)))
+  )
 
 (when *is-a-windows*
   ;; (defcustom gnutls-trustfiles "./cacert.pem"
@@ -175,6 +281,9 @@
   ;;   :group 'tools
   ;;   )
   ;; (customize-option 'gnutls-trustfiles)
+
+  (setq w32-lwindow-modifier 'meta)
+  (setq w32-rwindow-modifier 'meta)
 
 
   (set-fontset-font "fontset-default" 'gb18030 '("Microsoft YaHei" . "unicode-bmp"))
