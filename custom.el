@@ -196,6 +196,14 @@
   (interactive "p")
   (move-line (if (null n) 1 n)))
 
+(defun kill-paragraph-or-region ()
+  (interactive)
+  (if (use-region-p)
+      (kill-region (region-beginning) (region-end))
+    (kill-paragraph 1)
+    )
+  )
+
 (defun kill-line-or-region ()
   (interactive)
   (if (use-region-p)
@@ -381,6 +389,7 @@
 ;;   )
 ;; (global-set-key (kbd "C-S-k") 'kill-sentence)
 (global-set-key (kbd "C-j") 'kill-line-or-region)
+(global-set-key (kbd "M-k") 'kill-paragraph-or-region)
 (global-set-key (kbd "C-k") 'whole-line-or-region-kill-region)
 
 

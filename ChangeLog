@@ -7,4 +7,6 @@
  ;; If there is more than one, they won't work right.
 	'(ac-use-fuzzy t)): use fuzzy search
 	(wombat): use monokai instead of wombat
+	(kill-paragraph-or-region): define this func
+	(kbd): add key-binding for M-k (kill-paragraph-or-region)
 
