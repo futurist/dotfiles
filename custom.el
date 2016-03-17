@@ -15,6 +15,8 @@
 
 (setq debug-on-error t)
 
+(require-package 'monokai-theme)
+
 (require-package 'yasnippet)
 (yas-global-mode 1)
 
@@ -42,7 +44,7 @@
  '(cua-mode t nil (cua-base))
  '(custom-safe-themes
    (quote
-    ("4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" default)))
+    ("ff02e8e37c9cfd192d6a0cb29054777f5254c17b1bf42023ba52b65e4307b76a" "38ba6a938d67a452aeb1dada9d7cdeca4d9f18114e9fc8ed2b972573138d4664" "4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" default)))
  '(display-buffer-reuse-frames t)
  '(safe-local-variable-values
    (quote
@@ -62,7 +64,7 @@
  ;; If there is more than one, they won't work right.
  '(default ((t (:family "Courier New" :foundry "outline" :slant normal :weight normal :height 163 :width normal)))))
 
-(load-theme 'wombat t)
+(load-theme 'monokai t)
 ;; (tool-bar-mode nil)
 
 ;; save buffer when outof focus
