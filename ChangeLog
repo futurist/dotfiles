@@ -9,4 +9,10 @@
 	(wombat): use monokai instead of wombat
 	(kill-paragraph-or-region): define this func
 	(kbd): add key-binding for M-k (kill-paragraph-or-region)
+	(kbd C-{}): [Thu Mar 17 19:25:00 HKT 2016] add begin/end of sexp binding; change rewrap binding
+
+	[Thu Mar 17 20:14:35 HKT 2016]
+	(youdao-dictionary): add youdao dict package & fix
+	(kbd): binding to C-c y
+
 

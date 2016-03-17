@@ -341,6 +341,20 @@
       (beginning-of-thing 'symbol))))
 
 
+(require-package 'youdao-dictionary)
+;; FIX Problem for youdao-dict
+;; https://github.com/xuchunyang/youdao-dictionary.el/issues/1#issuecomment-71359418
+(defun url-cookie-expired-p (cookie)
+  "Return non-nil if COOKIE is expired."
+  (let ((exp (url-cookie-expires cookie)))
+    (and (> (length exp) 0)
+         (condition-case ()
+             (> (float-time) (float-time (date-to-time exp)))
+           (error nil)))))
+;; Enable Cache
+(setq url-automatic-caching t)
+
+
 ;; setting for auto-complete
 ;; press - to trigger isearch
 (setq ac-show-menu-immediately-on-auto-complete t)
@@ -353,6 +367,7 @@
 
 
 ;; custom functions
+(global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
 (define-key global-map (kbd "C-,") 'goto-first-reference)
 (define-key global-map (kbd "C-s") 'search-selection)
 (global-set-key (kbd "C-M-j") 'delete-indentation)
@@ -464,3 +479,4 @@
   ;; (global-set-key (kbd "M-SPC M-x") 'emacs-maximize)
 
   )
+
