@@ -1,0 +1,10 @@
+2016-03-17    <Administrator@PC33>
+
+	* custom.el (monokai-theme): load monokai theme
+	(;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+	'(ac-use-fuzzy t)): use fuzzy search
+	(wombat): use monokai instead of wombat
+
