@@ -7,6 +7,11 @@
 ;; (require 'init-lisp)
 
 
+(require 'tramp)
+(setq tramp-auto-save-directory "~/emacs/tramp-autosave")
+;; (setq tramp-chunksize "500")
+;; (setq tramp-default-method "plink")
+
 
 (setq debug-on-error t)
 
@@ -17,6 +22,7 @@
 (require 'smartparens-config)
 (add-hook 'js-mode #'smartparens-mode)
 (add-hook 'js2-mode #'smartparens-mode)
+(sp-use-smartparens-bindings)
 
 
 (defconst *is-a-windows* (eq system-type 'windows-nt))
@@ -90,8 +96,9 @@
       (let ((pos (- (point) (line-beginning-position)))) ;Save column
         (if (> 0 n)                             ;Comment out original with negative arg
             (comment-region (line-beginning-position) (line-end-position)))
-        (forward-line 1)
-        (forward-char pos)))))
+        (next-line 1)
+        ;; (forward-char pos)
+        ))))
 
 
 
@@ -119,9 +126,9 @@
             (delete-region start end)
           (if (= start end)
               (delete-char -1)
-            (backward-kill-word 1))
+            (sp-backward-kill-word 1))
           )
-      (backward-kill-word 1)
+      (sp-backward-kill-word 1)
       )
     )
   )
@@ -138,14 +145,14 @@
   (interactive)
   (if (ac-menu-live-p)
       (ac-next)
-    (forward-line 1)
+    (next-line 1)
     )
   )
 (defun ac-move-prev-item ()
   (interactive)
   (if (ac-menu-live-p)
       (ac-previous)
-    (forward-line -1)
+    (next-line -1)
     )
   )
 
@@ -154,6 +161,7 @@
   "Mark current sentence where point is"
   (interactive)
   (forward-sentence)
+  (deactivate-mark)
   (set-mark-command nil)
   (backward-sentence)
   )
@@ -168,10 +176,10 @@
     (beginning-of-line) (setq start (point))
     (end-of-line) (forward-char) (setq end (point))
     (let ((line-text (delete-and-extract-region start end)))
-      (forward-line n)
+      (next-line n)
       (insert line-text)
       ;; restore point to original column in moved line
-      (forward-line -1)
+      (next-line -1)
       (forward-char col))
     )
   )
@@ -190,7 +198,7 @@
   (interactive)
   (if (use-region-p)
       (kill-region (region-beginning) (region-end))
-    (kill-line)
+    (sp-kill-hybrid-sexp 1)
     )
   )
 
@@ -199,15 +207,128 @@
   (interactive)
   (if (region-active-p)()
     (set-mark-command nil))
-  (forward-line 1)
+  (next-line 1)
 )
 (defun highlight-prev-line()
   "highlight prev line"
   (interactive)
   (if (region-active-p)()
     (set-mark-command nil))
-  (forward-line -1)
+  (next-line -1)
 )
+
+(defun copy-line (arg)
+  "Copy lines (as many as prefix argument) in the kill ring.
+      Ease of use features:
+      - Move to start of next line.
+      - Appends the copy on sequential calls.
+      - Use newline as last char even on the last line of the buffer.
+      - If region is active, copy its lines."
+  (interactive "p")
+  (let ((beg (line-beginning-position))
+        (end (line-end-position arg)))
+    (when mark-active
+      (if (> (point) (mark))
+          (setq beg (save-excursion (goto-char (mark)) (line-beginning-position)))
+        (setq end (save-excursion (goto-char (mark)) (line-end-position)))))
+    (if (eq last-command 'copy-line)
+        (kill-append (buffer-substring beg end) (< end beg))
+      (kill-ring-save beg end)))
+  (kill-append "\n" nil)
+  (beginning-of-line (or (and arg (1+ arg)) 2))
+  (if (and arg (not (= 1 arg))) (message "%d lines copied" arg)))
+;; optional key binding
+
+
+(defun move-parent-forward (arg)
+  (interactive "p")
+  (setq arg (or arg 1))
+  (save-excursion
+  (sp-end-of-sexp)
+  (forward-char 1)
+  (if (eq arg 1)(kill-sexp 1)
+    (if (eq arg 2) (let ((char (read-char-exclusive "input a char to zap:")))
+                     (if (eq char 13)
+                         (sp-kill-hybrid-sexp 1)
+                         (zap-up-to-char 1 char))
+                     )
+      (if (eq arg 3) (sp-kill-hybrid-sexp 1))
+      )
+    )
+  (backward-char 1)
+  (yank)
+  ))
+
+(defun move-parent-backward (arg)
+  (interactive "p")
+  (setq arg (or arg 1))
+  (save-excursion
+    (when (eq arg 1)
+      (sp-end-of-sexp)
+      (backward-kill-sexp 1)
+      )
+    (when (eq arg 2) (sp-kill-hybrid-sexp 1))
+    (when (eq arg 3) (sp-kill-hybrid-sexp 1))
+    (forward-char 1)
+    (yank)
+    )
+  )
+
+(defun move-parent-forward-symbol ()(interactive)
+       (move-parent-forward 1))
+(defun move-parent-forward-up-to-char ()(interactive)
+       (move-parent-forward 2))
+(defun move-parent-backwrad-symbol()(interactive)
+       (move-parent-backward 2))
+
+
+;; -- define a new command to join multiple lines together --
+(defun join-lines () (interactive)
+       (next-line)
+       (join-line)
+       (delete-horizontal-space)
+       (insert " ")
+       )
+
+(defun sp-backward-delete-all (&optional arg)(interactive)
+       (let (
+             (old (point))
+             )
+         (sp-beginning-of-sexp arg)
+         (delete-region (point) old)
+         )
+       )
+
+
+(defun search-selection (&optional arg)
+  "search for selected text"
+  (interactive "P")
+  (when (and (eq arg nil) (not (region-active-p)))
+    (sp-select-next-thing-exchange)
+    )
+  (if (region-active-p)
+      (let (
+            (selection (buffer-substring-no-properties (region-beginning) (region-end)))
+            )
+        (deactivate-mark)
+        (isearch-mode t nil nil nil)
+        (isearch-yank-string selection)
+        )
+    (isearch-forward)
+    )
+  )
+
+
+(defun goto-first-reference ()
+  (interactive)
+  (set-mark-command nil)
+  (deactivate-mark)
+  (eval
+   `(progn
+      (goto-char (point-min))
+      (search-forward-regexp
+       (rx symbol-start ,(thing-at-point 'symbol) symbol-end))
+      (beginning-of-thing 'symbol))))
 
 
 ;; setting for auto-complete
@@ -217,16 +338,20 @@
 
 
 ;; multiple-cursors keybinding
-(global-set-key (kbd "C-S-d") 'mc/mark-next-like-this-symbol)
-(global-set-key (kbd "C-S-s") 'mc/skip-to-next-like-this)
+(global-set-key (kbd "M-D") 'mc/mark-next-like-this-symbol)
+(global-set-key (kbd "M-N") 'mc/skip-to-next-like-this)
 
 
 ;; custom functions
-(global-set-key (kbd "C-S-j") 'duplicate-line-or-region)
-(global-set-key (kbd "<C-backspace>") 'delete-backword-or-ws)
-(global-set-key (kbd "<M-backspace>") 'delete-backword-or-ws)
+(define-key global-map (kbd "C-,") 'goto-first-reference)
+(define-key global-map (kbd "C-s") 'search-selection)
+(global-set-key (kbd "C-M-j") 'delete-indentation)
+(global-set-key (kbd "C-S-j") 'join-lines)
+(global-set-key (kbd "C-S-d") 'duplicate-line-or-region)
+(global-set-key (kbd "C-<backspace>") 'delete-backword-or-ws)
+(global-set-key (kbd "C-S-<backspace>") 'sp-backward-delete-all)
 (global-set-key (kbd "C-c C-;") 'comment-or-uncomment-line-or-region)
-(global-set-key (kbd "C-S-l") 'mark-current-sentence)
+(global-set-key (kbd "C-M-l") 'mark-current-sentence)
 ;; move lines
 (global-set-key (kbd "C-x C-n") 'move-line-down)
 (global-set-key (kbd "C-x C-p") 'move-line-up)
@@ -237,25 +362,40 @@
 
 
 ;; some short keys for default
-(define-key global-map "\C-x\C-u" 'undo)
+;; (define-key global-map "\C-x\C-u" 'undo)
+(global-set-key (kbd "C-S-r") 'anzu-query-replace-at-cursor-thing)
 (global-set-key (kbd "C-z") 'undo)
-(global-set-key (kbd "C-S-z") 'redo )
+(global-set-key (kbd "C-S-z") 'redo)
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 (global-set-key (kbd "M-Z") 'zap-to-char)
-(global-set-key (kbd "C-M-j") 'delete-indentation)
-(global-set-key (kbd "C-S-h") 'backward-kill-sentence)
+(global-set-key (kbd "C-c C-c") 'whole-line-or-region-kill-ring-save)
+(global-set-key (kbd "C-c C-x") 'whole-line-or-region-kill-region)
+(global-set-key (kbd "C-c C-v") 'whole-line-or-region-yank)
+;; (global-set-key (kbd "C-S-h") 'backward-kill-sentence)
 ;; restore 'kill-sentence and bind 'paredit-kill to C-k
 ;; (after-load 'paredit
 ;;   (define-key paredit-everywhere-mode-map [remap kill-sentence] nil)
 ;;   (define-key paredit-mode-map [remap kill-sentence] nil)
 ;;   )
-(global-set-key (kbd "C-S-k") 'kill-sentence)
-(global-set-key (kbd "C-k") 'kill-line-or-region)
+;; (global-set-key (kbd "C-S-k") 'kill-sentence)
+(global-set-key (kbd "C-j") 'kill-line-or-region)
+(global-set-key (kbd "C-k") 'whole-line-or-region-kill-region)
 
 
+;; smartparents keybinding
+(global-set-key (kbd "M-]") 'sp-forward-sexp)
+(global-set-key (kbd "M-[") 'sp-backward-sexp)
+(global-set-key (kbd "M-s") 'sp-unwrap-sexp)
+(global-set-key (kbd "C-M-]") 'sp-rewrap-sexp)
+;; (global-set-key (kbd "C-M-<left>") 'sp-forward-slurp-sexp)
+;; (global-set-key (kbd "C-M-<right>") 'sp-forward-barf-sexp)
+(global-set-key (kbd "M-<right>") 'move-parent-backwrad-symbol)
+(global-set-key (kbd "M-<left>") 'move-parent-forward-symbol)
+(global-set-key (kbd "C-M-<left>") 'move-parent-forward-up-to-char)
 
-(global-set-key (kbd "M-] ]") 'paredit-wrap-square)
-(global-set-key (kbd "M-] }") 'paredit-wrap-curly)
+
+;; (global-set-key (kbd "M-] ]") 'paredit-wrap-square)
+;; (global-set-key (kbd "M-] }") 'paredit-wrap-curly)
 
 
 (global-set-key (kbd "C-h") 'delete-backward-char)
@@ -270,6 +410,10 @@
 ;; (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
 
 (when *is-a-mac*
+;; bash complete not run on windows
+  (require-package 'bash-completion)
+  (bash-completion-setup)
+
   (setq initial-frame-alist '((top . 0) (left . 280) (width . 120) (height . 46)))
   (setq default-frame-alist '((top . 0) (left . 280) (width . 120) (height . 46)))
   )
@@ -281,6 +425,8 @@
   ;;   :group 'tools
   ;;   )
   ;; (customize-option 'gnutls-trustfiles)
+
+  (setq tramp-default-method "plink")
 
   (setq w32-lwindow-modifier 'meta)
   (setq w32-rwindow-modifier 'meta)
