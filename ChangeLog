@@ -1,3 +1,20 @@
+2016-03-19    <Administrator@PC33>
+
+	* custom.el (default-font-size): set default font-size
+	(;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ `(default ((t (:family "Courier New" :foundry "outline" :slant normal :weight normal :height ,default-font-size :width normal))))): font-size adject in mac
+	(delete-backword-or-ws): remove message display
+ (highlight-next-line): make goal position unchanged
+ (move-parent-forward): add some format
+ (search-selection): search current symbol
+ (kbd): C-M-j above join
+ (kbd): C-S-j next join
+ (*is-a-mac*): setq var in mac, make option as commander key, font-size adj
+
+
 2016-03-17    <Administrator@PC33>
 
 	* custom.el (monokai-theme): load monokai theme

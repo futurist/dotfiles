@@ -27,8 +27,12 @@
 (sp-use-smartparens-bindings)
 
 
+(setq default-font-size 163)
 (defconst *is-a-windows* (eq system-type 'windows-nt))
-
+(when *is-a-mac*
+  (setq default-font-size 183)
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier 'meta))
 
 (setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
@@ -62,7 +66,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Courier New" :foundry "outline" :slant normal :weight normal :height 163 :width normal)))))
+ `(default ((t (:family "Courier New" :foundry "outline" :slant normal :weight normal :height ,default-font-size :width normal)))))
 
 (load-theme 'monokai t)
 ;; (tool-bar-mode nil)
@@ -122,7 +126,6 @@
         (start (point))
         (end (save-excursion (skip-chars-backward "\t\n \r") (+ 1 (point))))
         )
-    (message "%s, %s" start end)
     (if (thing-at-point 'whitespace)
         (if (> start end)
             (delete-region start end)
@@ -218,14 +221,14 @@
   (if (region-active-p)()
     (set-mark-command nil))
   (next-line 1)
-)
+  )
 (defun highlight-prev-line()
   "highlight prev line"
   (interactive)
   (if (region-active-p)()
     (set-mark-command nil))
   (next-line -1)
-)
+  )
 
 (defun copy-line (arg)
   "Copy lines (as many as prefix argument) in the kill ring.
@@ -254,20 +257,20 @@
   (interactive "p")
   (setq arg (or arg 1))
   (save-excursion
-  (sp-end-of-sexp)
-  (forward-char 1)
-  (if (eq arg 1)(kill-sexp 1)
-    (if (eq arg 2) (let ((char (read-char-exclusive "input a char to zap:")))
-                     (if (eq char 13)
-                         (sp-kill-hybrid-sexp 1)
+    (sp-end-of-sexp)
+    (forward-char 1)
+    (if (eq arg 1)(kill-sexp 1)
+      (if (eq arg 2) (let ((char (read-char-exclusive "input a char to zap:")))
+                       (if (eq char 13)
+                           (sp-kill-hybrid-sexp 1)
                          (zap-up-to-char 1 char))
-                     )
-      (if (eq arg 3) (sp-kill-hybrid-sexp 1))
+                       )
+        (if (eq arg 3) (sp-kill-hybrid-sexp 1))
+        )
       )
-    )
-  (backward-char 1)
-  (yank)
-  ))
+    (backward-char 1)
+    (yank)
+    ))
 
 (defun move-parent-backward (arg)
   (interactive "p")
@@ -313,7 +316,7 @@
 (defun search-selection (&optional arg)
   "search for selected text"
   (interactive "P")
-  (when (and (eq arg nil) (not (region-active-p)))
+  (when (and (thing-at-point 'symbol) (eq arg nil) (not (region-active-p)))
     (sp-select-next-thing-exchange)
     )
   (if (region-active-p)
@@ -362,21 +365,24 @@
 
 
 ;; multiple-cursors keybinding
-(global-set-key (kbd "M-D") 'mc/mark-next-like-this-symbol)
+(global-set-key (kbd "M-D") 'mc/mark-next-like-this)
 (global-set-key (kbd "M-N") 'mc/skip-to-next-like-this)
 
 
 ;; custom functions
+(global-set-key (kbd "C-c C-k") 'copy-line)
 (global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
-(define-key global-map (kbd "C-,") 'goto-first-reference)
+(define-key global-map (kbd "M-.") 'goto-first-reference)
 (define-key global-map (kbd "C-s") 'search-selection)
 (global-set-key (kbd "C-M-j") 'delete-indentation)
 (global-set-key (kbd "C-S-j") 'join-lines)
+;; C-j not work on OSX, so above C-M-j
+(global-set-key (kbd "C-j") 'join-lines)
 (global-set-key (kbd "C-S-d") 'duplicate-line-or-region)
 (global-set-key (kbd "C-<backspace>") 'delete-backword-or-ws)
 (global-set-key (kbd "C-S-<backspace>") 'sp-backward-delete-all)
 (global-set-key (kbd "C-c C-;") 'comment-or-uncomment-line-or-region)
-(global-set-key (kbd "C-M-l") 'mark-current-sentence)
+(global-set-key (kbd "C-M-l") 'mark-paragraph)
 ;; move lines
 (global-set-key (kbd "C-x C-n") 'move-line-down)
 (global-set-key (kbd "C-x C-p") 'move-line-up)
@@ -403,9 +409,9 @@
 ;;   (define-key paredit-mode-map [remap kill-sentence] nil)
 ;;   )
 ;; (global-set-key (kbd "C-S-k") 'kill-sentence)
-(global-set-key (kbd "C-j") 'kill-line-or-region)
+(global-set-key (kbd "C-k") 'kill-line-or-region)
 (global-set-key (kbd "M-k") 'kill-paragraph-or-region)
-(global-set-key (kbd "C-k") 'whole-line-or-region-kill-region)
+(global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
 
 
 ;; smartparents keybinding
@@ -438,7 +444,7 @@
 ;; (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
 
 (when *is-a-mac*
-;; bash complete not run on windows
+  ;; bash complete not run on windows
   (require-package 'bash-completion)
   (bash-completion-setup)
 
@@ -479,4 +485,3 @@
   ;; (global-set-key (kbd "M-SPC M-x") 'emacs-maximize)
 
   )
-
