@@ -1,3 +1,19 @@
+2016-03-26    <Administrator@PC33>
+
+	* custom.el (tramp-auto-save-directory): change remote emacs autosave folder
+	(copy-line): small format change
+	(select-current-pair): add new select-current-pair func
+	(kbd): bind
+	(kbd): bind C-S-l to sel paragraph
+	(kbd): bind C-V to paste
+
+2016-03-21    <Administrator@PC33>
+
+	* custom.el: add tern.js
+	(copy-line): restore copy-line append
+	(kbd):Change to C-V when paste
+	(kbd): C-+, C-0 to mc
+
 2016-03-19    <Administrator@PC33>
 
 	* custom.el (default-font-size): set default font-size

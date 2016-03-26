@@ -8,12 +8,15 @@
 
 
 (require 'tramp)
-(setq tramp-auto-save-directory "~/emacs/tramp-autosave")
+(setq tramp-auto-save-directory "~/tramp-autosave")
 ;; (setq tramp-chunksize "500")
-;; (setq tramp-default-method "plink")
+(setq tramp-default-method "plink")
 
 
-(setq debug-on-error t)
+;; (setq debug-on-error t)
+
+
+(require-package 'use-package)
 
 (require-package 'monokai-theme)
 
@@ -25,6 +28,34 @@
 (add-hook 'js-mode #'smartparens-mode)
 (add-hook 'js2-mode #'smartparens-mode)
 (sp-use-smartparens-bindings)
+
+
+
+
+(use-package js2-refactor
+  :defer t
+  :diminish js2-refactor-mode
+  :commands js2-refactor-mode
+  :ensure t
+  :init
+  (add-hook 'js2-mode-hook #'js2-refactor-mode)
+  :config
+  (js2r-add-keybindings-with-prefix "C-c C-m"))
+
+
+;; ternjs for eamcs
+(add-to-list 'load-path "d:\\crx\\github\\tern\\emacs")
+(autoload 'tern-mode "tern.el" nil t)
+(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
+(add-hook 'js-mode-hook (lambda () (tern-mode t)))
+
+;; add tern-auto-complete
+(eval-after-load 'tern
+  '(progn
+      (require-package 'tern-auto-complete)
+      (tern-ac-setup)))
+
+
 
 
 (setq default-font-size 163)
@@ -243,7 +274,8 @@
     (when mark-active
       (if (> (point) (mark))
           (setq beg (save-excursion (goto-char (mark)) (line-beginning-position)))
-        (setq end (save-excursion (goto-char (mark)) (line-end-position)))))
+        (setq end (save-excursion (goto-char (mark)) (line-end-position))))
+      )
     (if (eq last-command 'copy-line)
         (kill-append (buffer-substring beg end) (< end beg))
       (kill-ring-save beg end)))
@@ -303,12 +335,22 @@
        (insert " ")
        )
 
+(defun select-current-pair()
+  (interactive)
+  (sp-up-sexp)
+  (deactivate-mark)
+  (set-mark-command nil)
+  (sp-backward-sexp)
+  )
+
 (defun sp-backward-delete-all (&optional arg)(interactive)
        (let (
              (old (point))
              )
          (sp-beginning-of-sexp arg)
-         (delete-region (point) old)
+         (if (eq old (point))
+             (kill-line 0)
+           (delete-region (point) old))
          )
        )
 
@@ -365,12 +407,14 @@
 
 
 ;; multiple-cursors keybinding
-(global-set-key (kbd "M-D") 'mc/mark-next-like-this)
-(global-set-key (kbd "M-N") 'mc/skip-to-next-like-this)
+(global-set-key (kbd "C-0") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-9") 'mc/skip-to-next-like-this)
 
 
 ;; custom functions
+(define-key global-map (kbd "S-<space>") 'select-current-pair)
 (global-set-key (kbd "C-c C-k") 'copy-line)
+(global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
 (global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
 (define-key global-map (kbd "M-.") 'goto-first-reference)
 (define-key global-map (kbd "C-s") 'search-selection)
@@ -382,7 +426,7 @@
 (global-set-key (kbd "C-<backspace>") 'delete-backword-or-ws)
 (global-set-key (kbd "C-S-<backspace>") 'sp-backward-delete-all)
 (global-set-key (kbd "C-c C-;") 'comment-or-uncomment-line-or-region)
-(global-set-key (kbd "C-M-l") 'mark-paragraph)
+(global-set-key (kbd "C-S-l") 'mark-paragraph)
 ;; move lines
 (global-set-key (kbd "C-x C-n") 'move-line-down)
 (global-set-key (kbd "C-x C-p") 'move-line-up)
@@ -402,6 +446,7 @@
 (global-set-key (kbd "C-c C-c") 'whole-line-or-region-kill-ring-save)
 (global-set-key (kbd "C-c C-x") 'whole-line-or-region-kill-region)
 (global-set-key (kbd "C-c C-v") 'whole-line-or-region-yank)
+(global-set-key (kbd "C-V") 'whole-line-or-region-yank)
 ;; (global-set-key (kbd "C-S-h") 'backward-kill-sentence)
 ;; restore 'kill-sentence and bind 'paredit-kill to C-k
 ;; (after-load 'paredit
