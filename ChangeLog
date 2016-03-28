@@ -1,3 +1,9 @@
+2016-03-28    <Administrator@PC33>
+
+	* custom.el (tramp-default-method): comment this
+	(my-kill-thing-at-point): add defun
+	(kbd): add er/delete-char-or-word
+
 2016-03-26    <Administrator@PC33>
 
 	* custom.el (tramp-auto-save-directory): change remote emacs autosave folder

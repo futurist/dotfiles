@@ -10,7 +10,7 @@
 (require 'tramp)
 (setq tramp-auto-save-directory "~/tramp-autosave")
 ;; (setq tramp-chunksize "500")
-(setq tramp-default-method "plink")
+;; (setq tramp-default-method "plink")
 
 
 ;; (setq debug-on-error t)
@@ -149,6 +149,28 @@
   )
 
 
+(defun my-kill-thing-at-point (thing)
+  "Kill the `thing-at-point' for the specified kind of THING."
+  (let ((bounds (bounds-of-thing-at-point thing)))
+    (if bounds
+        (kill-region (car bounds) (cdr bounds))
+      (error "No %s at point" thing))))
+
+
+(defun er/delete-char-or-word(&optional arg)
+  (interactive "P")
+  (if (region-active-p)
+      (kill-region (region-beginning) (region-end))
+  (if (consp arg)
+      (let* ((int (car arg)) (count (or (log int 4) 1)))
+        (message "%s+++" count)
+        (if (<= count 1) (my-kill-thing-at-point 'word) (my-kill-thing-at-point 'symbol))
+        ;; (er/expand-region (or (log count 4) 1))
+        ;; (kill-region (region-beginning) (region-end))
+        )
+    (delete-char (or arg 1))
+    ))
+  )
 
 
 (defun delete-backword-or-ws ()
@@ -446,7 +468,7 @@
 (global-set-key (kbd "C-c C-c") 'whole-line-or-region-kill-ring-save)
 (global-set-key (kbd "C-c C-x") 'whole-line-or-region-kill-region)
 (global-set-key (kbd "C-c C-v") 'whole-line-or-region-yank)
-(global-set-key (kbd "C-V") 'whole-line-or-region-yank)
+(global-set-key (kbd "C-d") 'er/delete-char-or-word)
 ;; (global-set-key (kbd "C-S-h") 'backward-kill-sentence)
 ;; restore 'kill-sentence and bind 'paredit-kill to C-k
 ;; (after-load 'paredit
