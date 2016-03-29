@@ -18,6 +18,9 @@
 
 (setq debug-on-error t)
 
+(after-load "expand-region"
+  (setq expand-region-fast-keys-enabled nil)
+  )
 
 (require-package 'use-package)
 
@@ -161,8 +164,6 @@
         (progn (message "---%s" bounds) (delete-region (car bounds) (cdr bounds)) t)
       )))
 
-
-(cond (nil 1) (t 2) (nil 3) (t 4) )
 
 (defun er/delete-char-or-word(&optional arg)
   (interactive "P")
@@ -394,13 +395,14 @@
   "search for selected text"
   (interactive "P")
   (when (and (thing-at-point 'symbol) (eq arg nil) (not (region-active-p)))
-    (sp-select-next-thing-exchange)
+    ;; (sp-select-next-thing-exchange)
     )
   (if (region-active-p)
       (let (
             (selection (buffer-substring-no-properties (region-beginning) (region-end)))
             )
         (deactivate-mark)
+        (setq isearch-string selection)
         (isearch-mode t nil nil nil)
         (isearch-yank-string selection)
         )

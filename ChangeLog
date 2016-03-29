@@ -4,6 +4,9 @@
 	add 'delete-thing-at-point
 	change er/delete-char-or-word fun
 	default fg color: #E5E5DE
+	("expand-region"): prevent er/overlay-map
+	(nil): remove the line
+	(search-selection): Change: don't select symbol
 
 2016-03-28    <Administrator@PC33>
 
