@@ -1,19 +1,22 @@
 ;; Disable below line in purcell's init.el
 
+;; default fg color: #E5E5DE
 ;; (require 'init-themes)
 ;; (require 'init-flycheck)
 ;; (require 'init-sessions)
 ;; (require 'init-paredit)
 ;; (require 'init-lisp)
 
+(defconst *is-a-windows* (eq system-type 'windows-nt))
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
 
-(require 'tramp)
 (setq tramp-auto-save-directory "~/tramp-autosave")
 ;; (setq tramp-chunksize "500")
 ;; (setq tramp-default-method "plink")
 
 
-;; (setq debug-on-error t)
+(setq debug-on-error t)
 
 
 (require-package 'use-package)
@@ -30,8 +33,7 @@
 (sp-use-smartparens-bindings)
 
 
-
-
+(require-package 'dash)
 (use-package js2-refactor
   :defer t
   :diminish js2-refactor-mode
@@ -52,15 +54,18 @@
 ;; add tern-auto-complete
 (eval-after-load 'tern
   '(progn
-      (require-package 'tern-auto-complete)
-      (tern-ac-setup)))
+     (require-package 'tern-auto-complete)
+     (tern-ac-setup)))
 
 
 
+;; when it's windows, setting below
+(setq default-font-family "Consolas")
+(setq default-font-size 143)
 
-(setq default-font-size 163)
-(defconst *is-a-windows* (eq system-type 'windows-nt))
+;; when it's mac, setting below
 (when *is-a-mac*
+  (setq default-font-family "Source Code Pro")
   (setq default-font-size 183)
   (setq mac-command-modifier 'meta)
   (setq mac-option-modifier 'meta))
@@ -97,7 +102,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- `(default ((t (:family "Courier New" :foundry "outline" :slant normal :weight normal :height ,default-font-size :width normal)))))
+ `(default ((t (:family ,default-font-family :foundry "outline" :slant normal :weight normal :height ,default-font-size :width normal)))))
 
 (load-theme 'monokai t)
 ;; (tool-bar-mode nil)
@@ -149,27 +154,32 @@
   )
 
 
-(defun my-kill-thing-at-point (thing)
+(defun my-delete-thing-at-point (thing)
   "Kill the `thing-at-point' for the specified kind of THING."
   (let ((bounds (bounds-of-thing-at-point thing)))
     (if bounds
-        (kill-region (car bounds) (cdr bounds))
-      (error "No %s at point" thing))))
+        (progn (message "---%s" bounds) (delete-region (car bounds) (cdr bounds)) t)
+      )))
 
+
+(cond (nil 1) (t 2) (nil 3) (t 4) )
 
 (defun er/delete-char-or-word(&optional arg)
   (interactive "P")
   (if (region-active-p)
       (kill-region (region-beginning) (region-end))
-  (if (consp arg)
-      (let* ((int (car arg)) (count (or (log int 4) 1)))
-        (message "%s+++" count)
-        (if (<= count 1) (my-kill-thing-at-point 'word) (my-kill-thing-at-point 'symbol))
-        ;; (er/expand-region (or (log count 4) 1))
-        ;; (kill-region (region-beginning) (region-end))
-        )
-    (delete-char (or arg 1))
-    ))
+    (if (consp arg)
+        (let* ((int (car arg)) (count (or (log int 4) 1)))
+          (progn
+           (if (> count 0) (if (my-delete-thing-at-point 'word) (decf count)) )
+           (if (> count 0) (if (my-delete-thing-at-point 'symbol) (decf count)) )
+           (if (> count 0) (progn (sp-kill-sexp (round count)) (message "%s" count)))
+           )
+          ;; (er/expand-region (or (log count 4) 1))
+          ;; (kill-region (region-beginning) (region-end))
+          )
+      (sp-delete-char (or arg 1))
+      ))
   )
 
 
@@ -179,14 +189,16 @@
         (start (point))
         (end (save-excursion (skip-chars-backward "\t\n \r") (+ 1 (point))))
         )
-    (if (thing-at-point 'whitespace)
+    (if (and (thing-at-point 'whitespace) (>= start end))
         (if (> start end)
             (delete-region start end)
           (if (= start end)
               (delete-char -1)
-            (sp-backward-kill-word 1))
+            )
           )
       (sp-backward-kill-word 1)
+      (pop kill-ring)
+      (setq kill-ring-yank-pointer kill-ring)
       )
     )
   )
@@ -366,12 +378,13 @@
   )
 
 (defun sp-backward-delete-all (&optional arg)(interactive)
-       (let (
-             (old (point))
-             )
+       (let ((old (point)))
          (sp-beginning-of-sexp arg)
          (if (eq old (point))
-             (kill-line 0)
+             (progn
+               ;; (move-beginning-of-line nil)
+               (back-to-indentation)
+               (delete-region old (point)))
            (delete-region (point) old))
          )
        )
@@ -407,6 +420,12 @@
        (rx symbol-start ,(thing-at-point 'symbol) symbol-end))
       (beginning-of-thing 'symbol))))
 
+(defun my-backward-sexp()
+  (interactive)
+  (let ((old (point))) (sp-beginning-of-sexp nil)
+       (if (eq old (point)) (sp-backward-up-sexp nil))
+       )
+  )
 
 (require-package 'youdao-dictionary)
 ;; FIX Problem for youdao-dict
@@ -436,6 +455,8 @@
 ;; custom functions
 (define-key global-map (kbd "S-<space>") 'select-current-pair)
 (global-set-key (kbd "C-c C-k") 'copy-line)
+(global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
+(global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
 (global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
 (global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
 (define-key global-map (kbd "M-.") 'goto-first-reference)
@@ -468,7 +489,6 @@
 (global-set-key (kbd "C-c C-c") 'whole-line-or-region-kill-ring-save)
 (global-set-key (kbd "C-c C-x") 'whole-line-or-region-kill-region)
 (global-set-key (kbd "C-c C-v") 'whole-line-or-region-yank)
-(global-set-key (kbd "C-d") 'er/delete-char-or-word)
 ;; (global-set-key (kbd "C-S-h") 'backward-kill-sentence)
 ;; restore 'kill-sentence and bind 'paredit-kill to C-k
 ;; (after-load 'paredit
@@ -478,14 +498,14 @@
 ;; (global-set-key (kbd "C-S-k") 'kill-sentence)
 (global-set-key (kbd "C-k") 'kill-line-or-region)
 (global-set-key (kbd "M-k") 'kill-paragraph-or-region)
-(global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
 
 
 ;; smartparents keybinding
+(global-set-key (kbd "C-d") 'er/delete-char-or-word)
 (global-set-key (kbd "M-]") 'sp-forward-sexp)
 (global-set-key (kbd "M-[") 'sp-backward-sexp)
 (global-set-key (kbd "M-s") 'sp-unwrap-sexp)
-(global-set-key (kbd "C-{") 'sp-beginning-of-sexp)
+(global-set-key (kbd "C-{") 'my-backward-sexp)
 (global-set-key (kbd "C-}") 'sp-end-of-sexp)
 (global-set-key (kbd "C-M-'") 'sp-rewrap-sexp)
 ;; (global-set-key (kbd "C-M-<left>") 'sp-forward-slurp-sexp)
@@ -515,8 +535,8 @@
   (require-package 'bash-completion)
   (bash-completion-setup)
 
-  (setq initial-frame-alist '((top . 0) (left . 280) (width . 120) (height . 46)))
-  (setq default-frame-alist '((top . 0) (left . 280) (width . 120) (height . 46)))
+  (setq initial-frame-alist '((top . 0) (left . 280) (width . 120) (height . 42)))
+  (setq default-frame-alist '((top . 0) (left . 280) (width . 120) (height . 42)))
   )
 
 (when *is-a-windows*

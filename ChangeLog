@@ -1,3 +1,10 @@
+2016-03-29    <Administrator@PC33>
+
+	* custom.el: change font to source-code-pro
+	add 'delete-thing-at-point
+	change er/delete-char-or-word fun
+	default fg color: #E5E5DE
+
 2016-03-28    <Administrator@PC33>
 
 	* custom.el (tramp-default-method): comment this
