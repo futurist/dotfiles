@@ -75,6 +75,7 @@
 
 (setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
+(setq-default line-spacing 5)
 
 
 (custom-set-variables
@@ -117,8 +118,68 @@
       (save-buffer)
     )
   )
-(add-hook 'focus-out-hook 'save-current-file)
+;; (add-hook 'focus-out-hook 'save-current-file)
 
+(defun do-lines-in-region (fun &optional arg start end)
+  "Invoke function FUN on the text of each line from START to END."
+  (interactive)
+  (if (use-region-p)
+      (setq start (region-beginning)
+            end (region-end)
+            )
+    )
+  (deactivate-mark)
+  (save-excursion
+    (goto-char start)
+    (while (and (< (point) end)
+                (re-search-forward "\n" end t))
+      (funcall fun arg)
+      )
+    ))
+
+(defun count-lines-in-region ()
+  (when (use-region-p)
+    (let ((count 0)
+          (start (region-beginning))
+          (end (region-end))
+          )
+      (deactivate-mark)
+      (save-excursion
+        (goto-char start)
+        (while (and (< (point) end)
+                    (re-search-forward "\n" end t))
+          (incf count)
+          )
+        )
+      (or count 0)
+      ))
+  )
+
+(defun remove-add-last-comma(&optional arg)
+  (interactive "P")
+  (if (use-region-p)
+      (funcall 'do-lines-in-region '__remove-add-last-comma arg)
+    (__remove-add-last-comma arg)
+      )
+  )
+
+(defun __remove-add-last-comma(&optional arg)
+  (let ((has-comma (eq 59 (get-byte (1- (line-end-position))))));ASCII 59 = ;
+    (save-excursion
+      (if (and has-comma (eq arg nil))
+          (progn
+            (end-of-line)
+            (delete-backward-char 1)
+            )
+        )
+      (if (and (not has-comma) (consp arg))
+              (progn
+                (end-of-line)
+                (insert ";")
+                )
+        )
+      ))
+  )
 
 
 
@@ -455,6 +516,7 @@
 
 
 ;; custom functions
+(define-key global-map (kbd "C-x C-;") 'remove-add-last-comma)
 (define-key global-map (kbd "S-<space>") 'select-current-pair)
 (global-set-key (kbd "C-c C-k") 'copy-line)
 (global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
