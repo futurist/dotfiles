@@ -130,14 +130,18 @@
     )
   (deactivate-mark)
   (save-excursion
+    (goto-char end)
+    (re-search-forward "\n" nil t)
+    (setq end (point))
     (goto-char start)
     (while (and (< (point) end)
-                (re-search-forward "\n" end t))
-      (funcall fun arg)
+                (progn (unless (current-line-empty-p) (funcall fun arg))
+                       (re-search-forward "\n" end t))
+                )
       )
     ))
 
-(defun count-lines-in-region ()
+(defun count-lines-in-region (&optional skip-empty)
   (when (use-region-p)
     (let ((count 0)
           (start (region-beginning))
@@ -145,15 +149,25 @@
           )
       (deactivate-mark)
       (save-excursion
+        (goto-char end)
+        (re-search-forward "\n" nil t)
+        (setq end (point))
         (goto-char start)
         (while (and (< (point) end)
-                    (re-search-forward "\n" end t))
-          (incf count)
+                    (progn (incf count)
+                           (re-search-forward "\n" end t)))
           )
         )
       (or count 0)
       ))
   )
+
+
+(defun current-line-empty-p ()
+  (save-excursion
+    (beginning-of-line)
+    (looking-at "[[:space:]]*$")))
+
 
 (defun remove-add-last-comma(&optional arg)
   (interactive "P")
@@ -398,6 +412,8 @@
       )
     (backward-char 1)
     (yank)
+    (pop kill-ring)
+    (setq kill-ring-yank-pointer kill-ring)
     ))
 
 (defun move-parent-backward (arg)
@@ -412,6 +428,8 @@
     (when (eq arg 3) (sp-kill-hybrid-sexp 1))
     (forward-char 1)
     (yank)
+    (pop kill-ring)
+    (setq kill-ring-yank-pointer kill-ring)
     )
   )
 
