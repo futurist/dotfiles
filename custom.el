@@ -26,6 +26,16 @@
 
 (require-package 'monokai-theme)
 
+;; http://stackoverflow.com/questions/4462393/how-do-i-configure-emacs-for-editing-html-files-that-contain-javascript
+(require-package 'multi-web-mode)
+(setq mweb-default-major-mode 'html-mode)
+(setq mweb-tags
+  '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
+    (js2-mode  "<script[^>]*>" "</script>")
+    (css-mode "<style[^>]*>" "</style>")))
+(setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
+(multi-web-global-mode 1)
+
 (require-package 'yasnippet)
 (yas-global-mode 1)
 
@@ -49,10 +59,10 @@
 
 
 ;; ternjs for eamcs
-(add-to-list 'load-path "d:\\crx\\github\\tern\\emacs")
-(autoload 'tern-mode "tern.el" nil t)
-(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
-(add-hook 'js-mode-hook (lambda () (tern-mode t)))
+;; (add-to-list 'load-path "d:\\crx\\github\\tern\\emacs")
+;; (autoload 'tern-mode "tern.el" nil t)
+;; (add-hook 'js2-mode-hook (lambda () (tern-mode t)))
+;; (add-hook 'js-mode-hook (lambda () (tern-mode t)))
 
 ;; add tern-auto-complete
 (eval-after-load 'tern
@@ -75,8 +85,7 @@
 
 (setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
-(setq-default line-spacing 5)
-
+(setq-default line-spacing 15)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -195,6 +204,35 @@
       ))
   )
 
+(defun standard-format-region(start end)
+  (interactive "r")
+  (save-excursion
+  (let ((line-mode (not (region-active-p))) (success 0) (result nil) )
+    (when line-mode
+      (setq start (+ (line-beginning-position) (current-indentation)) end (line-end-position)))
+    (goto-char start)
+    (skip-chars-forward "\t\n \r" end)
+    (push-mark)
+    (setq start (point))
+    (goto-char end)
+    (skip-chars-backward "\t\n \r" start)
+    (setq end (point))
+    (setq result (buffer-substring start end))
+    (setq result (with-temp-buffer
+                   (insert result)
+                   (setq success (eq 0 (shell-command-on-region (point-min) (point-max) "standard-format -" " *temp*" t)))
+                   (buffer-string))
+          )
+    ;; (message "%s--" result)
+    (if (not success)
+        (progn (deactivate-mark) (message "standard-format error"))
+      (delete-region start end)
+      (insert result)
+      (delete-char -1)  ;; standard-format will add new line, don't need it
+      (js2-indent-region start (point))
+     )
+    ))
+  )
 
 
 (defun duplicate-line-or-region (&optional n)
@@ -534,6 +572,9 @@
 
 
 ;; custom functions
+(define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
+(define-key js2-mode-map (kbd "C-M-]") 'js2-mark-parent-statement)
+(define-key global-map (kbd "C-x j") 'standard-format-region)
 (define-key global-map (kbd "C-x C-;") 'remove-add-last-comma)
 (define-key global-map (kbd "S-<space>") 'select-current-pair)
 (global-set-key (kbd "C-c C-k") 'copy-line)
