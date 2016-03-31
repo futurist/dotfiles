@@ -59,17 +59,15 @@
 
 
 ;; ternjs for eamcs
-;; (add-to-list 'load-path "d:\\crx\\github\\tern\\emacs")
-;; (autoload 'tern-mode "tern.el" nil t)
-;; (add-hook 'js2-mode-hook (lambda () (tern-mode t)))
-;; (add-hook 'js-mode-hook (lambda () (tern-mode t)))
+(add-to-list 'load-path "~/.emacs.d/tern/emacs")
+(autoload 'tern-mode "tern.el" nil t)
+(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
 
 ;; add tern-auto-complete
 (eval-after-load 'tern
   '(progn
      (require-package 'tern-auto-complete)
      (tern-ac-setup)))
-
 
 
 ;; when it's windows, setting below
@@ -233,6 +231,30 @@
      )
     ))
   )
+
+(defun my-url-http (url &optional method args)
+  "Send ARGS to URL as a POST request."
+  ;; usage: (my-url-http-post "http://baidu.com" "POST" '(("post" . "1") ("text" . "just a test")))
+  (setq method (or method "GET"))
+  (message "--------%s" method)
+  (let ((url-request-method method)
+        (url-request-extra-headers (cond
+                                    ((string= method "POST") '(("Content-Type" . "application/x-www-form-urlencoded")))
+                                    ))
+        (url-request-data
+         (and args (mapconcat (lambda (arg)
+                      (concat (url-hexify-string (car arg))
+                              "="
+                              (url-hexify-string (cdr arg))))
+                    args
+                    "&"))))
+    ;; if you want, replace `my-switch-to-url-buffer' with `my-kill-url-buffer'
+    (url-retrieve url 'my-url-http-result)))
+
+    (defun my-url-http-result (status)
+      "Switch to the buffer returned by `url-retreive'.
+    The buffer contains the raw HTTP response sent by the server."
+      (message "-------%s %s %s" (buffer-name) status (prog1 (buffer-string) (kill-buffer))))
 
 
 (defun duplicate-line-or-region (&optional n)
@@ -572,8 +594,11 @@
 
 
 ;; custom functions
-(define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
-(define-key js2-mode-map (kbd "C-M-]") 'js2-mark-parent-statement)
+(add-hook 'js2-mode-hook
+          (lambda()
+            (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
+            (define-key js2-mode-map (kbd "C-M-]") 'js2-mark-parent-statement)
+            ))
 (define-key global-map (kbd "C-x j") 'standard-format-region)
 (define-key global-map (kbd "C-x C-;") 'remove-add-last-comma)
 (define-key global-map (kbd "S-<space>") 'select-current-pair)
