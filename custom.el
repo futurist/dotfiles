@@ -1,3 +1,5 @@
+;; Enable lexical-binding by default, so can inter-process pass arg  -*- lexical-binding: t; -*-
+
 ;; Disable below line in purcell's init.el
 
 ;; default fg color: #E5E5DE
@@ -208,23 +210,34 @@
   "Send ARGS to URL as a POST request."
   ;; usage: (my-url-http 'callback "http://baidu.com" "POST" '(("post" . "1") ("text" . "just a test")))
   (setq method (or method "GET"))
-  (message "--------%s" method)
   (let ((url-request-method method)
         (url-request-extra-headers (cond
                                     ((string= method "POST") '(("Content-Type" . "application/x-www-form-urlencoded")))
                                     ))
         (url-request-data
          (and args (mapconcat (lambda (arg)
-                      (concat (url-hexify-string (car arg))
-                              "="
-                              (url-hexify-string (cdr arg))))
-                    args
-                    "&"))))
-    ;; if you want, replace `my-switch-to-url-buffer' with `my-kill-url-buffer'
-    (url-retrieve url callback)))
+                                (concat (url-hexify-string (car arg))
+                                        "="
+                                        (url-hexify-string (cdr arg))))
+                              args
+                              "&"))))
+
+    (url-retrieve url callback)
+    ))
 
 
 ;; standard format for javascript
+(defvar standard-format-proc-name "NodeStandard")
+(defvar standard-format-proc-port nil)
+(defvar standard-format-command
+  (let* ((script-file (or load-file-name
+                          (and (boundp 'bytecomp-filename) bytecomp-filename)
+                          buffer-file-name))
+         (bin-file (expand-file-name "./standard/standard.js" (file-name-directory (file-truename script-file))))
+         (tern-itself (list (if (file-exists-p bin-file) bin-file "standard"))))
+    (if (eq system-type 'windows-nt) (cons "node" tern-itself) tern-itself))
+  "The command to be run to start the Tern server. Should be a
+list of strings, giving the binary name and arguments.")
 
 (defun standard-format-region(start end)
   (interactive "r")
@@ -256,36 +269,64 @@
     ))
   )
 
-    (defun my-url-http-result (status)
+    (defun standard-format-result (errorlist)
       "Switch to the buffer returned by `url-retreive'.
     The buffer contains the raw HTTP response sent by the server."
-      (message "-------%s %s %s" (buffer-name) status (prog1 (buffer-string) (kill-buffer))))
+      ;; (decode-coding-string "\\225\\357" 'utf-8) convert  unibyte string to Chinese!!!
+      ;; (message "-------%s -%s -%s" (buffer-name) errorlist (prog1 (buffer-string) (kill-buffer)))
+      (when (not errorlist)
+        (let ((result (prog2 (search-forward "\n\n" nil t) (buffer-substring (point) (point-max)) (kill-buffer))))
+          ;; (message "%s" (decode-coding-string result 'utf-8)))
+          (setf result (decode-coding-string result 'utf-8))
+          (message "%s" result)
+          )
+        )
+      )
 
 
-(defun standard-start-server ()
-  (let* ((default-directory tern-project-dir)
-         (cmd (if (member "--strip-crs" tern-command) tern-command (append tern-command '("--strip-crs"))))
-         (proc (apply #'start-process "Tern" nil cmd))
+
+(defun st()
+  (interactive)
+  (let* ((text "if(a==b)'这是测试sdj要新的';")
+         (data (list (cons "text" text) ))
+         (server "http://localhost")
+         (method "POST")
+         callback runner
+         )
+    (setf callback (lambda ()
+                     (funcall runner)
+                     ))
+    (setf runner (lambda()
+                   (my-url-http 'standard-format-result server method `,data) ; using backquote to quote the value of data
+                   ))
+    (if (and (get-process standard-format-proc-name))
+        (funcall runner)
+      (standard-start-server callback)
+      ))
+  )
+
+(defun standard-start-server (cb-success)
+  (let* ((cmd (append standard-format-command))
+         (proc (apply #'start-process standard-format-proc-name nil cmd))
          (all-output ""))
     (set-process-query-on-exit-flag proc nil)
     (set-process-sentinel proc (lambda (_proc _event)
                                  (delete-process proc)
-                                 (setf tern-known-port (cons :failed (concat "Could not start Tern server\n" all-output)))
-                                 (run-at-time "30 sec" nil
-                                              (lambda (buf)
-                                                (with-current-buffer buf
-                                                  (when (consp tern-known-port) (setf tern-known-port nil))))
-                                              (current-buffer))
-                                 (funcall c nil tern-known-port)))
+                                 (setf standard-format-proc-port nil)
+                                 (message "standard: %s" (concat "Could not start Tern server\n" all-output))
+                                 ))
     (set-process-filter proc (lambda (proc output)
                                (if (not (string-match "Listening on port \\([0-9][0-9]*\\)" output))
                                    (setf all-output (concat all-output output))
-                                 (setf tern-known-port (string-to-number (match-string 1 output)))
+                                 (setf standard-format-proc-port (string-to-number (match-string 1 output)))
                                  (set-process-sentinel proc (lambda (proc _event)
                                                               (delete-process proc)
-                                                              (setf tern-known-port nil)))
+                                                              (setf standard-format-proc-port nil)
+                                                              (message "standard server exit %s" _event)))
                                  (set-process-filter proc nil)
-                                 (funcall c tern-known-port nil))))))
+                                 (message "hererererer")
+                                 (funcall cb-success)
+                                 )))))
 
 
 (defun duplicate-line-or-region (&optional n)
@@ -327,7 +368,7 @@
   "Kill the `thing-at-point' for the specified kind of THING."
   (let ((bounds (bounds-of-thing-at-point thing)))
     (if bounds
-        (progn (message "---%s" bounds) (delete-region (car bounds) (cdr bounds)) t)
+        (progn (delete-region (car bounds) (cdr bounds)) t)
       )))
 
 
@@ -452,7 +493,7 @@
   (interactive "^P")
   (unless (region-active-p)
     (set-mark-command nil)
-    (transient-mark-mode 1)
+    (transient-mark-mode)
     )
   (next-line 1)
   )
@@ -461,7 +502,7 @@
   (interactive "^P")
   (unless (region-active-p)
     (set-mark-command nil)
-    (transient-mark-mode 1)
+    (transient-mark-mode)
     )
   (next-line -1)
   )
@@ -549,6 +590,7 @@
   (sp-up-sexp)
   (deactivate-mark)
   (set-mark-command nil)
+  (transient-mark-mode)
   (sp-backward-sexp)
   )
 
@@ -634,9 +676,10 @@
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
             (define-key js2-mode-map (kbd "C-M-]") 'js2-mark-parent-statement)
             ))
+(define-key global-map (kbd "C-x ^") 'maximize-window)
 (define-key global-map (kbd "C-x j") 'standard-format-region)
 (define-key global-map (kbd "C-x C-;") 'remove-add-last-comma)
-(define-key global-map (kbd "S-<space>") 'select-current-pair)
+(define-key global-map (kbd "C-M-]") 'select-current-pair)
 (global-set-key (kbd "C-c C-k") 'copy-line)
 (global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
 (global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
