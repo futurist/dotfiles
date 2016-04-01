@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+// #!/usr/bin/env node
 
 var format = require('standard-format').transform
 var http = require('http')
@@ -15,16 +15,29 @@ const server = http.createServer((req, res) => {
     })
 
     req.on('end', function () {
+      var result
       var query = querystring.parse(bodyString)
-      res.end(format(query.text||''))
+      console.log(query)
+      try{
+        result = format(query.text||'')
+      }catch(e){
+        console.log(e.description)
+        result = ''
+      }
+      res.end(result)
     })
   }
   if(req.method=='GET') {
-    res.end()
     console.log(req.url)
-    if(req.url=='/exit'){
+    switch(req.url) {
+    case '/exit':
       console.log('exit now')
+      res.end('')
       process.exit(0)
+      break
+    case '/getport':
+      res.end(port + '')
+      break
     }
   }
 }).listen(port, function(){
