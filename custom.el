@@ -202,6 +202,30 @@
       ))
   )
 
+
+
+(defun my-url-http (callback url &optional method args)
+  "Send ARGS to URL as a POST request."
+  ;; usage: (my-url-http 'callback "http://baidu.com" "POST" '(("post" . "1") ("text" . "just a test")))
+  (setq method (or method "GET"))
+  (message "--------%s" method)
+  (let ((url-request-method method)
+        (url-request-extra-headers (cond
+                                    ((string= method "POST") '(("Content-Type" . "application/x-www-form-urlencoded")))
+                                    ))
+        (url-request-data
+         (and args (mapconcat (lambda (arg)
+                      (concat (url-hexify-string (car arg))
+                              "="
+                              (url-hexify-string (cdr arg))))
+                    args
+                    "&"))))
+    ;; if you want, replace `my-switch-to-url-buffer' with `my-kill-url-buffer'
+    (url-retrieve url callback)))
+
+
+;; standard format for javascript
+
 (defun standard-format-region(start end)
   (interactive "r")
   (save-excursion
@@ -232,31 +256,38 @@
     ))
   )
 
-(defun my-url-http (url &optional method args)
-  "Send ARGS to URL as a POST request."
-  ;; usage: (my-url-http-post "http://baidu.com" "POST" '(("post" . "1") ("text" . "just a test")))
-  (setq method (or method "GET"))
-  (message "--------%s" method)
-  (let ((url-request-method method)
-        (url-request-extra-headers (cond
-                                    ((string= method "POST") '(("Content-Type" . "application/x-www-form-urlencoded")))
-                                    ))
-        (url-request-data
-         (and args (mapconcat (lambda (arg)
-                      (concat (url-hexify-string (car arg))
-                              "="
-                              (url-hexify-string (cdr arg))))
-                    args
-                    "&"))))
-    ;; if you want, replace `my-switch-to-url-buffer' with `my-kill-url-buffer'
-    (url-retrieve url 'my-url-http-result)))
-
     (defun my-url-http-result (status)
       "Switch to the buffer returned by `url-retreive'.
     The buffer contains the raw HTTP response sent by the server."
       (message "-------%s %s %s" (buffer-name) status (prog1 (buffer-string) (kill-buffer))))
 
 
+(defun standard-start-server ()
+  (let* ((default-directory tern-project-dir)
+         (cmd (if (member "--strip-crs" tern-command) tern-command (append tern-command '("--strip-crs"))))
+         (proc (apply #'start-process "Tern" nil cmd))
+         (all-output ""))
+    (set-process-query-on-exit-flag proc nil)
+    (set-process-sentinel proc (lambda (_proc _event)
+                                 (delete-process proc)
+                                 (setf tern-known-port (cons :failed (concat "Could not start Tern server\n" all-output)))
+                                 (run-at-time "30 sec" nil
+                                              (lambda (buf)
+                                                (with-current-buffer buf
+                                                  (when (consp tern-known-port) (setf tern-known-port nil))))
+                                              (current-buffer))
+                                 (funcall c nil tern-known-port)))
+    (set-process-filter proc (lambda (proc output)
+                               (if (not (string-match "Listening on port \\([0-9][0-9]*\\)" output))
+                                   (setf all-output (concat all-output output))
+                                 (setf tern-known-port (string-to-number (match-string 1 output)))
+                                 (set-process-sentinel proc (lambda (proc _event)
+                                                              (delete-process proc)
+                                                              (setf tern-known-port nil)))
+                                 (set-process-filter proc nil)
+                                 (funcall c tern-known-port nil))))))
+
+
 (defun duplicate-line-or-region (&optional n)
   "Duplicate current line, or region if active.
     With argument N, make N copies.
@@ -416,18 +447,22 @@
     )
   )
 
-(defun highlight-next-line()
+(defun highlight-next-line(arg)
   "highlight next line"
-  (interactive)
-  (if (region-active-p)()
-    (set-mark-command nil))
+  (interactive "^P")
+  (unless (region-active-p)
+    (set-mark-command nil)
+    (transient-mark-mode 1)
+    )
   (next-line 1)
   )
-(defun highlight-prev-line()
+(defun highlight-prev-line(arg)
   "highlight prev line"
-  (interactive)
-  (if (region-active-p)()
-    (set-mark-command nil))
+  (interactive "^P")
+  (unless (region-active-p)
+    (set-mark-command nil)
+    (transient-mark-mode 1)
+    )
   (next-line -1)
   )
 
