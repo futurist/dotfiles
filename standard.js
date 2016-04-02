@@ -4,6 +4,7 @@ var format = require('standard-format').transform
 var http = require('http')
 var querystring = require('querystring')
 
+var errorsign = '#!!#'
 var port = 80
 const server = http.createServer((req, res) => {
   var bodyString = ''
@@ -16,20 +17,20 @@ const server = http.createServer((req, res) => {
 
     req.on('end', function () {
       var result
-      var query = querystring.parse(bodyString)
-      console.log(query)
-      try{
-        result = format(query.text||'')
-      }catch(e){
-        console.log(e.description)
-        result = ''
+      // var query = querystring.parse(bodyString)
+      // console.log(query)
+      try {
+        result = format(bodyString || '')
+      } catch(e) {
+        console.log(JSON.stringify(e))
+        result = errorsign + JSON.stringify(e)
       }
       res.end(result)
     })
   }
-  if(req.method=='GET') {
+  if (req.method == 'GET') {
     console.log(req.url)
-    switch(req.url) {
+    switch (req.url) {
     case '/exit':
       console.log('exit now')
       res.end('')
@@ -40,6 +41,6 @@ const server = http.createServer((req, res) => {
       break
     }
   }
-}).listen(port, function(){
+}).listen(port, function () {
   console.log('Listening on port ' + port)
 })
