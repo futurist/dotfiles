@@ -245,10 +245,23 @@
   "The command to be run to start the Tern server. Should be a
 list of strings, giving the binary name and arguments.")
 
-(defun standard-format-region(start end)
+(defun standard-format-on-return(start end jump-to-error-p keep-newline-p)
   (interactive (if (region-active-p)
-                   (list (region-beginning) (region-end))
-                 (list (+ (line-beginning-position) (current-indentation)) (line-end-position))
+                   (list (region-beginning) (region-end) nil nil)
+                 (list (+ (line-beginning-position) (current-indentation)) (line-end-position) nil nil)
+                 ))
+  (newline-and-indent)
+  (forward-line -1)
+  (move-end-of-line nil)
+  (forward-char -1)
+  (js2-mark-parent-statement)
+  ;; (standard-format-region (region-beginning) (region-end) nil nil)
+  )
+
+(defun standard-format-region(start end jump-to-error-p keep-newline-p)
+  (interactive (if (region-active-p)
+                   (list (region-beginning) (region-end) current-prefix-arg nil)
+                 (list (+ (line-beginning-position) (current-indentation)) (line-end-position) current-prefix-arg nil)
                  ))
   (save-excursion
     (let ((cur-buffer (buffer-name))
@@ -278,11 +291,11 @@ list of strings, giving the binary name and arguments.")
               (if (not success)
                   (progn (deactivate-mark)
                          (string-match "\"index\":\\([0-9]+\\)" formatted)
-                         (goto-char (+ start (string-to-number (or (match-string 1 formatted) "")) ))
+                         (if jump-to-error-p (goto-char (+ start (string-to-number (or (match-string 1 formatted) "")) )))
                          (message "standard-format error: %s" (car (split-string formatted errorsign t)) ) )
                 (delete-region start end)
                 (insert formatted)
-                (delete-char -1)  ;; standard-format will add new line, don't need it
+                (if (null keep-newline-p) (delete-char -1))  ;; standard-format will add new line, don't need it
                 (js2-indent-region start (point))
                 )
               ))
@@ -356,6 +369,7 @@ list of strings, giving the binary name and arguments.")
                                  (set-process-filter proc nil)
                                  (funcall cb-success)
                                  )))))
+
 
 
 (defun duplicate-line-or-region (&optional n)
@@ -655,6 +669,11 @@ list of strings, giving the binary name and arguments.")
     )
   )
 
+(defun newline-before(&optional arg)
+  (interactive)
+  (move-beginning-of-line nil)
+  (sanityinc/open-line-with-reindent 1)
+  )
 
 (defun goto-first-reference ()
   (interactive)
@@ -698,28 +717,27 @@ list of strings, giving the binary name and arguments.")
 (global-set-key (kbd "C-0") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-9") 'mc/skip-to-next-like-this)
 
-
+
 ;; custom functions
 (add-hook 'js2-mode-hook
           (lambda()
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
             (define-key js2-mode-map (kbd "C-M-]") 'js2-mark-parent-statement)
+            (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
+            (define-key js2-mode-map (kbd "<return>") 'standard-format-on-return)
             ))
 (define-key global-map (kbd "C-x ^") 'maximize-window)
 (define-key global-map (kbd "C-x j") 'standard-format-region)
-(define-key global-map (kbd "C-x C-;") 'remove-add-last-comma)
 (define-key global-map (kbd "C-M-]") 'select-current-pair)
 (global-set-key (kbd "C-c C-k") 'copy-line)
 (global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
-(global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
-(global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
+;; (global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
 (global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
 (define-key global-map (kbd "M-.") 'goto-first-reference)
 (define-key global-map (kbd "C-s") 'search-selection)
 (global-set-key (kbd "C-M-j") 'delete-indentation)
 (global-set-key (kbd "C-S-j") 'join-lines)
-;; C-j not work on OSX, so above C-M-j
-(global-set-key (kbd "C-j") 'join-lines)
+;; (global-set-key (kbd "C-j") 'join-lines)
 (global-set-key (kbd "C-S-d") 'duplicate-line-or-region)
 (global-set-key (kbd "C-<backspace>") 'delete-backword-or-ws)
 (global-set-key (kbd "C-S-<backspace>") 'sp-backward-delete-all)
@@ -779,9 +797,8 @@ list of strings, giving the binary name and arguments.")
 
 (global-set-key (kbd "<f8>") 'flycheck-mode)
 
-(global-set-key (kbd "<M-RET>") 'sanityinc/newline-at-end-of-line)
-
-
+(global-set-key (kbd "<M-return>") 'sanityinc/newline-at-end-of-line)
+(global-set-key (kbd "<C-M-return>") 'newline-before)
 
 ;; (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
 
