@@ -246,15 +246,19 @@
 list of strings, giving the binary name and arguments.")
 
 
-(defun js2-mark-parent-statement2 ()
-  (interactive)
+(defun js2-mark-parent-statement2 (&optional arg)
+  (interactive "P")
   (let* ((cur (point))
+         (count (and (car arg)  (log (car arg) 4) ))
          (back (js2-backward-sws))
          (last (when (looking-at-p "[\t \n\r]") (forward-char -1)))
-         (parent-statement (if t
-                               (js2-node-parent-stmt (js2-node-at-point))
-                             ;; (forward-char 1)
-                             (js2-node-at-point)))
+         (cur-node (js2-node-at-point))
+         (parent-statement (if (null count)
+                               cur-node
+                             (while (and (> count 0)  (setq cur-node (js2-node-parent-stmt cur-node)) )
+                               (decf count))
+                             cur-node
+                             ))
          (beg (when parent-statement (js2-node-abs-pos parent-statement)))
          (end (when parent-statement (+ beg (js2-node-len parent-statement)))))
     (when (and beg end)
@@ -274,10 +278,6 @@ list of strings, giving the binary name and arguments.")
         (js2-mark-parent-statement2)
         (standard-format-region (region-beginning) (region-end) nil `(,line ,col))
         )
-  (run-at-time
-   "0 sec" nil
-   '(lambda()
-      ))
   )
 
 (defun standard-format-region(start end not-jump-p pos-list)
