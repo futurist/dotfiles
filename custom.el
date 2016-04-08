@@ -20,6 +20,8 @@
 
 (setq debug-on-error t)
 
+(server-start)
+
 (after-load "expand-region"
   (setq expand-region-fast-keys-enabled nil)
   )
