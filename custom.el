@@ -22,6 +22,21 @@
 
 (server-start)
 
+(setq bookmark-save-flag 1)             ;auto save bookmark when changed
+(defun bookmark-to-abbrevs ()
+  "Create abbrevs based on `bookmark-alist'."
+  (dolist (bookmark bookmark-alist)
+    (let* ((name (car bookmark))
+           (file (bookmark-get-filename name)))
+      (define-abbrev global-abbrev-table name file))))
+
+
+(require-package 'hlinum)
+(face-spec-set 'linum-highlight-face
+               '((t (:inherit default :foreground "#bbbbbb"
+                              :background "#333333"))))
+(hlinum-activate)
+
 (after-load "expand-region"
   (setq expand-region-fast-keys-enabled nil)
   )
@@ -42,6 +57,10 @@
 
 (require-package 'yasnippet)
 (yas-global-mode 1)
+;; yasnippet <tab> conflict with ac, change below
+(define-key yas-minor-mode-map (kbd "<tab>") nil)
+(define-key yas-minor-mode-map (kbd "TAB") nil)
+(define-key yas-minor-mode-map (kbd "<C-tab>") 'yas-expand)
 
 (require-package 'smartparens)
 (require 'smartparens-config)
@@ -323,6 +342,7 @@ list of strings, giving the binary name and arguments.")
                        (unless not-jump-p  (goto-char error-pos))
                        (message "standard-format error: %s" (car (split-string formatted errorsign t)) ) )
               (delete-region start end)
+              (when (string-prefix-p ";" formatted) (setq formatted (substring formatted 1)))
               (insert formatted)
               (delete-char -1)  ;; standard-format will add new line, don't need it
               (js2-indent-region start (point))
@@ -372,7 +392,7 @@ list of strings, giving the binary name and arguments.")
                    ;; (my-url-http 'standard-format-result server method `,data) ; using backquote to quote the value of data
                    (my-url-http local-done server method `,data) ; using backquote to quote the value of data
                    ))
-    (if (and (get-process standard-format-proc-name))
+    (if (or (get-process standard-format-proc-name) standard-format-proc-port)
         (funcall runner)
       (standard-start-server callback)
       ))
@@ -391,7 +411,7 @@ list of strings, giving the binary name and arguments.")
                                  ))
     (set-process-filter proc (lambda (proc output)
                                (if (and (not (string-match "Listening on port \\([0-9][0-9]*\\)" output))
-                                        ;; (not (string-match "EADDRINUSE 0.0.0.0:\\([0-9][0-9]*\\)" output))
+                                        (not (string-match "EADDRINUSE 0.0.0.0:\\([0-9][0-9]*\\)" output))
                                         )
                                    (setf all-output (concat all-output output))
                                  (setf standard-format-proc-port (string-to-number (match-string 1 output)))
@@ -716,7 +736,10 @@ list of strings, giving the binary name and arguments.")
 (defun newline-before(&optional arg)
   (interactive)
   (move-beginning-of-line nil)
-  (sanityinc/open-line-with-reindent 1)
+  ;; (sanityinc/open-line-with-reindent 1)
+  (newline-and-indent)
+  (forward-line -1)
+  (indent-for-tab-command)
   )
 
 (defun goto-first-reference ()
