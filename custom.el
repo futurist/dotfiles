@@ -19,13 +19,10 @@
 
 (server-start)
 
-;; bookmark with abbrevs mode
-;; (require 'bookmark)
-;; (setq bookmark-save-flag 1)             ;auto save bookmark when changed
+;; bookmark with abbrevs
 (defun bookmark-to-abbrevs ()
   "Create abbrevs based on `bookmark-alist'.
 use C-x a e to expand bookmark"
-  ;; (bookmark-maybe-load-default-file)    ;load default bookmark
   (when (boundp 'bookmark-alist)
     (dolist (bookmark bookmark-alist)
     (let* ((name (car bookmark))
@@ -33,9 +30,6 @@ use C-x a e to expand bookmark"
       (define-abbrev global-abbrev-table name file)))
     )
   )
-;; add minibuffer for abbrev
-;; (add-hook 'minibuffer-setup-hook 'abbrev-mode)
-;; (setq save-abbrevs nil)
 (add-hook 'bookmark-load-hook 'bookmark-to-abbrevs)                   ;use C-x a e to expand bookmark
 
 
@@ -356,8 +350,9 @@ use C-x a e to expand bookmark"
   )
 
 
-(defun delete-backword-or-ws ()
-  (interactive)
+(defun delete-backword-or-ws (arg)
+  (interactive "p")
+  (dotimes (count arg)
   (let (
         (start (point))
         (end (save-excursion (skip-chars-backward "\t\n \r") (+ 1 (point))))
@@ -373,7 +368,7 @@ use C-x a e to expand bookmark"
       (pop kill-ring)
       (setq kill-ring-yank-pointer kill-ring)
       )
-    )
+    ))
   )
 
 (defun ac-trigger-isearch ()
