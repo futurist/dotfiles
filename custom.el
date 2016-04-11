@@ -1,10 +1,22 @@
-;; Disable below line in purcell's init.el
+;;; custom.el --- based on purcell's .emacs.d
 
-;; default fg color: #E5E5DE
+;; Copyright (C) 2016 Micheal.Yang
+
+;; Maintainer: noambitions@126.com
+;; Keywords: lisp, languages
+;; Package: emacs.custom
+
+;;; Commentary:
+
+;; Disable below line in purcell's init.el
 ;; (require 'init-themes)
 ;; (require 'init-sessions)
 ;; (require 'init-paredit)
 ;; (require 'init-lisp)
+
+;; default fg color: #E5E5DE
+
+;;; Code:
 
 (defconst *is-a-windows* (eq system-type 'windows-nt))
 (set-language-environment "UTF-8")
@@ -336,13 +348,17 @@ use C-x a e to expand bookmark"
     (if (consp arg)
         (let* ((int (car arg)) (count (or (log int 4) 1))
                (is-js2-mode (string= "js2-mode" major-mode))
-               (is-pair (looking-at-p "[][(){}'\"]"))
+               (is-pair (looking-at-p (cond
+                                       ((string= "js2-mode" major-mode) "[][(){}'\"]")
+                                       ((string= "html-mode" major-mode) "[<>'\"]")
+                                       ("[][(){}'\"]")
+                                       )))
                )
           (progn
             (when (> count 0) (if (and (not is-pair) (my-delete-thing-at-point 'word)) (decf count)) )
             (when (> count 0)  (if (and (not is-pair) (my-delete-thing-at-point 'filename)) (decf count)) )
             (when (> count 0)  (if (and is-js2-mode is-pair) (js2r-kill) (sp-kill-sexp (round count))))
-           )
+            )
           ;; (er/expand-region (or (log count 4) 1))
           ;; (kill-region (region-beginning) (region-end))
           )
@@ -522,15 +538,37 @@ use C-x a e to expand bookmark"
 
 (defun select-current-pair()
   (interactive)
-  (when (not (region-active-p))
-    (if (looking-at-p "[]})]") (forward-char -1)
-      (if(looking-at-p "[[{(]") (forward-char 1))
-      ))
-  (sp-up-sexp)
-  (deactivate-mark)
-  (set-mark-command nil)
-  (transient-mark-mode '(4))
-  (sp-backward-sexp)
+  (let* (
+         (pair-out (cond
+                ((string= "js2-mode" major-mode) "[]})]")
+                ((string= "html-mode" major-mode) "[>]")
+                ("[]})]")         ;default pair
+                ))
+         (pair-in (cond
+                ((string= "js2-mode" major-mode) "[[{(]")
+                ((string= "html-mode" major-mode) "[<]")
+                ("[[{(]")         ;default pair
+                ))
+         (cur (point))
+         (str (sp-get-string))
+         )
+    (when (not (region-active-p))
+      (if (looking-at-p pair-in) (forward-char 1)
+        (if (looking-at-p pair-out) ()
+          (if str
+              (if (= (sp-get str :beg) cur) (forward-char 1)
+                (if (= (sp-get str :end) (1- cur)) ())
+                )
+              )
+          )
+        )
+      )
+    (sp-up-sexp)
+    (deactivate-mark)
+    (set-mark-command nil)
+    (transient-mark-mode '(4))
+    (sp-backward-sexp)
+    )
   )
 
 (defun sp-backward-delete-all (&optional arg)(interactive)
@@ -628,7 +666,7 @@ use C-x a e to expand bookmark"
 (add-hook 'js2-mode-hook
           (lambda()
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
-            (define-key js2-mode-map (kbd "C-M-;") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (js2-mark-parent-statement2))))
+            (define-key js2-mode-map (kbd "C-.") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (js2-mark-parent-statement2))))
             (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
             ;; (define-key js2-mode-map (kbd "C-'") 'standard-format-before-cursor)
             (define-key js2-mode-map (kbd "C-; l") 'align)
@@ -637,7 +675,6 @@ use C-x a e to expand bookmark"
 (define-key global-map (kbd "<up>") 'scroll-down-line)
 (define-key global-map (kbd "C-x ^") 'maximize-window)
 (define-key global-map (kbd "C-x j") 'standard-format-region)
-(define-key global-map (kbd "C-M-;") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (select-current-pair))))
 (global-set-key (kbd "C-c C-k") 'copy-line)
 (global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
 ;; (global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
@@ -666,7 +703,14 @@ use C-x a e to expand bookmark"
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 (global-set-key (kbd "M-Z") 'zap-to-char)
 (after-load 'init-editing-utils
-  (global-set-key (kbd "C-'") 'avy-goto-word-or-subword-1))
+  (global-set-key (kbd "C-'") 'avy-goto-word-or-subword-1)
+  (define-key global-map (kbd "C-.") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (select-current-pair))))
+  )
+;; use c to create new file in dired
+(after-load 'dired
+  (define-key dired-mode-map "c" 'find-file)
+  )
+
 ;; (global-set-key (kbd "C-c C-c") 'whole-line-or-region-kill-ring-save)
 ;; (global-set-key (kbd "C-c C-x") 'whole-line-or-region-kill-region)
 ;; (global-set-key (kbd "C-c C-v") 'whole-line-or-region-yank)
