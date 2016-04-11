@@ -107,6 +107,7 @@ use C-x a e to expand bookmark"
 (add-hook 'neotree-mode-hook
           (lambda() (setq neo-smart-open t)))
 
+(require-package 'form-feed)
 (require-package 'web-beautify)
 
 ;; ternjs for eamcs
@@ -138,7 +139,7 @@ use C-x a e to expand bookmark"
 ;; when it's mac, setting below
 (when *is-a-mac*
   (setq default-font-family "Source Code Pro")
-  (setq default-font-size 140)
+  (setq default-font-size 164)
   (setq mac-command-modifier 'meta)
   (setq mac-option-modifier 'meta))
 

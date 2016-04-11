@@ -5,7 +5,7 @@ var http = require('http')
 var querystring = require('querystring')
 
 var errorsign = '#!!#'
-var port = 80
+var port = 8000
 const server = http.createServer((req, res) => {
   var bodyString = ''
   res.setHeader('Content-Type', 'text/html')
@@ -18,7 +18,7 @@ const server = http.createServer((req, res) => {
     req.on('end', function () {
       var result
       // var query = querystring.parse(bodyString)
-      // console.log(query)
+      // console.log(bodyString)
       try {
         result = format(bodyString || '')
       } catch(e) {
