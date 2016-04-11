@@ -631,7 +631,7 @@ use C-x a e to expand bookmark"
             (define-key js2-mode-map (kbd "C-M-;") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (js2-mark-parent-statement2))))
             (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
             ;; (define-key js2-mode-map (kbd "C-'") 'standard-format-before-cursor)
-            (define-key js2-mode-map (kbd "C-' l") 'align)
+            (define-key js2-mode-map (kbd "C-; l") 'align)
             ))
 (define-key global-map (kbd "<down>") 'scroll-up-line)
 (define-key global-map (kbd "<up>") 'scroll-down-line)
@@ -665,6 +665,8 @@ use C-x a e to expand bookmark"
 (global-set-key (kbd "C-S-z") 'redo)
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 (global-set-key (kbd "M-Z") 'zap-to-char)
+(after-load 'init-editing-utils
+  (global-set-key (kbd "C-'") 'avy-goto-word-or-subword-1))
 ;; (global-set-key (kbd "C-c C-c") 'whole-line-or-region-kill-ring-save)
 ;; (global-set-key (kbd "C-c C-x") 'whole-line-or-region-kill-region)
 ;; (global-set-key (kbd "C-c C-v") 'whole-line-or-region-yank)
