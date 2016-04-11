@@ -140,6 +140,7 @@ use C-x a e to expand bookmark"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ac-use-fuzzy nil)
+ '(avy-keys '(?a ?s ?d ?f ?j ?k ?l ?\;))
  '(column-number-mode t)
  '(cua-mode t nil (cua-base))
  '(display-buffer-reuse-frames t)
