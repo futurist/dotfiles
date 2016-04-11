@@ -4,7 +4,6 @@
 
 ;; default fg color: #E5E5DE
 ;; (require 'init-themes)
-;; (require 'init-flycheck)
 ;; (require 'init-sessions)
 ;; (require 'init-paredit)
 ;; (require 'init-lisp)
@@ -22,21 +21,34 @@
 
 (server-start)
 
+;; bookmark with abbrevs mode
+(require 'bookmark)
 (setq bookmark-save-flag 1)             ;auto save bookmark when changed
 (defun bookmark-to-abbrevs ()
   "Create abbrevs based on `bookmark-alist'."
-  (dolist (bookmark bookmark-alist)
+  (bookmark-maybe-load-default-file)    ;load default bookmark
+  (when (boundp 'bookmark-alist)
+    (dolist (bookmark bookmark-alist)
     (let* ((name (car bookmark))
            (file (bookmark-get-filename name)))
-      (define-abbrev global-abbrev-table name file))))
+      (define-abbrev global-abbrev-table name file)))
+    )
+  )
+(setq-default abbrev-mode t)
+(setq save-abbrevs 'silently)
+(bookmark-to-abbrevs)                   ;use C-x a e to expand bookmark
 
 
+;; linum mode with highlight
 (require-package 'hlinum)
 (face-spec-set 'linum-highlight-face
                '((t (:inherit default :foreground "#bbbbbb"
                               :background "#333333"))))
 (hlinum-activate)
+(global-linum-mode t)                   ;(linum-mode) for all buffer
 
+
+;; remove er +/- overlay
 (after-load "expand-region"
   (setq expand-region-fast-keys-enabled nil)
   )
@@ -45,7 +57,7 @@
 
 (require-package 'monokai-theme)
 
-;; http://stackoverflow.com/questions/4462393/how-do-i-configure-emacs-for-editing-html-files-that-contain-javascript
+;; editing html file mode
 (require-package 'multi-web-mode)
 (setq mweb-default-major-mode 'html-mode)
 (setq mweb-tags
@@ -81,10 +93,19 @@
   (js2r-add-keybindings-with-prefix "C-c C-m"))
 
 
+;; (require-package 'projectile)
+;; (porojectile-global-mode)
+
+(require-package 'neotree)
+(global-set-key [f9] 'neotree-toggle)
+(add-hook 'neotree-mode-hook
+          (lambda() (setq neo-smart-open t)))
+
+(require-package 'web-beautify)
+
 ;; ternjs for eamcs
 (add-to-list 'load-path "~/.emacs.d/tern/emacs")
 (autoload 'tern-mode "tern.el" nil t)
-(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
 
 ;; add tern-auto-complete
 (eval-after-load 'tern
@@ -92,61 +113,58 @@
      (require-package 'tern-auto-complete)
      (tern-ac-setup)))
 
-(require-package 'web-beautify) ;; Not necessary if using ELPA package
-(eval-after-load 'js2-mode
-  '(define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js))
+(global-set-key (kbd "<f8>") 'flycheck-mode)
+(add-hook 'js2-mode-hook
+          (lambda ()
+            (tern-mode t)
+            (form-feed-mode t)
+            ;; (projectile-mode t)
+            (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)
+            (flycheck-select-checker 'javascript-standard)))
 
 
 ;; when it's windows, setting below
-(setq default-font-family "Consolas")
-(setq default-font-size 143)
+(defvar default-font-family "Source Code Pro")
+(defvar default-font-size 120)
+;; (set-face-attribute 'default (selected-frame) :height 140)
+
 
 ;; when it's mac, setting below
 (when *is-a-mac*
   (setq default-font-family "Source Code Pro")
-  (setq default-font-size 183)
+  (setq default-font-size 140)
   (setq mac-command-modifier 'meta)
   (setq mac-option-modifier 'meta))
 
 (setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)
-(setq-default line-spacing 15)
+(setq-default line-spacing 0.2)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(ac-use-fuzzy t)
+ '(ac-use-fuzzy nil)
  '(column-number-mode t)
  '(cua-mode t nil (cua-base))
- '(custom-safe-themes
-   (quote
-    ("ff02e8e37c9cfd192d6a0cb29054777f5254c17b1bf42023ba52b65e4307b76a" "38ba6a938d67a452aeb1dada9d7cdeca4d9f18114e9fc8ed2b972573138d4664" "4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" default)))
  '(display-buffer-reuse-frames t)
- '(safe-local-variable-values
-   (quote
-    ((no-byte-compile t)
-     (ruby-compilation-executable . "ruby")
-     (ruby-compilation-executable . "ruby1.8")
-     (ruby-compilation-executable . "ruby1.9")
-     (ruby-compilation-executable . "rbx")
-     (ruby-compilation-executable . "jruby"))))
+ '(safe-local-variable-values (quote ((no-byte-compile t))))
  '(session-use-package t nil (session))
  '(show-paren-mode t)
  '(tool-bar-mode nil))
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- `(default ((t (:family ,default-font-family :foundry "outline" :slant normal :weight normal :height ,default-font-size :width normal)))))
+ `(default ((t (:family "Source Code Pro" :foundry "outline" :slant normal :weight normal :height ,default-font-size :width normal)))))
+
 
 (load-theme 'monokai t)
-;; (tool-bar-mode nil)
 
 ;; save buffer when outof focus
-
 (defun save-current-file ()
   (if (and (buffer-file-name) (file-exists-p (buffer-file-name)))
       (save-buffer)
@@ -257,6 +275,19 @@
     ))
 
 
+
+;; align rule for js2-mode
+;; align var = abc; {a:1, b:2} etc
+(eval-after-load "align"
+  '(add-to-list 'align-rules-list
+                '(js-var
+                  (regexp . "\\(\\s-*\\)[=:]\\(\\s-*\\)")
+                  (group . (1 2))
+                  ;; (spacing . (1 1))
+                  (modes quote (js2-mode)))))
+
+
+
 ;; standard format for javascript
 (defvar standard-format-proc-name "NodeStandard")
 (defvar standard-format-proc-port nil)
@@ -286,7 +317,7 @@ list of strings, giving the binary name and arguments.")
                              ))
          (beg (and parent-statement (js2-node-abs-pos parent-statement)))
          (end (and parent-statement (+ beg (js2-node-len parent-statement)))))
-    (when (and beg end)
+    (when (and beg end (/= (- end beg) (- (point-max) (point-min))))
       (transient-mark-mode '(4))
       (goto-char beg)
       (set-mark-command nil)
@@ -518,21 +549,6 @@ list of strings, giving the binary name and arguments.")
     (insert "-")
     ))
 
-(defun ac-move-next-item (arg)
-  (interactive "^p")
-  (if (ac-menu-live-p)
-      (ac-next)
-    (next-line arg)
-    )
-  )
-(defun ac-move-prev-item (arg)
-  (interactive "^p")
-  (if (ac-menu-live-p)
-      (ac-previous)
-    (next-line (* -1 arg))
-    )
-  )
-
 
 (defun mark-current-sentence ()
   "Mark current sentence where point is"
@@ -585,25 +601,6 @@ list of strings, giving the binary name and arguments.")
       (kill-region (region-beginning) (region-end))
     (sp-kill-hybrid-sexp 1)
     )
-  )
-
-(defun highlight-next-line(arg)
-  "highlight next line"
-  (interactive "^p")
-  (unless (region-active-p)
-    (set-mark-command nil)
-    (transient-mark-mode '(4))
-    )
-  (next-line arg t)
-  )
-(defun highlight-prev-line(arg)
-  "highlight prev line"
-  (interactive "^p")
-  (unless (region-active-p)
-    (set-mark-command nil)
-    (transient-mark-mode '(4))
-    )
-  (next-line (* -1 arg) t)
   )
 
 (defun copy-line (arg)
@@ -769,11 +766,13 @@ list of strings, giving the binary name and arguments.")
 ;; https://github.com/xuchunyang/youdao-dictionary.el/issues/1#issuecomment-71359418
 (defun url-cookie-expired-p (cookie)
   "Return non-nil if COOKIE is expired."
-  (let ((exp (url-cookie-expires cookie)))
+  (let ((exp (url-cookie-expires cookie)) year)
     (and (> (length exp) 0)
-         (condition-case ()
-             (> (float-time) (float-time (date-to-time exp)))
-           (error nil)))))
+         (string-match "\\([0-9]\\{4\\}\\)" exp)
+         (setq year (match-string 1 exp))
+         (if (and year (setq year (string-to-number year)) (>= year 2038)) nil
+           (> (float-time) (float-time (date-to-time exp))))
+         )))
 ;; Enable Cache
 (setq url-automatic-caching t)
 
@@ -795,7 +794,8 @@ list of strings, giving the binary name and arguments.")
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
             (define-key js2-mode-map (kbd "C-M-;") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (js2-mark-parent-statement2))))
             (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
-            (define-key js2-mode-map (kbd "C-'") 'standard-format-before-cursor)
+            ;; (define-key js2-mode-map (kbd "C-'") 'standard-format-before-cursor)
+            (define-key js2-mode-map (kbd "C-' l") 'align)
             ))
 (define-key global-map (kbd "<down>") 'scroll-up-line)
 (define-key global-map (kbd "<up>") 'scroll-down-line)
@@ -819,11 +819,8 @@ list of strings, giving the binary name and arguments.")
 ;; move lines
 (global-set-key (kbd "C-x C-n") 'move-line-down)
 (global-set-key (kbd "C-x C-p") 'move-line-up)
-(global-set-key (kbd "C-S-n") 'highlight-next-line)
-(global-set-key (kbd "C-S-p") 'highlight-prev-line)
-(global-set-key (kbd "C-n") 'ac-move-next-item)
-(global-set-key (kbd "C-p") 'ac-move-prev-item)
-
+(define-key ac-complete-mode-map "\C-n" 'ac-next)
+(define-key ac-complete-mode-map "\C-p" 'ac-previous)
 
 ;; some short keys for default
 ;; (define-key global-map "\C-x\C-u" 'undo)
@@ -867,8 +864,6 @@ list of strings, giving the binary name and arguments.")
 
 (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-kill-word)
-
-(global-set-key (kbd "<f8>") 'flycheck-mode)
 
 (global-set-key (kbd "<M-return>") 'sanityinc/newline-at-end-of-line)
 (global-set-key (kbd "<C-M-return>") 'newline-before)
