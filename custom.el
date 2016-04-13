@@ -63,6 +63,13 @@ use C-x a e to expand bookmark"
 
 (require-package 'monokai-theme)
 
+;; package from github/zk-phi
+(require-package 'phi-search)
+(require-package 'indent-guide)
+(global-set-key (kbd "C-s") 'phi-search)
+(global-set-key (kbd "C-r") 'phi-search-backward)
+
+
 ;; editing html file mode
 (require-package 'multi-web-mode)
 (setq mweb-default-major-mode 'html-mode)
@@ -143,7 +150,7 @@ use C-x a e to expand bookmark"
   (setq mac-command-modifier 'meta)
   (setq mac-option-modifier 'meta))
 
-(setq-default tab-width 4)
+(setq-default tab-width 2)
 (setq-default indent-tabs-mode nil)
 (setq-default line-spacing 0.2)
 
@@ -153,14 +160,17 @@ use C-x a e to expand bookmark"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ac-use-fuzzy nil)
- '(avy-keys '(?a ?s ?d ?f ?j ?k ?l ?\;))
+ '(avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
  '(column-number-mode t)
  '(cua-mode t nil (cua-base))
  '(display-buffer-reuse-frames t)
  '(safe-local-variable-values (quote ((no-byte-compile t))))
  '(session-use-package t nil (session))
  '(show-paren-mode t)
- '(tool-bar-mode nil))
+ '(tool-bar-mode nil)
+ '(url-automatic-caching t)
+ '(grep-command "~/bin/grep")
+ )
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -642,25 +652,41 @@ use C-x a e to expand bookmark"
     (and (> (length exp) 0)
          (string-match "\\([1-9][0-9]\\{3\\}\\)" exp)
          (setq year (match-string 1 exp))
-         (message "cookie from init %s" year)
+         ;; (message "cookie from init %s" year)
          (if (and year (setq year (string-to-number year)) (>= year 2038)) nil
            (> (float-time) (float-time (date-to-time exp))))
          ))))
 
 
-;; Enable Cache
-(setq url-automatic-caching t)
-
 
 ;; setting for auto-complete
 ;; press - to trigger isearch
-(setq ac-show-menu-immediately-on-auto-complete t)
+;; (setq ac-show-menu-immediately-on-auto-complete t)
 (global-set-key (kbd "-") 'ac-trigger-isearch)
 
 
 ;; multiple-cursors keybinding
-(global-set-key (kbd "C-0") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-9") 'mc/skip-to-next-like-this)
+;; (global-set-key (kbd "C-0") 'mc/mark-next-like-this)
+;; (global-set-key (kbd "C-9") 'mc/skip-to-next-like-this)
+
+(defun my-indent-region (N)
+  "Forward indent N*tab."
+  (interactive "p")
+  (if (use-region-p)
+      (progn (indent-rigidly (region-beginning) (region-end) (* N tab-width))
+             (setq deactivate-mark nil))
+    (self-insert-command N)))
+
+(defun my-unindent-region (N)
+  "Backward indent N*tab."
+  (interactive "p")
+  (if (use-region-p)
+      (progn (indent-rigidly (region-beginning) (region-end) (* N (* -1 tab-width)))
+             (setq deactivate-mark nil))
+    (self-insert-command N)))
+
+(global-set-key ">" 'my-indent-region)
+(global-set-key "<" 'my-unindent-region)
 
 
 ;; custom functions
@@ -669,19 +695,14 @@ use C-x a e to expand bookmark"
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
             (define-key js2-mode-map (kbd "C-.") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (js2-mark-parent-statement2))))
             (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
-            ;; (define-key js2-mode-map (kbd "C-'") 'standard-format-before-cursor)
-            (define-key js2-mode-map (kbd "C-; l") 'align)
+            (define-key js2-mode-map (kbd "C-' l") 'align)
             ))
-(define-key global-map (kbd "<down>") 'scroll-up-line)
-(define-key global-map (kbd "<up>") 'scroll-down-line)
-(define-key global-map (kbd "C-x ^") 'maximize-window)
 (define-key global-map (kbd "C-x j") 'standard-format-region)
 (global-set-key (kbd "C-c C-k") 'copy-line)
-(global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
+;; (global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
 ;; (global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
 (global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
 (define-key global-map (kbd "M-.") 'goto-first-reference)
-(define-key global-map (kbd "C-s") 'search-selection)
 (global-set-key (kbd "C-M-j") 'delete-indentation)
 (global-set-key (kbd "C-S-j") 'join-lines)
 ;; (global-set-key (kbd "C-j") 'join-lines)
@@ -693,18 +714,19 @@ use C-x a e to expand bookmark"
 ;; move lines
 (global-set-key (kbd "C-x C-n") 'move-line-down)
 (global-set-key (kbd "C-x C-p") 'move-line-up)
-(define-key ac-complete-mode-map "\C-n" 'ac-next)
-(define-key ac-complete-mode-map "\C-p" 'ac-previous)
+
+(after-load 'mc-mark-more
+  (define-key mc/keymap "\C-n" 'mc/skip-to-next-like-this)
+  (define-key mc/keymap "\C-p" 'mc/skip-to-previous-like-this))
+
+(after-load 'auto-complete
+  (define-key ac-complete-mode-map "\C-n" 'ac-next)
+  (define-key ac-complete-mode-map "\C-p" 'ac-previous))
 
 ;; some short keys for default
 ;; (define-key global-map "\C-x\C-u" 'undo)
 (global-set-key (kbd "C-S-r") 'anzu-query-replace-at-cursor-thing)
-(global-set-key (kbd "C-z") 'undo)
-(global-set-key (kbd "C-S-z") 'redo)
-(global-set-key (kbd "M-z") 'zap-up-to-char)
-(global-set-key (kbd "M-Z") 'zap-to-char)
 (after-load 'init-editing-utils
-  (global-set-key (kbd "C-'") 'avy-goto-word-or-subword-1)
   (define-key global-map (kbd "C-.") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (select-current-pair))))
   )
 ;; use c to create new file in dired
@@ -722,15 +744,12 @@ use C-x a e to expand bookmark"
 ;;   (define-key paredit-mode-map [remap kill-sentence] nil)
 ;;   )
 ;; (global-set-key (kbd "C-S-k") 'kill-sentence)
-(global-set-key (kbd "C-k") 'kill-line-or-region)
-(global-set-key (kbd "M-k") 'kill-paragraph-or-region)
 
 
 ;; smartparents keybinding
-(global-set-key (kbd "C-d") 'er/delete-char-or-word)
 (global-set-key (kbd "M-]") 'sp-forward-sexp)
 (global-set-key (kbd "M-[") 'sp-backward-sexp)
-(global-set-key (kbd "M-s") 'sp-unwrap-sexp)
+;; (global-set-key (kbd "M-s") 'sp-unwrap-sexp)
 (global-set-key (kbd "C-{") 'my-backward-sexp)
 (global-set-key (kbd "C-}") 'sp-end-of-sexp)
 (global-set-key (kbd "C-M-'") 'sp-rewrap-sexp)
@@ -744,12 +763,29 @@ use C-x a e to expand bookmark"
 ;; (global-set-key (kbd "M-] ]") 'paredit-wrap-square)
 ;; (global-set-key (kbd "M-] }") 'paredit-wrap-curly)
 
+(global-set-key (kbd "<M-return>") 'sanityinc/newline-at-end-of-line)
+(global-set-key (kbd "<C-M-return>") 'newline-before)
+
+
+;; rebinding existing emacs keys
+
+(define-key global-map (kbd "<down>") 'scroll-up-line)
+(define-key global-map (kbd "<up>") 'scroll-down-line)
+(define-key global-map (kbd "C-x ^") 'maximize-window)
+
+;; use phi-search instead
+;; (define-key global-map (kbd "C-s") 'search-selection)
+(global-set-key (kbd "C-d") 'er/delete-char-or-word)
+(global-set-key (kbd "C-z") 'undo)
+(global-set-key (kbd "C-S-z") 'redo)
+(global-set-key (kbd "C-k") 'kill-line-or-region)
+(global-set-key (kbd "M-k") 'kill-paragraph-or-region)
+(global-set-key (kbd "M-z") 'zap-up-to-char)
+(global-set-key (kbd "M-Z") 'zap-to-char)
 
 (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-kill-word)
-
-(global-set-key (kbd "<M-return>") 'sanityinc/newline-at-end-of-line)
-(global-set-key (kbd "<C-M-return>") 'newline-before)
+
 
 ;; (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
 
@@ -769,6 +805,15 @@ use C-x a e to expand bookmark"
   ;;   :group 'tools
   ;;   )
   ;; (customize-option 'gnutls-trustfiles)
+
+;;   ;; UTF-8 settings
+;; (set-language-environment "UTF-8")
+;; (set-terminal-coding-system 'utf-8)
+;; (set-keyboard-coding-system 'utf-8)
+;; (set-clipboard-coding-system 'utf-8)
+;; (set-buffer-file-coding-system 'utf-8)
+;; (set-selection-coding-system 'utf-8)
+;; (modify-coding-system-alist 'process "*" 'utf-8)
 
   (setq tramp-default-method "plink")
 
@@ -793,5 +838,8 @@ use C-x a e to expand bookmark"
 
   (e-maximize)
   ;; (global-set-key (kbd "M-SPC M-x") 'emacs-maximize)
-
   )
+
+
+(provide 'custom)
+;;; custom.el ends here
