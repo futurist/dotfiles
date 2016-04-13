@@ -31,20 +31,6 @@
 
 (server-start)
 
-;; bookmark with abbrevs
-(defun bookmark-to-abbrevs ()
-  "Create abbrevs based on `bookmark-alist'.
-use C-x a e to expand bookmark"
-  (when (boundp 'bookmark-alist)
-    (dolist (bookmark bookmark-alist)
-    (let* ((name (car bookmark))
-           (file (bookmark-get-filename name)))
-      (define-abbrev global-abbrev-table name file)))
-    )
-  )
-(add-hook 'bookmark-load-hook 'bookmark-to-abbrevs)                   ;use C-x a e to expand bookmark
-
-
 ;; linum mode with highlight
 (require-package 'hlinum)
 (face-spec-set 'linum-highlight-face
@@ -106,8 +92,13 @@ use C-x a e to expand bookmark"
   (js2r-add-keybindings-with-prefix "C-c C-m"))
 
 
-;; (require-package 'projectile)
-;; (porojectile-global-mode)
+(defvar projectile-keymap-prefix (kbd "C-x p"))
+(require-package 'ag)
+(require-package 'flx-ido)
+(require-package 'projectile)
+(projectile-global-mode)
+
+
 
 (require-package 'neotree)
 (global-set-key [f9] 'neotree-toggle)
@@ -115,7 +106,10 @@ use C-x a e to expand bookmark"
           (lambda() (setq neo-smart-open t)))
 
 (require-package 'form-feed)
+(require-package 'js-doc)
 (require-package 'web-beautify)
+;; (after-load 'skewer-mode
+;;   (skewer-setup))
 
 ;; ternjs for eamcs
 (add-to-list 'load-path "~/.emacs.d/tern/emacs")
@@ -132,7 +126,8 @@ use C-x a e to expand bookmark"
           (lambda ()
             (tern-mode t)
             (form-feed-mode t)
-            ;; (projectile-mode t)
+            (define-key js2-mode-map "\C-ci" 'js-doc-insert-function-doc)
+            (define-key js2-mode-map "@" 'js-doc-insert-tag)
             (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)
             (flycheck-select-checker 'javascript-standard)))
 
@@ -387,7 +382,7 @@ use C-x a e to expand bookmark"
         )
     (if (and (thing-at-point 'whitespace) (>= start end))
         (if (> start end)
-            (delete-region start end)
+            (kill-region start end)
           (if (= start end)
               (delete-char -1)
             )
@@ -523,11 +518,11 @@ use C-x a e to expand bookmark"
     )
   )
 
-(defun move-parent-forward-symbol ()(interactive)
+(defun move-parent-forward-symbol (arg)(interactive "p")
        (move-parent-forward 1))
-(defun move-parent-forward-up-to-char ()(interactive)
+(defun move-parent-forward-up-to-char (arg)(interactive "p")
        (move-parent-forward 2))
-(defun move-parent-backwrad-symbol()(interactive)
+(defun move-parent-backwrad-symbol()(interactive "p")
        (move-parent-backward 2))
 
 
@@ -589,8 +584,8 @@ use C-x a e to expand bookmark"
              (progn
                ;; (move-beginning-of-line nil)
                (back-to-indentation)
-               (delete-region old (point)))
-           (delete-region (point) old))
+               (kill-region old (point)))
+           (kill-region (point) old))
          )
        )
 
@@ -690,6 +685,20 @@ use C-x a e to expand bookmark"
 
 
 ;; custom functions
+
+;; ido to jump to bookmark
+(global-set-key (kbd "C-x r b")
+    (lambda ()
+      (interactive)
+      (bookmark-jump
+       (ido-completing-read "Jump to bookmark: " (bookmark-all-names)))))
+
+(global-set-key (kbd "C-S-o")
+                (lambda()
+                  (interactive)
+                  (when fill-prefix (insert-and-inherit fill-prefix))
+                  ))
+
 (add-hook 'js2-mode-hook
           (lambda()
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
@@ -729,6 +738,7 @@ use C-x a e to expand bookmark"
 (after-load 'init-editing-utils
   (define-key global-map (kbd "C-.") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (select-current-pair))))
   )
+
 ;; use c to create new file in dired
 (after-load 'dired
   (define-key dired-mode-map "c" 'find-file)
