@@ -362,6 +362,19 @@
       )))
 
 
+(defun kill-backward-symbol(&optional arg)
+  (interactive "p")
+  (let ((cur (point)) count)
+    (re-search-backward "[^a-z_.-]" nil t)
+    (if (> (setq count (- cur (point))) 1)
+        (progn (kill-region (1+ (point)) cur)
+               (forward-char)
+               )
+      (sp-backward-delete-char 0)
+      ;; (call-interactively 'delete-backward-char)
+      )
+    )
+  )
 (defun er/delete-char-or-word(&optional arg)
   (interactive "P")
   (if (region-active-p)
@@ -810,7 +823,8 @@
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 (global-set-key (kbd "M-Z") 'zap-to-char)
 
-(global-set-key (kbd "C-h") 'delete-backward-char)
+(global-set-key (kbd "C-h") 'kill-backward-symbol)
+;; (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-kill-word)
 
 
