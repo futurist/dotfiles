@@ -1,4 +1,4 @@
-;;; custom.el --- based on purcell's .emacs.d
+;;; custom.el --- based on purcell's .emacs.d  -*- no-byte-compile: t; -*-
 
 ;; Copyright (C) 2016 Micheal.Yang
 
@@ -835,8 +835,8 @@
   (require-package 'bash-completion)
   (bash-completion-setup)
 
-  (setq initial-frame-alist '((top . 0) (left . 280) (width . 120) (height . 42)))
-  (setq default-frame-alist '((top . 0) (left . 280) (width . 120) (height . 42)))
+  (setq initial-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48)))
+  (setq default-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48)))
   )
 
 (when *is-a-windows*
@@ -884,3 +884,6 @@
 
 (provide 'custom)
 ;;; custom.el ends here
+;; Local Variables:
+;; no-byte-compile: t
+;; End:
