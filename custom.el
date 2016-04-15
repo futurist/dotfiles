@@ -29,7 +29,12 @@
 
 (setq debug-on-error t)
 
-(server-start)
+;; (server-start)  ;; server seems not stable in windows
+
+;; Install extensions if they're missing
+(require-package 'restclient)
+(require-package 'nodejs-repl)
+
 
 ;; linum mode with highlight
 (require-package 'hlinum)
@@ -56,15 +61,25 @@
 (global-set-key (kbd "C-r") 'phi-search-backward)
 
 
-;; editing html file mode
-(require-package 'multi-web-mode)
-(setq mweb-default-major-mode 'html-mode)
-(setq mweb-tags
-  '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
-    (js2-mode  "<script[^>]*>" "</script>")
-    (css-mode "<style[^>]*>" "</style>")))
-(setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
-(multi-web-global-mode 1)
+(require-package 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.[agj]sp\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+
+;; ;; editing html file mode
+;; (require-package 'multi-web-mode)
+;; (setq mweb-default-major-mode 'html-mode)
+;; (setq mweb-tags
+;;   '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
+;;     (js2-mode  "<script[^>]*>" "</script>")
+;;     (css-mode "<style[^>]*>" "</style>")))
+;; (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
+;; (multi-web-global-mode 1)
 
 (require-package 'yasnippet)
 (yas-global-mode 1)
@@ -648,7 +663,7 @@
          (string-match "\\([1-9][0-9]\\{3\\}\\)" exp)
          (setq year (match-string 1 exp))
          ;; (message "cookie from init %s" year)
-         (if (and year (setq year (string-to-number year)) (>= year 2038)) nil
+         (if (and year (setq year (string-to-number year)) (>= year 2038)) t
            (> (float-time) (float-time (date-to-time exp))))
          ))))
 
@@ -687,6 +702,8 @@
 ;; custom functions
 
 ;; ido to jump to bookmark
+;; C-' space is my custom space
+(global-set-key (kbd "C-' r f") 'recentf-open-files)
 (global-set-key (kbd "C-x r b")
     (lambda ()
       (interactive)
