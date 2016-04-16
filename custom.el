@@ -55,8 +55,11 @@
 (require-package 'monokai-theme)
 
 ;; package from github/zk-phi
-(require-package 'phi-search)
 (require-package 'indent-guide)
+(after-load 'indent-guide
+  (indent-guide-global-mode t)
+  (setq indent-guide-delay 0.1))
+(require-package 'phi-search)
 (global-set-key (kbd "C-s") 'phi-search)
 (global-set-key (kbd "C-r") 'phi-search-backward)
 
@@ -70,6 +73,23 @@
 ;; (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+
+
+;; (defvar html-file-extensions "\\.\\(aspx\\|php\\|\\sw*html*\\)\\'")
+;; (setq mmm-global-mode t)
+;; (mmm-add-group
+;;  'html-js2
+;;  '((js-script
+;;     :submode js2-mode
+;;     :face mmm-code-submode-face
+;;     :front "<script[^>]*>[ \t]*\n?"
+;;     :back "[ \t]*</script>"
+;;     :insert ((?j js-tag nil @ "<script type=\"text/javascript\">\n"
+;;                  @ "" _ "" @ "\n</script>" @)))))
+;; (mmm-add-mode-ext-class nil html-file-extensions 'html-php)
+;; (mmm-add-mode-ext-class nil html-file-extensions 'html-js)
+;; (mmm-add-mode-ext-class nil html-file-extensions 'html-css)
+
 
 ;; ;; editing html file mode
 ;; (require-package 'multi-web-mode)
@@ -174,13 +194,12 @@
  '(column-number-mode t)
  '(cua-mode t nil (cua-base))
  '(display-buffer-reuse-frames t)
+ '(grep-command "~/bin/grep")
  '(safe-local-variable-values (quote ((no-byte-compile t))))
  '(session-use-package t nil (session))
  '(show-paren-mode t)
  '(tool-bar-mode nil)
- '(url-automatic-caching t)
- '(grep-command "~/bin/grep")
- )
+ '(url-automatic-caching t))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -353,6 +372,17 @@
     )
   )
 
+(defun kill-whitespace ()
+  "Kill the whitespace between two non-whitespace characters"
+  (interactive "*")
+  (save-excursion
+    (save-restriction
+      (save-match-data
+        (progn
+          (re-search-backward "[^ \t\r\n]" nil t)
+          (re-search-forward "[ \t\r\n]+" nil t)
+          (replace-match "" nil nil))))))
+
 
 (defun my-delete-thing-at-point (thing)
   "Kill the `thing-at-point' for the specified kind of THING."
@@ -362,19 +392,34 @@
       )))
 
 
+(defun syntax-forward-syntax (&optional arg)
+  "Move ARG times to start of a set of the same syntax characters."
+  (interactive "p")
+  (setq arg (or arg 1))
+  (while (and (> arg 0)
+              (not (eobp))
+              (skip-syntax-forward (string (char-syntax (char-after)))))
+    (setq arg (1- arg)))
+  (while (and (< arg 0)
+              (not (bobp))
+              (skip-syntax-backward
+               (string (char-syntax (char-before)))))
+    (setq arg (1+ arg))))
+
+
+
+
 (defun kill-backward-symbol(&optional arg)
   (interactive "p")
-  (let ((cur (point)) count)
-    (re-search-backward "[^a-z_.-]" nil t)
-    (if (> (setq count (- cur (point))) 1)
-        (progn (kill-region (1+ (point)) cur)
-               (forward-char)
-               )
-      (sp-backward-delete-char 0)
-      ;; (call-interactively 'delete-backward-char)
-      )
+  (let ((cur (point)) count to)
+    (cond
+         ((memq (car (syntax-after (1- (point)))) '(0 11 12)) (skip-syntax-backward "-<>") (kill-region (point) cur)) ;whitespace
+         ((memq (car (syntax-after (1- (point)))) '(2 3)) (skip-syntax-backward "_w") (kill-region (point) cur)) ;word-or-symbol
+         (t (call-interactively 'delete-backward-char))
+     )
     )
   )
+
 (defun er/delete-char-or-word(&optional arg)
   (interactive "P")
   (if (region-active-p)
@@ -716,7 +761,10 @@
 
 ;; ido to jump to bookmark
 ;; C-' space is my custom space
-(global-set-key (kbd "C-' r f") 'recentf-open-files)
+(global-set-key (kbd "C-' f") 'recentf-open-files)
+(after-load 'phi-search
+  (define-key phi-search-default-map (kbd "C-l") '(lambda()(interactive)(phi-search-recenter)(phi-search-complete)))
+  )
 (global-set-key (kbd "C-x r b")
     (lambda ()
       (interactive)
@@ -883,7 +931,7 @@
 
 
 (provide 'custom)
-;;; custom.el ends here
 ;; Local Variables:
 ;; no-byte-compile: t
 ;; End:
+;;; custom.el ends here
