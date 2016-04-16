@@ -54,6 +54,10 @@
 
 (require-package 'monokai-theme)
 
+;; package from github/xahlee
+(require-package 'xah-find)
+
+
 ;; package from github/zk-phi
 (require-package 'indent-guide)
 (after-load 'indent-guide
@@ -63,6 +67,11 @@
 (global-set-key (kbd "C-s") 'phi-search)
 (global-set-key (kbd "C-r") 'phi-search-backward)
 
+
+;; package from github
+(require-package 'emmet-mode)
+(add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+(add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
 
 ;; (require-package 'web-mode)
 ;; (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
@@ -75,20 +84,20 @@
 ;; (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 
 
-;; (defvar html-file-extensions "\\.\\(aspx\\|php\\|\\sw*html*\\)\\'")
-;; (setq mmm-global-mode t)
-;; (mmm-add-group
-;;  'html-js2
-;;  '((js-script
-;;     :submode js2-mode
-;;     :face mmm-code-submode-face
-;;     :front "<script[^>]*>[ \t]*\n?"
-;;     :back "[ \t]*</script>"
-;;     :insert ((?j js-tag nil @ "<script type=\"text/javascript\">\n"
-;;                  @ "" _ "" @ "\n</script>" @)))))
-;; (mmm-add-mode-ext-class nil html-file-extensions 'html-php)
-;; (mmm-add-mode-ext-class nil html-file-extensions 'html-js)
-;; (mmm-add-mode-ext-class nil html-file-extensions 'html-css)
+(defvar html-file-extensions "\\.\\(aspx\\|php\\|\\sw*html*\\)\\'")
+(setq mmm-global-mode nil)
+(after-load 'init-mmm
+  (mmm-add-classes
+   '((html-js2
+      :submode js-mode
+      :face mmm-default-submode-face
+      :front "<script[^>]*>"
+      :back "[ \t\n]*</script>"
+      )))
+  (mmm-add-mode-ext-class 'html-mode html-file-extensions 'html-php)
+  (mmm-add-mode-ext-class 'html-mode html-file-extensions 'html-js2)
+  (mmm-add-mode-ext-class 'html-mode html-file-extensions 'html-css)
+  )
 
 
 ;; ;; editing html file mode
@@ -115,7 +124,26 @@
 (sp-use-smartparens-bindings)
 
 
+;; github/magnars
+(require-package 's)
 (require-package 'dash)
+(require-package 'tagedit)
+(after-load 'tagedit
+  (defun te/goto-current-tag-content()
+    (interactive)
+    (let* ((curtag (te/current-tag))
+           (is-closed (equal :f (cdr (assq :self-closing curtag))))
+           (beg (cdr (assq :beg curtag)))
+           (end (cdr (assq :end curtag)))
+           )
+      (when is-closed
+        (goto-char beg)
+        (re-search-forward ">" nil t)
+        )
+      )
+    )
+  (define-key tagedit-mode-map (kbd "M-'") 'te/goto-current-tag-content)
+  )
 (use-package js2-refactor
   :defer t
   :diminish js2-refactor-mode
@@ -125,6 +153,15 @@
   (add-hook 'js2-mode-hook #'js2-refactor-mode)
   :config
   (js2r-add-keybindings-with-prefix "C-c C-m"))
+
+(eval-after-load "sgml-mode"
+  '(progn
+     (tagedit-add-paredit-like-keybindings)
+     (add-hook 'html-mode-hook (lambda ()
+                                 (tagedit-mode 1)
+                                 (tagedit-add-experimental-features)
+                                 ))))
+
 
 
 (defvar projectile-keymap-prefix (kbd "C-x p"))
@@ -194,7 +231,6 @@
  '(column-number-mode t)
  '(cua-mode t nil (cua-base))
  '(display-buffer-reuse-frames t)
- '(grep-command "~/bin/grep")
  '(safe-local-variable-values (quote ((no-byte-compile t))))
  '(session-use-package t nil (session))
  '(show-paren-mode t)
@@ -333,6 +369,14 @@
                   ;; (spacing . (1 1))
                   (modes quote (js2-mode)))))
 
+
+(require 'hi-lock)
+(defun my/unhighlight-all-in-buffer ()
+  "Remove all highlights made by `hi-lock' from the current buffer.
+The same result can also be be achieved by \\[universal-argument] \\[unhighlight-regexp]."
+  (interactive)
+  (unhighlight-regexp t))
+(define-key search-map "hU" #'my/unhighlight-all-in-buffer)
 
 
 (add-to-list 'load-path (expand-file-name "standard" user-emacs-directory))
@@ -761,9 +805,13 @@
 
 ;; ido to jump to bookmark
 ;; C-' space is my custom space
+(defun phi-complete-after-center(&rest args) (interactive) (phi-search-complete))
+(global-set-key (kbd "C-' g") 'xah-find-text)
 (global-set-key (kbd "C-' f") 'recentf-open-files)
+(global-set-key (kbd "C-' s") 'highlight-symbol-at-point)
 (after-load 'phi-search
-  (define-key phi-search-default-map (kbd "C-l") '(lambda()(interactive)(phi-search-recenter)(phi-search-complete)))
+  (advice-add 'phi-search-recenter :after #'phi-complete-after-center)
+  ;; (define-key phi-search-default-map (kbd "C-l") 'phi-search-complete)
   )
 (global-set-key (kbd "C-x r b")
     (lambda ()
@@ -794,7 +842,7 @@
 (global-set-key (kbd "C-S-j") 'join-lines)
 ;; (global-set-key (kbd "C-j") 'join-lines)
 (global-set-key (kbd "C-S-d") 'duplicate-line-or-region)
-(global-set-key (kbd "C-<backspace>") 'delete-backword-or-ws)
+(global-set-key (kbd "C-<backspace>") 'kill-backward-symbol)
 (global-set-key (kbd "C-S-<backspace>") 'sp-backward-delete-all)
 (global-set-key (kbd "C-c C-;") 'comment-or-uncomment-line-or-region)
 (global-set-key (kbd "C-S-l") 'mark-paragraph)
@@ -871,7 +919,7 @@
 (global-set-key (kbd "M-z") 'zap-up-to-char)
 (global-set-key (kbd "M-Z") 'zap-to-char)
 
-(global-set-key (kbd "C-h") 'kill-backward-symbol)
+(global-set-key (kbd "C-h") 'delete-backword-or-ws)
 ;; (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-kill-word)
 
@@ -895,14 +943,16 @@
   ;;   )
   ;; (customize-option 'gnutls-trustfiles)
 
-;;   ;; UTF-8 settings
-;; (set-language-environment "UTF-8")
-;; (set-terminal-coding-system 'utf-8)
-;; (set-keyboard-coding-system 'utf-8)
-;; (set-clipboard-coding-system 'utf-8)
-;; (set-buffer-file-coding-system 'utf-8)
-;; (set-selection-coding-system 'utf-8)
-;; (modify-coding-system-alist 'process "*" 'utf-8)
+  (setq grep-command "~/bin/grep.exe")
+
+  ;; UTF-8 settings
+(set-language-environment "Chinese-GB18030")
+(set-terminal-coding-system 'gb18030)
+(set-keyboard-coding-system 'gb18030)
+(set-clipboard-coding-system 'gb18030)
+(set-buffer-file-coding-system 'gb18030)
+(set-selection-coding-system 'gb18030)
+(modify-coding-system-alist 'process "*" 'gb18030)
 
   (setq tramp-default-method "plink")
 
