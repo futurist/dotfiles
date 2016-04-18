@@ -237,8 +237,8 @@ Including indent-buffer, which should not be called automatically on save."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ac-use-fuzzy nil)
- ;; '(avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
- '(avy-keys '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
+ '(avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
+ ;; '(avy-keys '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
  '(column-number-mode t)
  '(enable-dir-local-variables nil)
  '(cua-mode t nil (cua-base))
@@ -466,37 +466,54 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
         (progn (kill-region (car bounds) (cdr bounds)) t)
       )))
 
+(defun escape-regexp-in-string(str)
+  (setq str (replace-regexp-in-string "'" "\\\'" str 'FIXEDCASE 'LITERAL))
+  (setq str (replace-regexp-in-string "\"" "\\\"" str 'FIXEDCASE 'LITERAL))
+  )
 
 (defun syntax-forward-syntax-group (&optional arg)
   "Move ARG times to start of a set of the same syntax characters group.
 from Google syntax-forward-syntax func."
   (interactive "^p")
-  (let ((arg (or arg 1))
-        (group '("_w" "-<>"))
-        role
-        )
-  (while (and (> arg 0) (not (eobp))
-              (setq role (string (char-syntax (char-after))))
-              (skip-syntax-forward (or (--first (string-match role it) group) role) ))
-    (setq arg (1- arg)))
-  (while (and (< arg 0)
-              (not (bobp))
-              (setq role (string (char-syntax (char-before))))
-              (skip-syntax-backward (or (--first (string-match role it) group) role) ))
-    (setq arg (1+ arg))))
+  (let* ((group '("_w" "-<>"))
+         get-group role curgroup
+         )
+    (setq get-group '(lambda(role) (--first (progn (when (not (consp it)) (setq it `(,it . ,it))) (string-match role (car it))) group) ))
+
+    (while (and (> arg 0) (not (eobp)) )
+      (setq role (string (char-syntax (char-after))))
+      (setq curgroup (funcall get-group role))
+      ;; (message "%s--%s" role curgroup)
+      (if (null curgroup) (forward-char)
+        (skip-syntax-forward (car curgroup)))
+      (skip-syntax-forward "-<>" )
+      (setq arg (1- arg)))
+    (while (and (< arg 0) (not (bobp)))
+      (setq role (string (char-syntax (char-before))))
+      (setq curgroup (funcall get-group role))
+      (if (null curgroup) (forward-char -1)
+        (skip-syntax-backward (car curgroup)))
+      (skip-syntax-backward "-<>" )
+      (setq arg (1+ arg)))
+    )
   )
 
 
 
 
+(defun kill-forward-symbol(&optional arg)
+  (interactive "p")
+  (let ((cur (point)) count to)
+    (syntax-forward-syntax-group arg)
+    (kill-region (point) cur)
+    )
+  )
+
 (defun kill-backward-symbol(&optional arg)
   (interactive "p")
   (let ((cur (point)) count to)
-    (cond
-         ((memq (car (syntax-after (1- (point)))) '(0 11 12)) (skip-syntax-backward "-<>") (kill-region (point) cur)) ;whitespace
-         ((memq (car (syntax-after (1- (point)))) '(2 3)) (skip-syntax-backward "_w") (kill-region (point) cur)) ;word-or-symbol
-         (t (call-interactively 'delete-backward-char))
-     )
+    (syntax-forward-syntax-group (* -1 arg))
+    (kill-region (point) cur)
     )
   )
 
@@ -566,32 +583,6 @@ from Google syntax-forward-syntax func."
   )
 
 
-
-(defun move-line (n)
-  "Move the current line up or down by N lines."
-  (interactive "p")
-  (let ((col nil) (start nil) (end nil))
-    (setq col (current-column))
-    (beginning-of-line) (setq start (point))
-    (end-of-line) (forward-char) (setq end (point))
-    (let ((line-text (delete-and-extract-region start end)))
-      (next-line n)
-      (insert line-text)
-      ;; restore point to original column in moved line
-      (next-line -1)
-      (forward-char col))
-    )
-  )
-
-(defun move-line-up (n)
-  "Move the current line up by N lines."
-  (interactive "p")
-  (move-line (if (null n) -1 (- n))))
-
-(defun move-line-down (n)
-  "Move the current line down by N lines."
-  (interactive "p")
-  (move-line (if (null n) 1 n)))
 
 (defun kill-paragraph-or-region ()
   (interactive)
@@ -842,7 +833,8 @@ from Google syntax-forward-syntax func."
 ;; ido to jump to bookmark
 ;; C-' space is my custom space
 (defun phi-complete-after-center(&rest args) (interactive) (phi-search-complete))
-(global-set-key (kbd "C-' C-'") 'syntax-forward-syntax-group)
+(global-set-key (kbd "M-]") 'syntax-forward-syntax-group)
+(global-set-key (kbd "M-[") '(lambda(arg)(interactive "^p") (syntax-forward-syntax-group (* arg -1))))
 (global-set-key (kbd "C-' g") 'xah-find-text)
 (global-set-key (kbd "C-' f") 'recentf-open-files)
 (global-set-key (kbd "C-' s") 'highlight-symbol-at-point)
@@ -884,8 +876,8 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-c C-;") 'comment-or-uncomment-line-or-region)
 (global-set-key (kbd "C-S-l") 'mark-paragraph)
 ;; move lines
-(global-set-key (kbd "C-x C-n") 'move-line-down)
-(global-set-key (kbd "C-x C-p") 'move-line-up)
+(global-set-key (kbd "C-x C-n") 'md/move-lines-down)
+(global-set-key (kbd "C-x C-p") 'md/move-lines-up)
 
 (after-load 'mc-mark-more
   (define-key mc/keymap "\C-n" 'mc/skip-to-next-like-this)
@@ -900,6 +892,12 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-S-r") 'anzu-query-replace-at-cursor-thing)
 (after-load 'init-editing-utils
   (define-key global-map (kbd "C-.") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (select-current-pair))))
+  ;; remmap the old C-M-. is 'find-tag-regexp
+  (define-key global-map (kbd "C-M-.") '(lambda(arg)(interactive "P")
+                                          (funcall (global-key-binding (kbd "C-.")) arg)
+                                          (kill-ring-save (region-beginning) (region-end))
+                                          ))
+  (define-key global-map (kbd "C-;") 'avy-goto-char-timer)
   )
 
 ;; use c to create new file in dired
@@ -920,8 +918,8 @@ from Google syntax-forward-syntax func."
 
 
 ;; smartparents keybinding
-(global-set-key (kbd "M-]") 'sp-forward-sexp)
-(global-set-key (kbd "M-[") 'sp-backward-sexp)
+;; (global-set-key (kbd "M-]") 'sp-forward-sexp)
+;; (global-set-key (kbd "M-[") 'sp-backward-sexp)
 (global-set-key (kbd "M-S") 'sp-unwrap-sexp)
 (global-set-key (kbd "C-{") 'my-backward-sexp)
 (global-set-key (kbd "C-}") 'sp-end-of-sexp)
@@ -948,6 +946,7 @@ from Google syntax-forward-syntax func."
 
 ;; use phi-search instead
 ;; (define-key global-map (kbd "C-s") 'search-selection)
+(global-set-key (kbd "M-D") 'kill-forward-symbol)
 (global-set-key (kbd "C-d") 'er/delete-char-or-word)
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-S-z") 'redo)
