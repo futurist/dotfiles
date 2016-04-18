@@ -157,7 +157,7 @@
       )
     )
 
-  (defun te/delete-current-tag(arg)
+  (defun te/kill-current-tag(arg)
     (interactive "p")
     (decf arg)
     (let* ((tag (te/current-tag)) (parent tag))
@@ -169,7 +169,7 @@
     )
 
   (define-key tagedit-mode-map (kbd "M-'") 'te/goto-current-tag-content)
-  (define-key tagedit-mode-map (kbd "C-c C-<backspace>") 'te/delete-current-tag)
+  (define-key tagedit-mode-map (kbd "C-c C-<backspace>") 'te/kill-current-tag)
   (define-key tagedit-mode-map (kbd "C-%") 'te/goto-tag-match)
   (define-key tagedit-mode-map (kbd "C-^") 'te/goto-tag-begging)
   (define-key tagedit-mode-map (kbd "C-$") 'te/goto-tag-end)
