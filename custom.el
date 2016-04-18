@@ -133,7 +133,46 @@
     (interactive)
     (goto-char (te/inner-beg (te/current-tag)))
     )
+
+  (defun te/goto-tag-begging()
+    (interactive)
+    (goto-char (te/get (te/current-tag) :beg))
+    )
+
+  (defun te/goto-tag-end()
+    (interactive)
+    (goto-char (1- (te/get (te/current-tag) :end)))
+    )
+
+  (defun te/goto-tag-match()
+    (interactive)
+    (let* ((tag (te/current-tag))
+         (in-opening-tag (and (>= (point) (te/get tag :beg)) (<= (point) (te/inner-beg tag))))
+         (in-closing-tag (and (<= (point) (te/get tag :end)) (>= (point) (te/inner-end tag))))
+         )
+      (if in-opening-tag
+          (te/goto-tag-end)
+        (te/goto-tag-begging)
+        )
+      )
+    )
+
+  (defun te/delete-current-tag(arg)
+    (interactive "p")
+    (decf arg)
+    (let* ((tag (te/current-tag)) (parent tag))
+      (dotimes (i arg)
+        (setq parent (te/parent-tag parent))
+        )
+      (kill-region (te/get parent :beg) (te/get parent :end))
+      )
+    )
+
   (define-key tagedit-mode-map (kbd "M-'") 'te/goto-current-tag-content)
+  (define-key tagedit-mode-map (kbd "C-c C-<backspace>") 'te/delete-current-tag)
+  (define-key tagedit-mode-map (kbd "C-%") 'te/goto-tag-match)
+  (define-key tagedit-mode-map (kbd "C-^") 'te/goto-tag-begging)
+  (define-key tagedit-mode-map (kbd "C-$") 'te/goto-tag-end)
   )
 (use-package js2-refactor
   :defer t
