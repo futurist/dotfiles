@@ -131,16 +131,7 @@
 (after-load 'tagedit
   (defun te/goto-current-tag-content()
     (interactive)
-    (let* ((curtag (te/current-tag))
-           (is-closed (equal :f (cdr (assq :self-closing curtag))))
-           (beg (cdr (assq :beg curtag)))
-           (end (cdr (assq :end curtag)))
-           )
-      (when is-closed
-        (goto-char beg)
-        (re-search-forward ">" nil t)
-        )
-      )
+    (goto-char (te/inner-beg (te/current-tag)))
     )
   (define-key tagedit-mode-map (kbd "M-'") 'te/goto-current-tag-content)
   )
@@ -246,8 +237,10 @@ Including indent-buffer, which should not be called automatically on save."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ac-use-fuzzy nil)
- '(avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
+ ;; '(avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
+ '(avy-keys '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
  '(column-number-mode t)
+ '(enable-dir-local-variables nil)
  '(cua-mode t nil (cua-base))
  '(display-buffer-reuse-frames t)
  '(safe-local-variable-values (quote ((no-byte-compile t))))
@@ -474,19 +467,24 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
       )))
 
 
-(defun syntax-forward-syntax (&optional arg)
-  "Move ARG times to start of a set of the same syntax characters."
-  (interactive "p")
-  (setq arg (or arg 1))
-  (while (and (> arg 0)
-              (not (eobp))
-              (skip-syntax-forward (string (char-syntax (char-after)))))
+(defun syntax-forward-syntax-group (&optional arg)
+  "Move ARG times to start of a set of the same syntax characters group.
+from Google syntax-forward-syntax func."
+  (interactive "^p")
+  (let ((arg (or arg 1))
+        (group '("_w" "-<>"))
+        role
+        )
+  (while (and (> arg 0) (not (eobp))
+              (setq role (string (char-syntax (char-after))))
+              (skip-syntax-forward (or (--first (string-match role it) group) role) ))
     (setq arg (1- arg)))
   (while (and (< arg 0)
               (not (bobp))
-              (skip-syntax-backward
-               (string (char-syntax (char-before)))))
+              (setq role (string (char-syntax (char-before))))
+              (skip-syntax-backward (or (--first (string-match role it) group) role) ))
     (setq arg (1+ arg))))
+  )
 
 
 
@@ -844,6 +842,7 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 ;; ido to jump to bookmark
 ;; C-' space is my custom space
 (defun phi-complete-after-center(&rest args) (interactive) (phi-search-complete))
+(global-set-key (kbd "C-' C-'") 'syntax-forward-syntax-group)
 (global-set-key (kbd "C-' g") 'xah-find-text)
 (global-set-key (kbd "C-' f") 'recentf-open-files)
 (global-set-key (kbd "C-' s") 'highlight-symbol-at-point)
@@ -923,7 +922,7 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 ;; smartparents keybinding
 (global-set-key (kbd "M-]") 'sp-forward-sexp)
 (global-set-key (kbd "M-[") 'sp-backward-sexp)
-;; (global-set-key (kbd "M-s") 'sp-unwrap-sexp)
+(global-set-key (kbd "M-S") 'sp-unwrap-sexp)
 (global-set-key (kbd "C-{") 'my-backward-sexp)
 (global-set-key (kbd "C-}") 'sp-end-of-sexp)
 (global-set-key (kbd "C-M-'") 'sp-rewrap-sexp)
