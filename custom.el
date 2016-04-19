@@ -118,9 +118,9 @@
 (require-package 'yasnippet)
 (yas-global-mode 1)
 ;; yasnippet <tab> conflict with ac, change below
-(define-key yas-minor-mode-map (kbd "<tab>") nil)
-(define-key yas-minor-mode-map (kbd "TAB") nil)
-(define-key yas-minor-mode-map (kbd "<C-tab>") 'yas-expand)
+;; (define-key yas-minor-mode-map (kbd "<tab>") nil)
+;; (define-key yas-minor-mode-map (kbd "TAB") nil)
+;; (define-key yas-minor-mode-map (kbd "<C-tab>") 'yas-expand)
 
 (require-package 'smartparens)
 (require 'smartparens-config)
@@ -227,6 +227,8 @@ Including indent-buffer, which should not be called automatically on save."
   (setq company-flx-limit 10)
   (setq company-auto-complete t)
   (setq company-auto-complete-chars '(?\  ?\) ?. ?\t))
+  (define-key company-active-map "\C-n" 'company-select-next-or-abort)
+  (define-key company-active-map "\C-p" 'company-select-previous-or-abort)
   )
 (after-load 'company-tern
   (add-to-list 'company-backends 'company-tern)
@@ -263,7 +265,6 @@ Including indent-buffer, which should not be called automatically on save."
   '(progn
      (require-package 'tern-auto-complete)
      ;; (tern-ac-setup)
-     (add-to-list 'company-backends 'company-tern)
      ))
 
 (global-set-key (kbd "<f8>") 'flycheck-mode)
@@ -277,7 +278,6 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map (kbd "C-M-i") 'company-tern)
             (flycheck-select-checker 'javascript-standard)
             ))
-
 
 
 ;; when it's windows, setting below
@@ -303,7 +303,7 @@ Including indent-buffer, which should not be called automatically on save."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ac-use-fuzzy nil)
- '(avy-timeout-seconds 0.3)
+ '(avy-timeout-seconds 0.4)
  '(avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
  ;; '(avy-keys '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
  '(column-number-mode t)
@@ -965,14 +965,12 @@ from Google syntax-forward-syntax func."
   (define-key mc/keymap "\C-n" 'mc/skip-to-next-like-this)
   (define-key mc/keymap "\C-p" 'mc/skip-to-previous-like-this))
 
-;; (after-load 'company
-;;   (define-key company-mode-map "\C-n" 'company-select-next-or-abort)
-;;   (define-key company-mode-map "\C-p" 'company-select-previous-or-abort))
 
 
-(after-load 'auto-complete
-  (define-key ac-complete-mode-map "\C-n" 'ac-next)
-  (define-key ac-complete-mode-map "\C-p" 'ac-previous))
+
+;; (after-load 'auto-complete
+;;   (define-key ac-complete-mode-map "\C-n" 'ac-next)
+;;   (define-key ac-complete-mode-map "\C-p" 'ac-previous))
 
 ;; some short keys for default
 ;; (define-key global-map "\C-x\C-u" 'undo)
@@ -1030,7 +1028,6 @@ from Google syntax-forward-syntax func."
 (define-key global-map (kbd "<down>") 'scroll-up-line)
 (define-key global-map (kbd "<up>") 'scroll-down-line)
 (define-key global-map (kbd "C-x ^") 'maximize-window)
-(define-key global-map (kbd "C-M-i") 'company-complete)
 
 ;; use phi-search instead
 ;; (define-key global-map (kbd "C-s") 'search-selection)
