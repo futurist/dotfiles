@@ -434,23 +434,28 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 (require 'init-js-standard)
 
 ;; location current file in explorer
+(require-package 'reveal-in-osx-finder)
 (defun locate-current-file-in-explorer (in-tc)
   (interactive "p")
-  (let ((cmd (if (= in-tc 1) "tc " "explorer /e,/select,")))
-  (cond
-   ;; In buffers with file name
-   ((buffer-file-name)
-    (shell-command (concat "start " cmd  "\"" (replace-regexp-in-string "/" "\\\\" (buffer-file-name)) "\"")))
-   ;; In dired mode
-   ((eq major-mode 'dired-mode)
-    (shell-command (concat "start " cmd  "\"" (replace-regexp-in-string "/" "\\\\" (dired-current-directory)) "\"")))
-   ;; In eshell mode
-   ((eq major-mode 'eshell-mode)
-    (shell-command (concat "start " cmd  "\"" (replace-regexp-in-string "/" "\\\\" (eshell/pwd)) "\"")))
-   ;; Use default-directory as last resource
-   (t
-    (shell-command (concat "start " cmd  "\"" (replace-regexp-in-string "/" "\\\\" default-directory) "\""))))))
-(define-key global-map (kbd "C-' d") 'locate-current-file-in-explorer)
+  (when *is-a-windows*
+    (let ((cmd (if (= in-tc 1) "tc " "explorer /e,/select,")))
+      (cond
+       ;; In buffers with file name
+       ((buffer-file-name)
+        (shell-command (concat "start " cmd  "\"" (replace-regexp-in-string "/" "\\\\" (buffer-file-name)) "\"")))
+       ;; In dired mode
+       ((eq major-mode 'dired-mode)
+        (shell-command (concat "start " cmd  "\"" (replace-regexp-in-string "/" "\\\\" (dired-current-directory)) "\"")))
+       ;; In eshell mode
+       ((eq major-mode 'eshell-mode)
+        (shell-command (concat "start " cmd  "\"" (replace-regexp-in-string "/" "\\\\" (eshell/pwd)) "\"")))
+       ;; Use default-directory as last resource
+       (t
+        (shell-command (concat "start " cmd  "\"" (replace-regexp-in-string "/" "\\\\" default-directory) "\""))))))
+  (when *is-a-mac*
+    (reveal-in-osx-finder)
+    )
+  )
 
 (defun duplicate-line-or-region (&optional n)
   "Duplicate current line, or region if active.
@@ -877,6 +882,11 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-' g") 'xah-find-text)
 (global-set-key (kbd "C-' f") 'recentf-open-files)
 (global-set-key (kbd "C-' s") 'highlight-symbol-at-point)
+(define-key global-map (kbd "C-' o") 'locate-current-file-in-explorer)
+(define-key global-map (kbd "C-' c") 'cleanup-buffer)
+(define-key global-map (kbd "M-\\") 'comint-dynamic-complete-filename)
+
+
 (after-load 'phi-search
   (advice-add 'phi-search-recenter :after #'phi-complete-after-center)
   ;; (define-key phi-search-default-map (kbd "C-l") 'phi-search-complete)
