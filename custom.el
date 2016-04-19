@@ -67,6 +67,7 @@
 (global-set-key (kbd "C-s") 'phi-search)
 (global-set-key (kbd "C-r") 'phi-search-backward)
 
+(require-package 'ascii)
 
 ;; package from github
 (require-package 'emmet-mode)
@@ -97,8 +98,12 @@
   (mmm-add-mode-ext-class 'html-mode html-file-extensions 'html-php)
   (mmm-add-mode-ext-class 'html-mode html-file-extensions 'html-js2)
   (mmm-add-mode-ext-class 'html-mode html-file-extensions 'html-css)
+  (add-hook 'html-mode-hook
+            #'(lambda()
+                (mmm-mode t)
+                (define-key mmm-mode-map (kbd "C-c C-v") '(lambda()(interactive) (save-buffer) (browse-url-of-buffer)))
+                ))
   )
-
 
 ;; ;; editing html file mode
 ;; (require-package 'multi-web-mode)
@@ -119,8 +124,8 @@
 
 (require-package 'smartparens)
 (require 'smartparens-config)
-(add-hook 'js-mode #'smartparens-mode)
-(add-hook 'js2-mode #'smartparens-mode)
+(add-hook 'js-mode-hook #'smartparens-mode)
+(add-hook 'js2-mode-hook #'smartparens-mode)
 (sp-use-smartparens-bindings)
 
 
@@ -211,10 +216,27 @@ Including indent-buffer, which should not be called automatically on save."
   (delete-trailing-whitespace)
   (indent-buffer))
 
+(require-package 'company)
+(require-package 'company-flx)
+(require-package 'company-tern)
+(add-hook 'after-init-hook 'global-company-mode)
+(setq company-idle-delay 0)
+(setq company-minimum-prefix-length 2)
+(after-load 'company
+  (company-flx-mode +1)
+  (setq company-flx-limit 10)
+  (setq company-auto-complete t)
+  (setq company-auto-complete-chars '(?\  ?\) ?. ?\t))
+  )
+(after-load 'company-tern
+  (add-to-list 'company-backends 'company-tern)
+  ;; (setq company-tern-property-marker "")
+  )
 
 
 (defvar projectile-keymap-prefix (kbd "C-x p"))
 (require-package 'ag)
+(require-package 'flx)
 (require-package 'flx-ido)
 (require-package 'projectile)
 (projectile-global-mode)
@@ -237,10 +259,12 @@ Including indent-buffer, which should not be called automatically on save."
 (autoload 'tern-mode "tern.el" nil t)
 
 ;; add tern-auto-complete
-(eval-after-load 'tern
+(after-load 'tern
   '(progn
      (require-package 'tern-auto-complete)
-     (tern-ac-setup)))
+     ;; (tern-ac-setup)
+     (add-to-list 'company-backends 'company-tern)
+     ))
 
 (global-set-key (kbd "<f8>") 'flycheck-mode)
 (add-hook 'js2-mode-hook
@@ -250,7 +274,10 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map "\C-ci" 'js-doc-insert-function-doc)
             (define-key js2-mode-map "@" 'js-doc-insert-tag)
             (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)
-            (flycheck-select-checker 'javascript-standard)))
+            (define-key js2-mode-map (kbd "C-M-i") 'company-tern)
+            (flycheck-select-checker 'javascript-standard)
+            ))
+
 
 
 ;; when it's windows, setting below
@@ -276,13 +303,14 @@ Including indent-buffer, which should not be called automatically on save."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ac-use-fuzzy nil)
+ '(avy-timeout-seconds 0.3)
  '(avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
  ;; '(avy-keys '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
  '(column-number-mode t)
- '(enable-dir-local-variables nil)
+ '(enable-dir-local-variables t)
  '(cua-mode t nil (cua-base))
  '(display-buffer-reuse-frames t)
- '(safe-local-variable-values (quote ((no-byte-compile t))))
+ '(safe-local-variable-values '((no-byte-compile t)))
  '(session-use-package t nil (session))
  '(show-paren-mode t)
  '(tool-bar-mode nil)
@@ -519,24 +547,29 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
   "Move ARG times to start of a set of the same syntax characters group.
 from Google syntax-forward-syntax func."
   (interactive "^p")
-  (let* ((group '("_w" "-<>"))
+  (let* ((cur (point))
+         (group '("_w" "-<>"))
          get-group role curgroup
          )
     (setq get-group '(lambda(role) (--first (progn (when (not (consp it)) (setq it `(,it . ,it))) (string-match role (car it))) group) ))
 
     (while (and (> arg 0) (not (eobp)) )
+      (setq cur (point))
       (setq role (string (char-syntax (char-after))))
       (setq curgroup (funcall get-group role))
       ;; (message "%s--%s" role curgroup)
       (if (null curgroup) (forward-char)
         (skip-syntax-forward (car curgroup)))
+      (if (= cur (point)) (forward-char))
       (skip-syntax-forward "-<>" )
       (setq arg (1- arg)))
     (while (and (< arg 0) (not (bobp)))
+      (setq cur (point))
       (setq role (string (char-syntax (char-before))))
       (setq curgroup (funcall get-group role))
       (if (null curgroup) (forward-char -1)
         (skip-syntax-backward (car curgroup)))
+      (if (= cur (point)) (forward-char -1))
       (skip-syntax-backward "-<>" )
       (setq arg (1+ arg)))
     )
@@ -845,7 +878,7 @@ from Google syntax-forward-syntax func."
 ;; setting for auto-complete
 ;; press - to trigger isearch
 ;; (setq ac-show-menu-immediately-on-auto-complete t)
-(global-set-key (kbd "-") 'ac-trigger-isearch)
+;; (global-set-key (kbd "-") 'ac-trigger-isearch)
 
 
 ;; multiple-cursors keybinding
@@ -922,8 +955,8 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-S-d") 'duplicate-line-or-region)
 (global-set-key (kbd "C-<backspace>") 'kill-backward-symbol)
 (global-set-key (kbd "C-S-<backspace>") 'sp-backward-delete-all)
-(global-set-key (kbd "C-c C-;") 'comment-or-uncomment-line-or-region)
-(global-set-key (kbd "C-S-l") 'mark-paragraph)
+(global-set-key (kbd "C-c C-/") 'comment-or-uncomment-line-or-region)
+(global-set-key (kbd "C-M-]") 'mark-paragraph)
 ;; move lines
 (global-set-key (kbd "C-x C-n") 'md/move-lines-down)
 (global-set-key (kbd "C-x C-p") 'md/move-lines-up)
@@ -931,6 +964,11 @@ from Google syntax-forward-syntax func."
 (after-load 'mc-mark-more
   (define-key mc/keymap "\C-n" 'mc/skip-to-next-like-this)
   (define-key mc/keymap "\C-p" 'mc/skip-to-previous-like-this))
+
+;; (after-load 'company
+;;   (define-key company-mode-map "\C-n" 'company-select-next-or-abort)
+;;   (define-key company-mode-map "\C-p" 'company-select-previous-or-abort))
+
 
 (after-load 'auto-complete
   (define-key ac-complete-mode-map "\C-n" 'ac-next)
@@ -992,10 +1030,12 @@ from Google syntax-forward-syntax func."
 (define-key global-map (kbd "<down>") 'scroll-up-line)
 (define-key global-map (kbd "<up>") 'scroll-down-line)
 (define-key global-map (kbd "C-x ^") 'maximize-window)
+(define-key global-map (kbd "C-M-i") 'company-complete)
 
 ;; use phi-search instead
 ;; (define-key global-map (kbd "C-s") 'search-selection)
-(global-set-key (kbd "M-D") 'kill-forward-symbol)
+(global-set-key (kbd "C-M-d") 'kill-forward-symbol)
+;; (global-set-key (kbd "M-D") 'kill-word)
 (global-set-key (kbd "C-d") 'er/delete-char-or-word)
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-S-z") 'redo)
