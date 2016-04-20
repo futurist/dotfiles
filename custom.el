@@ -64,8 +64,8 @@
   (indent-guide-global-mode t)
   (setq indent-guide-delay 0.1))
 (require-package 'phi-search)
-(global-set-key (kbd "C-s") 'phi-search)
-(global-set-key (kbd "C-r") 'phi-search-backward)
+(global-set-key (kbd "C-S-s") 'phi-search)
+;; (global-set-key (kbd "C-r") 'phi-search-backward)
 
 (require-package 'ascii)
 
@@ -319,6 +319,7 @@ Including indent-buffer, which should not be called automatically on save."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ac-use-fuzzy nil)
+ '(search-whitespace-regexp ".*?")      ;space seperated multi key word
  '(avy-timeout-seconds 0.4)
  '(avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
  ;; '(avy-keys '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
@@ -580,7 +581,7 @@ from Google syntax-forward-syntax func."
       (if (null curgroup) (forward-char)
         (skip-syntax-forward (car curgroup)))
       (if (= cur (point)) (forward-char))
-      (when (or (string-match role " -<>") (not (looking-back "[[:space:]]*$"))) (skip-syntax-forward " -<>" ))
+      (when (or (string-match role " -<>") (not (looking-at "[[:space:]]*$"))) (skip-syntax-forward " -<>" ))
       (setq arg (1- arg)))
     (while (and (< arg 0) (not (bobp)))
       (setq cur (point))
