@@ -235,6 +235,7 @@ Including indent-buffer, which should not be called automatically on save."
   (add-to-list 'company-backends 'company-dict)
   (add-to-list 'company-backends 'company-restclient)
   (define-key global-map (kbd "M-/") 'company-complete)
+  (define-key global-map (kbd "M-\\") 'hippie-expand)
   (define-key company-active-map (kbd "C-j") 'company-abort)
   (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
   (define-key company-active-map "\C-n" 'company-select-next-or-abort)
@@ -244,6 +245,11 @@ Including indent-buffer, which should not be called automatically on save."
   (add-to-list 'company-backends 'company-tern)
   ;; (setq company-tern-property-marker "")
   )
+
+(require-package 'sws-mode)
+(require-package 'jade-mode)
+(require-package 'stylus-mode)
+(add-to-list 'auto-mode-alist '("\\.styl\\'" . stylus-mode))
 
 
 (defvar projectile-keymap-prefix (kbd "C-x p"))
@@ -318,7 +324,8 @@ Including indent-buffer, which should not be called automatically on save."
  ;; '(avy-keys '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
  '(column-number-mode t)
  '(enable-dir-local-variables t)
- '(cua-mode t nil (cua-base))
+ '(cua-enable-cua-keys nil)
+ '(cua-mode nil nil (cua-base))
  '(display-buffer-reuse-frames t)
  '(safe-local-variable-values '((no-byte-compile t)))
  '(session-use-package t nil (session))
@@ -387,9 +394,9 @@ Including indent-buffer, which should not be called automatically on save."
   )
 
 
-(defun current-line-empty-p ()
+(defun current-line-empty-p (&optional at-point-p)
   (save-excursion
-    (beginning-of-line)
+    (unless at-point-p (beginning-of-line))
     (looking-at "[[:space:]]*$")))
 
 
@@ -465,7 +472,9 @@ Including indent-buffer, which should not be called automatically on save."
 The same result can also be be achieved by \\[universal-argument] \\[unhighlight-regexp]."
   (interactive)
   (unhighlight-regexp t))
-(define-key search-map "hU" #'my/unhighlight-all-in-buffer)
+(define-key search-map "hu" #'my/unhighlight-all-in-buffer)
+(define-key global-map (kbd "M-n") #'highlight-symbol-next)
+(define-key global-map (kbd "M-p") #'highlight-symbol-prev)
 
 
 (add-to-list 'load-path (expand-file-name "standard" user-emacs-directory))
@@ -558,7 +567,7 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 from Google syntax-forward-syntax func."
   (interactive "^p")
   (let* ((cur (point))
-         (group '("_w" "-<>"))
+         (group '("_w" " -<>"))
          get-group role curgroup
          )
     (setq get-group '(lambda(role) (--first (progn (when (not (consp it)) (setq it `(,it . ,it))) (string-match role (car it))) group) ))
@@ -571,7 +580,7 @@ from Google syntax-forward-syntax func."
       (if (null curgroup) (forward-char)
         (skip-syntax-forward (car curgroup)))
       (if (= cur (point)) (forward-char))
-      (skip-syntax-forward "-<>" )
+      (when (or (string-match role " -<>") (not (looking-back "[[:space:]]*$"))) (skip-syntax-forward " -<>" ))
       (setq arg (1- arg)))
     (while (and (< arg 0) (not (bobp)))
       (setq cur (point))
@@ -580,12 +589,10 @@ from Google syntax-forward-syntax func."
       (if (null curgroup) (forward-char -1)
         (skip-syntax-backward (car curgroup)))
       (if (= cur (point)) (forward-char -1))
-      (skip-syntax-backward "-<>" )
+      (when (or (string-match role " -<>") (not (looking-back "^[[:space:]]*"))) (skip-syntax-backward " -<>" ))
       (setq arg (1+ arg)))
     )
   )
-
-
 
 
 (defun kill-forward-symbol(&optional arg)
@@ -922,13 +929,11 @@ from Google syntax-forward-syntax func."
 (defun phi-complete-after-center(&rest args) (interactive) (phi-search-complete))
 (global-set-key (kbd "M-]") 'syntax-forward-syntax-group)
 (global-set-key (kbd "M-[") '(lambda(arg)(interactive "^p") (syntax-forward-syntax-group (* arg -1))))
-(global-set-key (kbd "C-' g") 'xah-find-text)
+(global-set-key (kbd "C-' x f") 'xah-find-text)
 (global-set-key (kbd "C-' f") 'recentf-open-files)
 (global-set-key (kbd "C-' s") 'highlight-symbol-at-point)
 (define-key global-map (kbd "C-' o") 'locate-current-file-in-explorer)
 (define-key global-map (kbd "C-' c") 'cleanup-buffer)
-(define-key global-map (kbd "M-\\") 'comint-dynamic-complete-filename)
-
 
 (after-load 'phi-search
   (advice-add 'phi-search-recenter :after #'phi-complete-after-center)
@@ -940,7 +945,7 @@ from Google syntax-forward-syntax func."
       (bookmark-jump
        (ido-completing-read "Jump to bookmark: " (bookmark-all-names)))))
 
-(global-set-key (kbd "C-S-o")
+(global-set-key (kbd "C-' 8")
                 (lambda()
                   (interactive)
                   (when fill-prefix (insert-and-inherit fill-prefix))
@@ -1029,7 +1034,9 @@ from Google syntax-forward-syntax func."
 ;; (global-set-key (kbd "M-] ]") 'paredit-wrap-square)
 ;; (global-set-key (kbd "M-] }") 'paredit-wrap-curly)
 
-(global-set-key (kbd "<M-return>") 'sanityinc/newline-at-end-of-line)
+;; replace exist C-<return> cua-set-rectangle-mark
+(global-set-key (kbd "<C-S-return>") 'cua-set-rectangle-mark)
+(global-set-key (kbd "<C-return>") 'sanityinc/newline-at-end-of-line)
 (global-set-key (kbd "<C-M-return>") 'newline-before)
 
 
@@ -1092,7 +1099,7 @@ from Google syntax-forward-syntax func."
   (setq w32-rwindow-modifier 'meta)
 
 
-  (set-fontset-font "fontset-default" 'gb18030 '("Microsoft YaHei" . "unicode-bmp"))
+  (set-fontset-font t 'gb18030 '("Microsoft YaHei" . "unicode-bmp"))
 
   (defun e-maximize ()
     "Maximize emacs window in windows os"
