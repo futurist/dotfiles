@@ -1086,21 +1086,29 @@ from Google syntax-forward-syntax func."
   (setq grep-command "~/bin/grep.exe")
 
   ;; UTF-8 settings
-(set-language-environment "Chinese-GB18030")
-(set-terminal-coding-system 'gb18030)
-(set-keyboard-coding-system 'gb18030)
-(set-clipboard-coding-system 'gb18030)
-(set-buffer-file-coding-system 'gb18030)
-(set-selection-coding-system 'gb18030)
-(modify-coding-system-alist 'process "*" 'gb18030)
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+(set-buffer-file-coding-system 'utf-8-unix)
+(set-clipboard-coding-system 'utf-8-unix)
+(set-file-name-coding-system 'utf-8-unix)
+(set-keyboard-coding-system 'utf-8-unix)
+(set-next-selection-coding-system 'utf-8-unix)
+(set-selection-coding-system 'utf-8-unix)
+(set-terminal-coding-system 'utf-8-unix)
+(setq locale-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
 
-  (setq tramp-default-method "plink")
 
-  (setq w32-lwindow-modifier 'meta)
-  (setq w32-rwindow-modifier 'meta)
+(set-fontset-font t 'gb18030 '("WenQuanYi Zen Hei" . "unicode-bmp"))
+;; (set-fontset-font t 'han (font-spec :family "Microsoft Yahei" :size 16))
+(setq face-font-rescale-alist '(("WenQuanYi Zen Hei" . 1) ("Microsoft Yahei" . 1)))
 
 
-  (set-fontset-font t 'gb18030 '("Microsoft YaHei" . "unicode-bmp"))
+(setq tramp-default-method "plink")
+
+(setq w32-lwindow-modifier 'meta)
+(setq w32-rwindow-modifier 'meta)
+
 
   (defun e-maximize ()
     "Maximize emacs window in windows os"
@@ -1115,7 +1123,12 @@ from Google syntax-forward-syntax func."
     (interactive)
     (w32-send-sys-command #xf120))    ; #xf120 normalimize
 
-  (e-maximize)
+(defun e-fix-max ()
+    "Fix max not max bug in windows"
+    (interactive)
+    (e-normal) (e-maximize))    ; #xf120 normalimize
+
+(add-hook 'after-init-hook 'e-fix-max)
   ;; (global-set-key (kbd "M-SPC M-x") 'emacs-maximize)
   )
 
