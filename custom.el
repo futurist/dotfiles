@@ -999,7 +999,7 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-<backspace>") 'kill-backward-symbol)
 (global-set-key (kbd "C-S-<backspace>") 'sp-backward-delete-all)
 (global-set-key (kbd "C-:") 'comment-or-uncomment-line-or-region)
-(global-set-key (kbd "C-M-]") 'mark-paragraph)
+(global-set-key (kbd "C-S-l") 'mark-paragraph)
 ;; move lines
 (global-set-key (kbd "C-x C-n") 'md/move-lines-down)
 (global-set-key (kbd "C-x C-p") 'md/move-lines-up)
@@ -1117,21 +1117,34 @@ from Google syntax-forward-syntax func."
   (setq w32-lwindow-modifier 'meta)
   (setq w32-rwindow-modifier 'meta)
 
+  (defvar au3-last-window nil
+    "Last activated widnow from autoit3.")
+
   (defun au3-command-winactivate (arg)
     (start-process "autoit3" nil (expand-file-name "~/win32/AutoIt3.exe") "/AutoIt3ExecuteLine" (concat "WinActivate('[REGEXPTITLE:" arg  "]')"))
+    arg
+    )
+
+  (defun au3-activate-last()
+    (interactive)
+    (when au3-last-window
+      (au3-command-winactivate au3-last-window))
     )
 
   (defun au3-activate-tc()
     (interactive)
-    (au3-command-winactivate "Total Commander") )
+    (setq au3-last-window
+          (au3-command-winactivate "Total Commander")) )
 
   (defun au3-activate-chrome()
     (interactive)
-    (au3-command-winactivate "- Google Chrome$") )
+    (setq au3-last-window
+          (au3-command-winactivate "- Google Chrome$") ))
 
   (defun au3-activate-xshell()
     (interactive)
-    (au3-command-winactivate "Xshell") )
+    (setq au3-last-window
+          (au3-command-winactivate "Xshell") ))
 
   (defun e-maximize ()
     "Maximize emacs window in windows os"
@@ -1154,6 +1167,7 @@ from Google syntax-forward-syntax func."
   (define-key global-map (kbd "<C-tab> t") 'au3-activate-tc)
   (define-key global-map (kbd "<C-tab> c") 'au3-activate-chrome)
   (define-key global-map (kbd "<C-tab> s") 'au3-activate-xshell)
+  (define-key global-map (kbd "<C-tab> '") 'au3-activate-last)
 
   ;; Start maximised (cross-platf)
   (add-hook 'window-setup-hook 'toggle-frame-maximized t)
