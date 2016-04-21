@@ -248,7 +248,7 @@ Including indent-buffer, which should not be called automatically on save."
   (company-flx-mode +1)
   ;; (company-quickhelp-mode 1)
   (setq company-auto-complete t)
-  (setq company-flx-limit 10)
+  (setq company-flx-limit 15)
   (setq company-dict-dir (concat user-emacs-directory "company-dict/"))
   ;; (setq company-auto-complete-chars '(?\  ?\) ?. ?\t))
   ;; (add-to-list 'company-backends 'company-dict)
@@ -256,6 +256,7 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key global-map (kbd "M-/") 'company-complete)
   (define-key global-map (kbd "C-M-/") 'company-dict)
   (define-key global-map (kbd "M-\\") 'hippie-expand)
+  (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (insert " ") (undo-boundary) (company-complete-selection)))
   (define-key company-active-map (kbd "<M-SPC>") '(lambda()(interactive) (company-abort) (insert " ")))
   (define-key company-active-map (kbd "C-j") 'company-abort)
   (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
@@ -1171,10 +1172,21 @@ from Google syntax-forward-syntax func."
 
   ;; Start maximised (cross-platf)
   (add-hook 'window-setup-hook 'toggle-frame-maximized t)
+
   ;; (global-set-key (kbd "M-SPC M-x") 'emacs-maximize)
 
   ;; exec autoit
   )
+
+
+
+;; ////////////////////////////////////////
+;; define some useful macro
+
+;; save to remote custom file
+(fset 'my-macro-save-to-remote-dotfile-custom
+   [?\C-x ?h ?\M-w ?\C-x ?p ?p ?d ?o ?t ?f ?i ?l ?e ?s return ?c ?u ?t ?o ?m return ?\C-x ?h ?\C-y ?\C-x ?\C-s])
+(define-key global-map (kbd "C-' m d") 'my-macro-save-to-remote-dotfile-custom) ;save custom.el into remote
 
 
 (provide 'custom)
