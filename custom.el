@@ -24,21 +24,20 @@
 
   ;; UTF-8 settings
   (set-language-environment "UTF-8")
-  (set-default-coding-systems 'gb18030)
-  (set-buffer-file-coding-system 'gb18030)
-  (set-clipboard-coding-system 'gb18030)
-  (set-file-name-coding-system 'gb18030)
-  (set-keyboard-coding-system 'gb18030)
-  (set-next-selection-coding-system 'gb18030)
-  (set-selection-coding-system 'gb18030)
-  (set-terminal-coding-system 'gb18030)
-  (setq locale-coding-system 'gb18030)
-  (prefer-coding-system 'gb18030)
+  (set-default-coding-systems 'utf-8)
+  (set-buffer-file-coding-system 'utf-8-unix)
+  (set-clipboard-coding-system 'utf-8-unix)
+  (set-file-name-coding-system 'utf-8-unix)
+  (set-keyboard-coding-system 'utf-8-unix)
+  (set-next-selection-coding-system 'utf-8-unix)
+  (set-selection-coding-system 'utf-8-unix)
+  (set-terminal-coding-system 'utf-8-unix)
+  (setq locale-coding-system 'utf-8)
+  (prefer-coding-system 'utf-8)
 
-
-  (set-fontset-font t 'gb18030 '("WenQuanYi Zen Hei" . "unicode-bmp"))
+  (set-fontset-font t 'gb18030 '("Microsoft Yahei" . "unicode-bmp"))
   ;; (set-fontset-font t 'han (font-spec :family "Microsoft Yahei" :size 16))
-  (setq face-font-rescale-alist '(("WenQuanYi Zen Hei" . 1) ("Microsoft Yahei" . 1)))
+  (setq face-font-rescale-alist '( ("Microsoft Yahei" . 1)("WenQuanYi Zen Hei" . 1)))
   )
 
 (setq tramp-auto-save-directory "~/tramp-autosave")
