@@ -256,8 +256,8 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key global-map (kbd "M-/") 'company-complete)
   (define-key global-map (kbd "C-M-/") 'company-dict)
   (define-key global-map (kbd "M-\\") 'hippie-expand)
-  (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (insert " ") (undo-boundary) (company-complete-selection)))
-  (define-key company-active-map (kbd "<M-SPC>") '(lambda()(interactive) (company-abort) (insert " ")))
+  (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (self-insert-command 1) (undo-boundary) (company-complete-selection)))
+  (define-key company-active-map (kbd "<M-SPC>") '(lambda()(interactive) (company-abort) (self-insert-command 1)))
   (define-key company-active-map (kbd "C-j") 'company-abort)
   (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
   (define-key company-active-map "\C-n" 'company-select-next-or-abort)
@@ -692,7 +692,8 @@ from Google syntax-forward-syntax func."
   (interactive)
   (if (ac-menu-live-p)
       (ac-isearch)
-    (insert "-")
+    ;; (insert "-")
+    (self-insert-command 1)
     ))
 
 
