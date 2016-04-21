@@ -19,8 +19,27 @@
 ;;; Code:
 
 (defconst *is-a-windows* (eq system-type 'windows-nt))
-(set-language-environment "UTF-8")
-(set-default-coding-systems 'utf-8)
+
+(when *is-a-windows*
+
+  ;; UTF-8 settings
+  (set-language-environment "UTF-8")
+  (set-default-coding-systems 'gb18030)
+  (set-buffer-file-coding-system 'gb18030)
+  (set-clipboard-coding-system 'gb18030)
+  (set-file-name-coding-system 'gb18030)
+  (set-keyboard-coding-system 'gb18030)
+  (set-next-selection-coding-system 'gb18030)
+  (set-selection-coding-system 'gb18030)
+  (set-terminal-coding-system 'gb18030)
+  (setq locale-coding-system 'gb18030)
+  (prefer-coding-system 'gb18030)
+
+
+  (set-fontset-font t 'gb18030 '("WenQuanYi Zen Hei" . "unicode-bmp"))
+  ;; (set-fontset-font t 'han (font-spec :family "Microsoft Yahei" :size 16))
+  (setq face-font-rescale-alist '(("WenQuanYi Zen Hei" . 1) ("Microsoft Yahei" . 1)))
+  )
 
 (setq tramp-auto-save-directory "~/tramp-autosave")
 ;; (setq tramp-chunksize "500")
@@ -152,9 +171,9 @@
   (defun te/goto-tag-match()
     (interactive)
     (let* ((tag (te/current-tag))
-         (in-opening-tag (and (>= (point) (te/get tag :beg)) (<= (point) (te/inner-beg tag))))
-         (in-closing-tag (and (<= (point) (te/get tag :end)) (>= (point) (te/inner-end tag))))
-         )
+           (in-opening-tag (and (>= (point) (te/get tag :beg)) (<= (point) (te/inner-beg tag))))
+           (in-closing-tag (and (<= (point) (te/get tag :end)) (>= (point) (te/inner-end tag))))
+           )
       (if in-opening-tag
           (te/goto-tag-end)
         (te/goto-tag-begging)
@@ -227,15 +246,17 @@ Including indent-buffer, which should not be called automatically on save."
 (setq company-minimum-prefix-length 2)
 (after-load 'company
   (company-flx-mode +1)
-  (company-quickhelp-mode 1)
+  ;; (company-quickhelp-mode 1)
   (setq company-auto-complete t)
   (setq company-flx-limit 10)
   (setq company-dict-dir (concat user-emacs-directory "company-dict/"))
   ;; (setq company-auto-complete-chars '(?\  ?\) ?. ?\t))
-  (add-to-list 'company-backends 'company-dict)
-  (add-to-list 'company-backends 'company-restclient)
+  ;; (add-to-list 'company-backends 'company-dict)
+  ;; (add-to-list 'company-backends 'company-restclient)
   (define-key global-map (kbd "M-/") 'company-complete)
+  (define-key global-map (kbd "C-M-/") 'company-dict)
   (define-key global-map (kbd "M-\\") 'hippie-expand)
+  (define-key company-active-map (kbd "<M-SPC>") '(lambda()(interactive) (company-abort) (insert " ")))
   (define-key company-active-map (kbd "C-j") 'company-abort)
   (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
   (define-key company-active-map "\C-n" 'company-select-next-or-abort)
@@ -406,7 +427,7 @@ Including indent-buffer, which should not be called automatically on save."
   (if (use-region-p)
       (funcall 'do-lines-in-region '__remove-add-last-comma arg)
     (__remove-add-last-comma arg)
-      )
+    )
   )
 
 (defun __remove-add-last-comma(&optional arg)
@@ -419,10 +440,10 @@ Including indent-buffer, which should not be called automatically on save."
             )
         )
       (if (and (not has-comma) (consp arg))
-              (progn
-                (end-of-line)
-                (insert ";")
-                )
+          (progn
+            (end-of-line)
+            (insert ";")
+            )
         )
       ))
   )
@@ -443,13 +464,13 @@ Including indent-buffer, which should not be called automatically on save."
          (cond
           ((not args) "")
           ((string= method "POST")  (mapconcat (lambda (arg)
-                                         (concat (url-hexify-string (car arg))
-                                                 "="
-                                                 (url-hexify-string (cdr arg))))
-                                       args
-                                       "&"))
+                                                 (concat (url-hexify-string (car arg))
+                                                         "="
+                                                         (url-hexify-string (cdr arg))))
+                                               args
+                                               "&"))
           ((and t) args)
-               )))
+          )))
 
     (url-retrieve url callback)
     ))
@@ -530,13 +551,19 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 
 
 
-(defun comment-or-uncomment-line-or-region ()
+(defun comment-or-uncomment-line-or-region (arg)
   "Comments or uncomments the current line or region."
-  (interactive)
+  (interactive "p")
   (if (region-active-p)
       (comment-or-uncomment-region (region-beginning) (region-end))
-    (comment-or-uncomment-region (line-beginning-position) (line-end-position))
-    )
+    (save-excursion
+      (let (cur)
+        (setq cur (line-beginning-position))
+        (forward-line arg)
+        (if (plusp arg)
+            (comment-or-uncomment-region cur  (line-beginning-position))
+          (comment-or-uncomment-region  (line-beginning-position) cur)
+          ) )) )
   )
 
 (defun kill-whitespace ()
@@ -571,7 +598,7 @@ from Google syntax-forward-syntax func."
          (group '("_w" " -<>"))
          get-group role curgroup
          )
-    (setq get-group '(lambda(role) (--first (progn (when (not (consp it)) (setq it `(,it . ,it))) (string-match role (car it))) group) ))
+    (setq get-group '(lambda(role) (--first (progn (when (not (consp it)) (setq it `(,it . ,it))) (s-contains? role (car it))) group) ))
 
     (while (and (> arg 0) (not (eobp)) )
       (setq cur (point))
@@ -581,7 +608,7 @@ from Google syntax-forward-syntax func."
       (if (null curgroup) (forward-char)
         (skip-syntax-forward (car curgroup)))
       (if (= cur (point)) (forward-char))
-      (when (or (string-match role " -<>") (not (looking-at "[[:space:]]*$"))) (skip-syntax-forward " -<>" ))
+      (when (or (s-contains? role " -<>") (not (looking-at "[[:space:]]*$"))) (skip-syntax-forward " -<>" ))
       (setq arg (1- arg)))
     (while (and (< arg 0) (not (bobp)))
       (setq cur (point))
@@ -590,7 +617,7 @@ from Google syntax-forward-syntax func."
       (if (null curgroup) (forward-char -1)
         (skip-syntax-backward (car curgroup)))
       (if (= cur (point)) (forward-char -1))
-      (when (or (string-match role " -<>") (not (looking-back "^[[:space:]]*"))) (skip-syntax-backward " -<>" ))
+      (when (or (s-contains? role " -<>") (not (looking-back "^[[:space:]]*"))) (skip-syntax-backward " -<>" ))
       (setq arg (1+ arg)))
     )
   )
@@ -641,22 +668,22 @@ from Google syntax-forward-syntax func."
 (defun delete-backword-or-ws (arg)
   (interactive "p")
   (dotimes (count arg)
-  (let (
-        (start (point))
-        (end (save-excursion (skip-chars-backward "\t\n \r") (+ 1 (point))))
-        )
-    (if (and (thing-at-point 'whitespace) (>= start end))
-        (if (> start end)
-            (kill-region start end)
-          (if (= start end)
-              (delete-char -1)
-            )
+    (let (
+          (start (point))
+          (end (save-excursion (skip-chars-backward "\t\n \r") (+ 1 (point))))
           )
-      (sp-backward-kill-word 1)
-      (pop kill-ring)
-      (setq kill-ring-yank-pointer kill-ring)
-      )
-    ))
+      (if (and (thing-at-point 'whitespace) (>= start end))
+          (if (> start end)
+              (kill-region start end)
+            (if (= start end)
+                (delete-char -1)
+              )
+            )
+        (sp-backward-kill-word 1)
+        (pop kill-ring)
+        (setq kill-ring-yank-pointer kill-ring)
+        )
+      ))
   )
 
 (defun ac-trigger-isearch ()
@@ -785,15 +812,15 @@ from Google syntax-forward-syntax func."
   (interactive)
   (let* (
          (pair-out (cond
-                ((string= "js2-mode" major-mode) "[]})]")
-                ((string= "html-mode" major-mode) "[>]")
-                ("[]})]")         ;default pair
-                ))
+                    ((string= "js2-mode" major-mode) "[]})]")
+                    ((string= "html-mode" major-mode) "[>]")
+                    ("[]})]")         ;default pair
+                    ))
          (pair-in (cond
-                ((string= "js2-mode" major-mode) "[[{(]")
-                ((string= "html-mode" major-mode) "[<]")
-                ("[[{(]")         ;default pair
-                ))
+                   ((string= "js2-mode" major-mode) "[[{(]")
+                   ((string= "html-mode" major-mode) "[<]")
+                   ("[[{(]")         ;default pair
+                   ))
          (cur (point))
          (str (sp-get-string))
          )
@@ -804,7 +831,7 @@ from Google syntax-forward-syntax func."
               (if (= (sp-get str :beg) cur) (forward-char 1)
                 (if (= (sp-get str :end) (1- cur)) ())
                 )
-              )
+            )
           )
         )
       )
@@ -880,16 +907,16 @@ from Google syntax-forward-syntax func."
 ;; https://github.com/xuchunyang/youdao-dictionary.el/issues/1#issuecomment-71359418
 ;; after load url-cookie.el, replace this func to avoid y2038 problem in 32-bit os
 (eval-after-load 'url-cookie
-'(defun url-cookie-expired-p (cookie)
-  "Return non-nil if COOKIE is expired."
-  (let ((exp (url-cookie-expires cookie)) year)
-    (and (> (length exp) 0)
-         (string-match "\\([1-9][0-9]\\{3\\}\\)" exp)
-         (setq year (match-string 1 exp))
-         ;; (message "cookie from init %s" year)
-         (if (and year (setq year (string-to-number year)) (>= year 2038)) t
-           (> (float-time) (float-time (date-to-time exp))))
-         ))))
+  '(defun url-cookie-expired-p (cookie)
+     "Return non-nil if COOKIE is expired."
+     (let ((exp (url-cookie-expires cookie)) year)
+       (and (> (length exp) 0)
+            (string-match "\\([1-9][0-9]\\{3\\}\\)" exp)
+            (setq year (match-string 1 exp))
+            ;; (message "cookie from init %s" year)
+            (if (and year (setq year (string-to-number year)) (>= year 2038)) t
+              (> (float-time) (float-time (date-to-time exp))))
+            ))))
 
 
 
@@ -941,10 +968,10 @@ from Google syntax-forward-syntax func."
   ;; (define-key phi-search-default-map (kbd "C-l") 'phi-search-complete)
   )
 (global-set-key (kbd "C-x r b")
-    (lambda ()
-      (interactive)
-      (bookmark-jump
-       (ido-completing-read "Jump to bookmark: " (bookmark-all-names)))))
+                (lambda ()
+                  (interactive)
+                  (bookmark-jump
+                   (ido-completing-read "Jump to bookmark: " (bookmark-all-names)))))
 
 (global-set-key (kbd "C-' 8")
                 (lambda()
@@ -971,7 +998,7 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-S-d") 'duplicate-line-or-region)
 (global-set-key (kbd "C-<backspace>") 'kill-backward-symbol)
 (global-set-key (kbd "C-S-<backspace>") 'sp-backward-delete-all)
-(global-set-key (kbd "C-c C-/") 'comment-or-uncomment-line-or-region)
+(global-set-key (kbd "C-:") 'comment-or-uncomment-line-or-region)
 (global-set-key (kbd "C-M-]") 'mark-paragraph)
 ;; move lines
 (global-set-key (kbd "C-x C-n") 'md/move-lines-down)
@@ -1085,30 +1112,26 @@ from Google syntax-forward-syntax func."
 
   (setq grep-command "~/bin/grep.exe")
 
-  ;; UTF-8 settings
-(set-language-environment "UTF-8")
-(set-default-coding-systems 'utf-8)
-(set-buffer-file-coding-system 'utf-8-unix)
-(set-clipboard-coding-system 'utf-8-unix)
-(set-file-name-coding-system 'utf-8-unix)
-(set-keyboard-coding-system 'utf-8-unix)
-(set-next-selection-coding-system 'utf-8-unix)
-(set-selection-coding-system 'utf-8-unix)
-(set-terminal-coding-system 'utf-8-unix)
-(setq locale-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
+  (setq tramp-default-method "plink")
 
+  (setq w32-lwindow-modifier 'meta)
+  (setq w32-rwindow-modifier 'meta)
 
-(set-fontset-font t 'gb18030 '("WenQuanYi Zen Hei" . "unicode-bmp"))
-;; (set-fontset-font t 'han (font-spec :family "Microsoft Yahei" :size 16))
-(setq face-font-rescale-alist '(("WenQuanYi Zen Hei" . 1) ("Microsoft Yahei" . 1)))
+  (defun au3-command-winactivate (arg)
+    (start-process "autoit3" nil (expand-file-name "~/win32/AutoIt3.exe") "/AutoIt3ExecuteLine" (concat "WinActivate('[REGEXPTITLE:" arg  "]')"))
+    )
 
+  (defun au3-activate-tc()
+    (interactive)
+    (au3-command-winactivate "Total Commander") )
 
-(setq tramp-default-method "plink")
+  (defun au3-activate-chrome()
+    (interactive)
+    (au3-command-winactivate "- Google Chrome$") )
 
-(setq w32-lwindow-modifier 'meta)
-(setq w32-rwindow-modifier 'meta)
-
+  (defun au3-activate-xshell()
+    (interactive)
+    (au3-command-winactivate "Xshell") )
 
   (defun e-maximize ()
     "Maximize emacs window in windows os"
@@ -1123,13 +1146,20 @@ from Google syntax-forward-syntax func."
     (interactive)
     (w32-send-sys-command #xf120))    ; #xf120 normalimize
 
-(defun e-fix-max ()
+  (defun e-fix-max ()
     "Fix max not max bug in windows"
     (interactive)
     (e-normal) (e-maximize))    ; #xf120 normalimize
 
-(add-hook 'after-init-hook 'e-fix-max)
+  (define-key global-map (kbd "<C-tab> t") 'au3-activate-tc)
+  (define-key global-map (kbd "<C-tab> c") 'au3-activate-chrome)
+  (define-key global-map (kbd "<C-tab> s") 'au3-activate-xshell)
+
+  ;; Start maximised (cross-platf)
+  (add-hook 'window-setup-hook 'toggle-frame-maximized t)
   ;; (global-set-key (kbd "M-SPC M-x") 'emacs-maximize)
+
+  ;; exec autoit
   )
 
 
