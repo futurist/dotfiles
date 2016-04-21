@@ -44,6 +44,7 @@
 ;; (setq tramp-chunksize "500")
 ;; (setq tramp-default-method "plink")
 
+(set-face-attribute 'default t :foreground "#E5E5DE") ;; set default color for fg
 
 (setq debug-on-error t)
 
@@ -256,7 +257,7 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key global-map (kbd "C-M-/") 'company-dict)
   (define-key global-map (kbd "M-\\") 'hippie-expand)
   (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (self-insert-command 1) (undo-boundary) (company-complete-selection)))
-  (define-key company-active-map (kbd "<M-SPC>") '(lambda()(interactive) (company-abort) (self-insert-command 1)))
+  (define-key company-active-map (kbd "<M-SPC>") '(lambda()(interactive) (company-abort) (insert " ")))
   (define-key company-active-map (kbd "C-j") 'company-abort)
   (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
   (define-key company-active-map "\C-n" 'company-select-next-or-abort)
@@ -950,6 +951,22 @@ from Google syntax-forward-syntax func."
 (global-set-key ">" 'my-indent-region)
 (global-set-key "<" 'my-unindent-region)
 
+(defun my-max-window-size (restore)
+  "Max window size of window."
+  (interactive "P")
+  (let* ((win (or
+               (get-buffer-window "*Completions*")
+               (get-buffer-window "*Ido Completions*")
+               (get-buffer-window nil))) size)
+    (when win
+      (if restore
+          (balance-windows nil)
+        (setq size (window-resizable win 200))
+        (window-resize win size))
+      )
+    )
+  )
+
 
 ;; custom functions
 
@@ -1073,7 +1090,7 @@ from Google syntax-forward-syntax func."
 
 (define-key global-map (kbd "<down>") 'scroll-up-line)
 (define-key global-map (kbd "<up>") 'scroll-down-line)
-(define-key global-map (kbd "C-x ^") 'maximize-window)
+(define-key global-map (kbd "C-x C-6") 'my-max-window-size)
 
 ;; use phi-search instead
 ;; (define-key global-map (kbd "C-s") 'search-selection)
