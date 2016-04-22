@@ -138,9 +138,9 @@
 (require-package 'yasnippet)
 (yas-global-mode 1)
 ;; yasnippet <tab> conflict with ac, change below
-;; (define-key yas-minor-mode-map (kbd "<tab>") nil)
-;; (define-key yas-minor-mode-map (kbd "TAB") nil)
-;; (define-key yas-minor-mode-map (kbd "<C-tab>") 'yas-expand)
+(define-key yas-minor-mode-map (kbd "<tab>") nil)
+(define-key yas-minor-mode-map (kbd "TAB") nil)
+(define-key yas-minor-mode-map (kbd "<C-tab>") 'yas-expand)
 
 (require-package 'smartparens)
 (require 'smartparens-config)
@@ -257,8 +257,8 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key global-map (kbd "M-/") 'company-complete)
   (define-key global-map (kbd "C-M-/") 'company-dict)
   (define-key global-map (kbd "M-\\") 'hippie-expand)
-  (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (self-insert-command 1) (undo-boundary) (company-complete-selection)))
-  (define-key company-active-map (kbd "<M-SPC>") '(lambda()(interactive) (company-abort) (insert " ")))
+  ;; (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (self-insert-command 1) (undo-boundary) (company-complete-selection)))
+  (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (company-abort) (insert " ")))
   (define-key company-active-map (kbd "C-j") 'company-abort)
   (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
   (define-key company-active-map "\C-n" 'company-select-next-or-abort)
@@ -503,6 +503,16 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 (define-key search-map "hu" #'my/unhighlight-all-in-buffer)
 (define-key global-map (kbd "M-n") #'highlight-symbol-next)
 (define-key global-map (kbd "M-p") #'highlight-symbol-prev)
+
+(advice-add 'ido-kill-buffer
+            :around
+            '(lambda(oldfun &rest args)
+               "If in server edit mode, close client."
+               (if server-buffer-clients
+                   (server-edit)
+                 (apply oldfun args)
+                 )
+               ))
 
 
 (add-to-list 'load-path (expand-file-name "standard" user-emacs-directory))
@@ -866,10 +876,10 @@ from Google syntax-forward-syntax func."
 (defun search-selection (&optional arg)
   "search for selected text"
   (interactive "P")
-  (when (and (thing-at-point 'symbol) (eq arg nil) (not (region-active-p)))
+  (when (and (thing-at-point 'symbol) (equal arg nil) (not (region-active-p)))
     ;; (sp-select-next-thing-exchange)
     )
-  (if (region-active-p)
+  (if (and (not arg) (region-active-p))
       (let (
             (selection (buffer-substring-no-properties (region-beginning) (region-end)))
             )
@@ -1099,7 +1109,7 @@ from Google syntax-forward-syntax func."
 (define-key global-map (kbd "C-x C-6") 'my-max-window-size)
 
 ;; use phi-search instead
-;; (define-key global-map (kbd "C-s") 'search-selection)
+(define-key global-map (kbd "C-s") 'search-selection)
 (global-set-key (kbd "C-M-d") 'kill-forward-symbol)
 ;; (global-set-key (kbd "M-D") 'kill-word)
 (global-set-key (kbd "C-d") 'er/delete-char-or-word)
@@ -1188,10 +1198,10 @@ from Google syntax-forward-syntax func."
     (interactive)
     (e-normal) (e-maximize))    ; #xf120 normalimize
 
-  (define-key global-map (kbd "<C-tab> t") 'au3-activate-tc)
-  (define-key global-map (kbd "<C-tab> c") 'au3-activate-chrome)
-  (define-key global-map (kbd "<C-tab> s") 'au3-activate-xshell)
-  (define-key global-map (kbd "<C-tab> '") 'au3-activate-last)
+  (define-key global-map (kbd "C-' C-' t") 'au3-activate-tc)
+  (define-key global-map (kbd "C-' C-' c") 'au3-activate-chrome)
+  (define-key global-map (kbd "C-' C-' s") 'au3-activate-xshell)
+  (define-key global-map (kbd "C-' C-' '") 'au3-activate-last)
 
   ;; Start maximised (cross-platf)
   (add-hook 'window-setup-hook 'toggle-frame-maximized t)
@@ -1209,7 +1219,9 @@ from Google syntax-forward-syntax func."
 ;; save to remote custom file
 (fset 'my-macro-save-to-remote-dotfile-custom
    [?\C-x ?h ?\M-w ?\C-x ?p ?p ?d ?o ?t ?f ?i ?l ?e ?s return ?c ?u ?t ?o ?m return ?\C-x ?h ?\C-y ?\C-x ?\C-s])
-(define-key global-map (kbd "C-' m d") 'my-macro-save-to-remote-dotfile-custom) ;save custom.el into remote
+
+;; save custom.el into remote
+(define-key global-map (kbd "C-' m s") 'my-macro-save-to-remote-dotfile-custom)
 
 
 (provide 'custom)
