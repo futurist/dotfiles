@@ -121,6 +121,7 @@
             #'(lambda()
                 (mmm-mode t)
                 (define-key mmm-mode-map (kbd "C-c C-v") '(lambda()(interactive) (save-buffer) (browse-url-of-buffer)))
+                (define-key mmm-mode-map (kbd "C-' r") '(lambda()(interactive) (mmm-parse-buffer)))
                 ))
   )
 
@@ -306,9 +307,13 @@ Including indent-buffer, which should not be called automatically on save."
      ))
 
 (global-set-key (kbd "<f8>") 'flycheck-mode)
+(add-hook 'js-mode-hook
+          (lambda()
+            (tern-mode +1)
+            ) )
 (add-hook 'js2-mode-hook
           (lambda ()
-            (tern-mode t)
+            (tern-mode +1)
             (form-feed-mode t)
             (define-key js2-mode-map "\C-ci" 'js-doc-insert-function-doc)
             (define-key js2-mode-map "@" 'js-doc-insert-tag)
@@ -1081,8 +1086,9 @@ from Google syntax-forward-syntax func."
 ;; (global-set-key (kbd "M-] }") 'paredit-wrap-curly)
 
 ;; replace exist C-<return> cua-set-rectangle-mark
-(global-set-key (kbd "<C-S-return>") 'cua-set-rectangle-mark)
-(global-set-key (kbd "<C-return>") 'sanityinc/newline-at-end-of-line)
+(global-set-key (kbd "<C-S-M-return>") 'cua-set-rectangle-mark)
+(global-set-key (kbd "<M-return>") 'sanityinc/newline-at-end-of-line)
+(global-set-key (kbd "<C-O>") 'sanityinc/newline-at-end-of-line)
 (global-set-key (kbd "<C-M-return>") 'newline-before)
 
 
