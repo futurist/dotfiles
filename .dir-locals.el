@@ -1,11 +1,10 @@
-;; put this file into projectile root folder, for projectile settings
 (
  (nil . (
          (tab-width . 2)
          (eval . (progn
-                   (message "set local vars")
+                   (message "set local vars %s" (buffer-file-name) )
                    (add-to-list 'browse-url-filename-alist
-                                `(,(file-name-directory (projectile-project-root)) . "http://localhost:8080/"))
+                                `(,(file-name-directory (symbol-name (car (car dir-locals-class-alist)))) . "http://localhost:9778/"))
                   ))
          ))
  )
