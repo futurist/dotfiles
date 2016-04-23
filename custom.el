@@ -48,7 +48,7 @@
 
 (setq debug-on-error t)
 
-;; (server-start)  ;; server seems not stable in windows
+(server-start)  ;; server seems not stable in windows
 
 ;; Install extensions if they're missing
 (require-package 'restclient)
@@ -124,6 +124,9 @@
                 (define-key mmm-mode-map (kbd "C-' r") '(lambda()(interactive) (mmm-parse-buffer)))
                 ))
   )
+(defvar browse-url-filename-alist nil
+  "Default mapping for preview html file to http host.")
+
 
 ;; ;; editing html file mode
 ;; (require-package 'multi-web-mode)
