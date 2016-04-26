@@ -53,7 +53,8 @@
 ;; Install extensions if they're missing
 (require-package 'restclient)
 (require-package 'nodejs-repl)
-
+(require-package 'editorconfig)
+(editorconfig-mode 1)
 
 ;; linum mode with highlight
 (require-package 'hlinum)
@@ -147,8 +148,8 @@
 
 (require-package 'smartparens)
 (require 'smartparens-config)
-(add-hook 'js-mode-hook #'smartparens-mode)
-(add-hook 'js2-mode-hook #'smartparens-mode)
+;; (add-hook 'js-mode-hook #'smartparens-mode)
+;; (add-hook 'js2-mode-hook #'smartparens-mode)
 (sp-use-smartparens-bindings)
 
 
@@ -805,8 +806,8 @@ from Google syntax-forward-syntax func."
     )
   )
 
-(defun move-parent-forward-symbol (arg)(interactive "p")
-       (move-parent-forward 1))
+(defun move-parent-forward-symbol (arg)(interactive "P")
+       (move-parent-forward (if arg 2 1)))
 (defun move-parent-forward-up-to-char (arg)(interactive "p")
        (move-parent-forward 2))
 (defun move-parent-backwrad-symbol()(interactive "p")
