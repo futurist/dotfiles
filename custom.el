@@ -1066,7 +1066,7 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "M-]") 'syntax-forward-syntax-group)
 (global-set-key (kbd "M-[") '(lambda(arg)(interactive "^p") (syntax-forward-syntax-group (* arg -1))))
 (global-set-key (kbd "C-' x f") 'xah-find-text)
-(global-set-key (kbd "C-' f") '(lambda()(interactive) (recentf-open-files))
+(global-set-key (kbd "C-' f") 'recentf-open-files)
 (global-set-key (kbd "C-' s") 'highlight-symbol-at-point)
 (define-key global-map (kbd "C-' o") 'locate-current-file-in-explorer)
 (define-key global-map (kbd "C-' c") 'cleanup-buffer)

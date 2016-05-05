@@ -65,19 +65,19 @@ const server = http.createServer((req, res) => {
     })
 
     req.on('end', function () {
-      var result
+      var result = bodyString || ''
       // var query = querystring.parse(bodyString)
       // console.log(bodyString)
       try {
 
-        // Stage 1 escodegen format
-        var syntax = esprima.parse(bodyString || '', esprimaOptions)
-
-        if (options.comment) {
-          escodegen.attachComments(syntax, syntax.comments, syntax.tokens)
+        if (req.url.indexOf('esprima') > -1) {
+          // Stage 1 escodegen format
+          var syntax = esprima.parse(result, esprimaOptions)
+          if (options.comment) {
+            escodegen.attachComments(syntax, syntax.comments, syntax.tokens)
+          }
+          result = escodegen.generate(syntax, options)
         }
-
-        result = (escodegen.generate(syntax, options))
 
         // Stage 2 standard format
         result = format(result)
