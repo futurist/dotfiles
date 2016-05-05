@@ -9,7 +9,8 @@ goto END
 
 :FOUND
 echo Running
-nircmd win activate class "Emacs"
-nircmd win max class "Emacs"
+@rem nircmd win activate class "Emacs"
+@rem nircmd win max class "Emacs"
+autoit3 /AutoIt3ExecuteLine WinActivate('[CLASS:Emacs]')
 
 :END
