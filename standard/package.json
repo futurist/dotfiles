@@ -1,0 +1,17 @@
+{
+  "name": "standard",
+  "version": "1.0.0",
+  "description": "",
+  "main": "standard.js",
+  "dependencies": {
+    "escodegen": "^1.8.0",
+    "esprima": "^2.7.2",
+    "standard-format": "^2.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

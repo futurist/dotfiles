@@ -1,3 +1,4 @@
+# Filename on windows msys: ~/.profile
 # Determine windows path
 W=`pwd -W`
 
