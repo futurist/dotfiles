@@ -46,7 +46,10 @@
 
 (set-face-attribute 'default t :foreground "#E5E5DE") ;; set default color for fg
 
-(setq debug-on-error t)
+;; (setq debug-on-error t)
+
+;; prevent Chinese date problems
+(setq system-time-locale "C")
 
 (server-start)  ;; server seems not stable in windows
 
@@ -89,6 +92,62 @@
 
 (require-package 'ascii)
 
+;; package from Harry Schwartz
+(add-to-list 'load-path "~/download/org-8.3.4/lisp")
+(add-to-list 'load-path "~/download/org-8.3.4/contrib/lisp" t)
+(require-package 'ox-twbs)
+
+(defun hrs/de-unicode ()
+  "Tidy up a buffer by replacing all special Unicode characters
+       (smart quotes, etc.) with their more sane cousins"
+  (interactive)
+  (let ((unicode-map '(("[\u2018\|\u2019\|\u201A\|\uFFFD]" . "'")
+                       ("[\u201c\|\u201d\|\u201e]" . "\"")
+                       ("\u2013" . "--")
+                       ("\u2014" . "---")
+                       ("\u2026" . "...")
+                       ("\u00A9" . "(c)")
+                       ("\u00AE" . "(r)")
+                       ("\u2122" . "TM")
+                       ("[\u02DC\|\u00A0]" . " "))))
+    (save-excursion
+      (loop for (key . value) in unicode-map
+            do
+            (goto-char (point-min))
+            (replace-regexp key value)))))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (org-bullets-mode -1)
+            (flycheck-mode -1)
+            (define-key org-mode-map (kbd "C-'") nil)
+            (define-key org-mode-map (kbd "C-' l") 'org-toggle-link-display)
+            (define-key org-mode-map (kbd "C-' c") 'org-unindent-buffer)
+            (define-key global-map (kbd "<M-return>") nil)
+            (setq-default org-display-custom-times t)
+            (setq org-time-stamp-custom-formats '("<%Y-%m-%d %a>" . "<%Y-%m-%d %H:%M>"))
+            (setq org-export-html-postamble-format
+                  '( ("zh-CN" "<p class=\"postamble\">最后更新日期: %C</p>")
+                     ("en" "<p class=\"postamble\">最后更新日期: %C</p>")
+                     ))
+            ;; fix Chinese 'creator name
+            (add-to-list 'org-export-dictionary '("Created" ("zh-CN" :default "更新")))
+            ))
+
+(setq user-full-name "James Yang"
+        user-mail-address "jamesyang999@gmail.com"
+        calendar-latitude 30.26
+        calendar-longitude 120.19
+        calendar-location-name "Hangzhou, China")
+
+
+
+(setq org-hide-leading-stars t)
+(setq org-ellipsis " ⇒⇒")
+
+
+;; ← ↑ → ↓ ↔ ↕ ↖ ↗ ↘ ↙ ▲ ▼ ◀ ▶ ➔ ➘ ➙ ➚ ➛ ➜ ➝ ➞ ➟ ➠ ➡ ➢ ➣ ➤ ➥ ➦ ↪ ↩ ↚ ↛ ↜ ↝ ↞ ↟ ↠ ↡ ↢ ↣ ↤ ↦ ↥ ↧ ↨ ↫ ↬ ↭ ↮ ↯ ↰ ↱ ↲ ↴ ↳ ↵ ↶ ↷ ↸ ↹ ↺ ↻ ⟲ ⟳ ↼ ↽ ↾ ↿ ⇀ ⇁ ⇂ ⇃ ⇄ ⇅ ⇆ ⇇ ⇐ ⇑ ⇒ ⇓ ⇔ ⇌ ⇍ ⇏ ⇕ ⇖ ⇗ ⇘ ⇙ ⇙ ⇳ ⇚ ⇛ ⇜ ⇝ ⇞ ⇟ ⇟ ⇟ ⇠ ⇡ ⇢ ⇣ ⇤ ⇥ ⇦ ⇨ ⇩ ⇪ ⇧ ⇫ ⇬ ⇭ ⇮ ⇯ ⇰ ⇱ ⇲ ⇴ ⇵ ⇶ ⇷ ⇸ ⇹ ⇺ ⇺ ⇻ ⇼ ⇽ ⇾ ⇿ ⟰ ⟱ ⟴ ⟵ ⟶ ⟷ ⟸ ⟹ ⟽ ⟾ ⟺ ⟻ ⟼ ⟿ ⤀ ⤁ ⤅ ⤂ ⤃ ⤄ ⤆ ⤇ ⤈ ⤉ ⤊ ⤋ ⤌ ⤍ ⤎ ⤏ ⤐ ⤑ ⤒ ⤓ ⤔ ⤕ ⤖ ⤗ ⤘ ⤙ ⤙ ⤚ ⤛ ⤜ ⤝ ⤞ ⤡ ⤢ ⤣ ⤤ ⤥ ⤦ ⤧ ⤨ ⤩ ⤪ ⤭ ⤮ ⤯ ⤰ ⤱ ⤲ ⤳ ⤻ ⤸ ⤾ ⤿ ⤺ ⤼ ⤽ ⤴ ⤵ ⤶ ⤷ ⤹ ⥀ ⥁ ⥂ ⥃ ⥄ ⥅ ⥆ ⥇ ⥈ ⥉ ⥒ ⥓ ⥔ ⥕ ⥖ ⥗ ⥘ ⥙ ⥚ ⥛ ⥜ ⥝ ⥞ ⥟ ⥠ ⥡ ⥢ ⥣ ⥤ ⥥ ⥦ ⥧ ⥨ ⥩ ⥪ ⥫ ⥬ ⥭ ⥮ ⥯ ⥰ ⥱ ⥲ ⥳ ⥴ ⥵ ⥶ ⥷ ⥸ ⥹ ⥺ ⥻ ➧ ➨ ➩ ➪ ➫ ➬ ➭ ➮ ➯ ➱ ➲ ➳ ➴ ➵ ➶ ➷ ➸ ➹ ➺ ➻ ➼ ➽ ➾ ⬅ ⬆ ⬇ ⏎ ⬎ ⬏ ⬐ ⬑ ☈ ☇ ⍃ ⍄ ⍇ ⍈ ⍐ ⍗ ⍌ ⍓ ⍍ ⍔ ⍏ ⍖ ⍅ ⍆ ⬈ ⬉ ⬊ ⬋ ⬌ ⬍ ⬀ ⬁ ⬂ ⬃ ⬄
+
 ;; package from github
 (require-package 'emmet-mode)
 (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
@@ -121,7 +180,10 @@
   (add-hook 'html-mode-hook
             #'(lambda()
                 (mmm-mode t)
-                (define-key mmm-mode-map (kbd "C-c C-v") '(lambda()(interactive) (save-buffer) (browse-url-of-buffer)))
+                (define-key mmm-mode-map (kbd "C-c C-v")
+                  '(lambda()(interactive)
+                     (save-buffer)
+                     (browse-url-of-buffer)))
                 (define-key mmm-mode-map (kbd "C-' r") '(lambda()(interactive) (mmm-parse-buffer)))
                 ))
   )
@@ -140,6 +202,7 @@
 ;; (multi-web-global-mode 1)
 
 (require-package 'yasnippet)
+(require-package 'react-snippets)
 (yas-global-mode 1)
 ;; yasnippet <tab> conflict with ac, change below
 (define-key yas-minor-mode-map (kbd "<tab>") nil)
