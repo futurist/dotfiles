@@ -1230,6 +1230,7 @@ from Google syntax-forward-syntax func."
     "Last activated widnow from autoit3.")
 
   (defun au3-command-winactivate (arg)
+    ;; (start-process "nircmd" nil (expand-file-name "~/win32/nircmd.exe") "win" "activate" "ititle" (concat "" arg  ""))
     (start-process "autoit3" nil (expand-file-name "~/win32/AutoIt3.exe") "/AutoIt3ExecuteLine" (concat "WinActivate('[REGEXPTITLE:" arg  "]')"))
     arg
     )
@@ -1249,6 +1250,11 @@ from Google syntax-forward-syntax func."
     (interactive)
     (setq au3-last-window
           (au3-command-winactivate "- Google Chrome$") ))
+
+  (defun au3-activate-cmd()
+    (interactive)
+    (setq au3-last-window
+          (au3-command-winactivate "cmd.exe") ))
 
   (defun au3-activate-xshell()
     (interactive)
@@ -1273,6 +1279,7 @@ from Google syntax-forward-syntax func."
     (interactive)
     (e-normal) (e-maximize))    ; #xf120 normalimize
 
+  (define-key global-map (kbd "C-' C-' d") 'au3-activate-cmd)
   (define-key global-map (kbd "C-' C-' t") 'au3-activate-tc)
   (define-key global-map (kbd "C-' C-' c") 'au3-activate-chrome)
   (define-key global-map (kbd "C-' C-' s") 'au3-activate-xshell)
