@@ -54,8 +54,9 @@
 (server-start)  ;; server seems not stable in windows
 
 ;; Install extensions if they're missing
+(require-package 'swiper)
 (require-package 'restclient)
-(require-package 'nodejs-repl)
+;; (require-package 'nodejs-repl)  ;;buggy!!! will freeze emacs
 (require-package 'editorconfig)
 (editorconfig-mode 1)
 
@@ -65,7 +66,7 @@
                '((t (:inherit default :foreground "#bbbbbb"
                               :background "#333333"))))
 (hlinum-activate)
-(global-linum-mode t)                   ;(linum-mode) for all buffer
+(global-linum-mode -1)                   ;(linum-mode) for all buffer
 
 
 ;; remove er +/- overlay
@@ -96,6 +97,8 @@
 (add-to-list 'load-path "~/download/org-8.3.4/lisp")
 (add-to-list 'load-path "~/download/org-8.3.4/contrib/lisp" t)
 (require-package 'ox-twbs)
+(require-package 'org-download)
+(setq org-startup-with-inline-images t)
 
 (defun hrs/de-unicode ()
   "Tidy up a buffer by replacing all special Unicode characters
@@ -1134,6 +1137,8 @@ from Google syntax-forward-syntax func."
                                           (kill-ring-save (region-beginning) (region-end))
                                           ))
   (define-key global-map (kbd "C-;") 'avy-goto-char-timer)
+  (guide-key-mode -1)
+  (cua-selection-mode -1)
   )
 
 ;; use c to create new file in dired
@@ -1171,7 +1176,7 @@ from Google syntax-forward-syntax func."
 ;; (global-set-key (kbd "M-] }") 'paredit-wrap-curly)
 
 ;; replace exist C-<return> cua-set-rectangle-mark
-(global-set-key (kbd "<C-S-M-return>") 'cua-set-rectangle-mark)
+;; (global-set-key (kbd "<C-S-M-return>") 'cua-set-rectangle-mark) ;; buggy!!! will exit transient-mark-mode
 (global-set-key (kbd "<M-return>") 'sanityinc/newline-at-end-of-line)
 (global-set-key (kbd "<C-O>") 'sanityinc/newline-at-end-of-line)
 (global-set-key (kbd "<C-M-return>") 'newline-before)
@@ -1254,7 +1259,7 @@ from Google syntax-forward-syntax func."
   (defun au3-activate-cmd()
     (interactive)
     (setq au3-last-window
-          (au3-command-winactivate "cmd.exe") ))
+          (au3-command-winactivate "cmd.exe|sh.exe") ))
 
   (defun au3-activate-xshell()
     (interactive)
