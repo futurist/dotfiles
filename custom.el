@@ -58,7 +58,7 @@
 (require-package 'restclient)
 ;; (require-package 'nodejs-repl)  ;;buggy!!! will freeze emacs
 (require-package 'editorconfig)
-(editorconfig-mode 1)
+(editorconfig-mode -1)
 
 ;; linum mode with highlight
 (require-package 'hlinum)
@@ -80,7 +80,16 @@
 
 ;; package from github/xahlee
 (require-package 'xah-find)
-
+(defun xah-new-empty-buffer ()
+  "Open a new empty buffer.
+URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
+Version 2015-06-12"
+  (interactive)
+  (let (($buf (generate-new-buffer "untitled")))
+    (switch-to-buffer $buf)
+    (funcall (and 'text-mode))
+    (setq buffer-offer-save t)))
+;; (setq initial-major-mode (quote text-mode))
 
 ;; package from github/zk-phi
 (require-package 'indent-guide)
@@ -98,7 +107,9 @@
 (add-to-list 'load-path "~/download/org-8.3.4/contrib/lisp" t)
 (require-package 'ox-twbs)
 (require-package 'org-download)
-(setq org-startup-with-inline-images t)
+(require-package 'ox-reveal)
+(setq org-startup-with-inline-images nil)
+
 
 (defun hrs/de-unicode ()
   "Tidy up a buffer by replacing all special Unicode characters
