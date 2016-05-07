@@ -1223,8 +1223,12 @@ from Google syntax-forward-syntax func."
   (require-package 'bash-completion)
   (bash-completion-setup)
 
-  (setq initial-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48)))
-  (setq default-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48)))
+  (if (> (x-display-pixel-width) 1280)
+      (progn
+        (setq initial-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48)))
+        (setq default-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48))))
+    (setq initial-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))
+    (setq default-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32))))
   )
 
 (when *is-a-windows*
