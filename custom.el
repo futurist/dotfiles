@@ -51,7 +51,25 @@
 ;; prevent Chinese date problems
 (setq system-time-locale "C")
 
+(when *is-a-mac*
+  (setq server-auth-dir "/tmp/emacsserver")
+  (setq server-use-tcp t)
+  )
 (server-start)  ;; server seems not stable in windows
+
+;; go-mode
+(require-package 'go-mode)
+(require-package 'go-eldoc)
+;; (require-package 'company-go)
+(require-package 'go-autocomplete)
+(add-hook 'go-mode-hook (lambda()
+                          (exec-path-from-shell-copy-env "GOPATH")
+                          ;; disable company-mode and use ac-mode for go
+                           ;; (set (make-local-variable 'company-backends) '(company-go)) ;only load go backends
+                          (company-mode -1)
+                          (auto-complete-mode 1)
+                           (go-eldoc-setup)))
+
 
 ;; Install extensions if they're missing
 (require-package 'swiper)
@@ -159,8 +177,6 @@ Version 2015-06-12"
 (setq org-hide-leading-stars t)
 (setq org-ellipsis " ⇒⇒")
 
-
-;; ← ↑ → ↓ ↔ ↕ ↖ ↗ ↘ ↙ ▲ ▼ ◀ ▶ ➔ ➘ ➙ ➚ ➛ ➜ ➝ ➞ ➟ ➠ ➡ ➢ ➣ ➤ ➥ ➦ ↪ ↩ ↚ ↛ ↜ ↝ ↞ ↟ ↠ ↡ ↢ ↣ ↤ ↦ ↥ ↧ ↨ ↫ ↬ ↭ ↮ ↯ ↰ ↱ ↲ ↴ ↳ ↵ ↶ ↷ ↸ ↹ ↺ ↻ ⟲ ⟳ ↼ ↽ ↾ ↿ ⇀ ⇁ ⇂ ⇃ ⇄ ⇅ ⇆ ⇇ ⇐ ⇑ ⇒ ⇓ ⇔ ⇌ ⇍ ⇏ ⇕ ⇖ ⇗ ⇘ ⇙ ⇙ ⇳ ⇚ ⇛ ⇜ ⇝ ⇞ ⇟ ⇟ ⇟ ⇠ ⇡ ⇢ ⇣ ⇤ ⇥ ⇦ ⇨ ⇩ ⇪ ⇧ ⇫ ⇬ ⇭ ⇮ ⇯ ⇰ ⇱ ⇲ ⇴ ⇵ ⇶ ⇷ ⇸ ⇹ ⇺ ⇺ ⇻ ⇼ ⇽ ⇾ ⇿ ⟰ ⟱ ⟴ ⟵ ⟶ ⟷ ⟸ ⟹ ⟽ ⟾ ⟺ ⟻ ⟼ ⟿ ⤀ ⤁ ⤅ ⤂ ⤃ ⤄ ⤆ ⤇ ⤈ ⤉ ⤊ ⤋ ⤌ ⤍ ⤎ ⤏ ⤐ ⤑ ⤒ ⤓ ⤔ ⤕ ⤖ ⤗ ⤘ ⤙ ⤙ ⤚ ⤛ ⤜ ⤝ ⤞ ⤡ ⤢ ⤣ ⤤ ⤥ ⤦ ⤧ ⤨ ⤩ ⤪ ⤭ ⤮ ⤯ ⤰ ⤱ ⤲ ⤳ ⤻ ⤸ ⤾ ⤿ ⤺ ⤼ ⤽ ⤴ ⤵ ⤶ ⤷ ⤹ ⥀ ⥁ ⥂ ⥃ ⥄ ⥅ ⥆ ⥇ ⥈ ⥉ ⥒ ⥓ ⥔ ⥕ ⥖ ⥗ ⥘ ⥙ ⥚ ⥛ ⥜ ⥝ ⥞ ⥟ ⥠ ⥡ ⥢ ⥣ ⥤ ⥥ ⥦ ⥧ ⥨ ⥩ ⥪ ⥫ ⥬ ⥭ ⥮ ⥯ ⥰ ⥱ ⥲ ⥳ ⥴ ⥵ ⥶ ⥷ ⥸ ⥹ ⥺ ⥻ ➧ ➨ ➩ ➪ ➫ ➬ ➭ ➮ ➯ ➱ ➲ ➳ ➴ ➵ ➶ ➷ ➸ ➹ ➺ ➻ ➼ ➽ ➾ ⬅ ⬆ ⬇ ⏎ ⬎ ⬏ ⬐ ⬑ ☈ ☇ ⍃ ⍄ ⍇ ⍈ ⍐ ⍗ ⍌ ⍓ ⍍ ⍔ ⍏ ⍖ ⍅ ⍆ ⬈ ⬉ ⬊ ⬋ ⬌ ⬍ ⬀ ⬁ ⬂ ⬃ ⬄
 
 ;; package from github
 (require-package 'emmet-mode)
@@ -323,8 +339,12 @@ Including indent-buffer, which should not be called automatically on save."
 (require-package 'company-quickhelp)
 (require-package 'company-dict)
 (require-package 'company-restclient)
+(require-package 'company-go)
 (add-hook 'after-init-hook 'global-company-mode)
-(setq company-idle-delay 0)
+(setq company-tooltip-limit 20)                      ; bigger popup window
+(setq company-idle-delay .3)                         ; decrease delay before autocompletion popup shows
+(setq company-echo-delay 0)                          ; remove annoying blinking
+(setq company-begin-commands '(self-insert-command)) ; start autocompletion only after typing
 (setq company-minimum-prefix-length 2)
 (after-load 'company
   (company-flx-mode +1)
@@ -348,6 +368,9 @@ Including indent-buffer, which should not be called automatically on save."
 (after-load 'company-tern
   (add-to-list 'company-backends 'company-tern)
   ;; (setq company-tern-property-marker "")
+  )
+(after-load 'company-go
+  (add-to-list 'company-backends 'company-go)
   )
 
 (require-package 'sws-mode)
@@ -1223,12 +1246,14 @@ from Google syntax-forward-syntax func."
   (require-package 'bash-completion)
   (bash-completion-setup)
 
-  (if (> (x-display-pixel-width) 1280)
-      (progn
-        (setq initial-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48)))
-        (setq default-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48))))
-    (setq initial-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))
-    (setq default-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32))))
+  ;; when in graphic GUI, set proper window size
+  (when (display-graphic-p)
+    (if (> (x-display-pixel-width) 1280)
+        (progn
+          (setq initial-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48)))
+          (setq default-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48))))
+      (setq initial-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))
+      (setq default-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))))
   )
 
 (when *is-a-windows*
