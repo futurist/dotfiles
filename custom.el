@@ -58,12 +58,21 @@
 (server-start)  ;; server seems not stable in windows
 
 ;; go-mode
+(defvar GO-MODE-GOPATH (expand-file-name "" "~/GoCode")
+  "GOPATH for go-mode")
 (require-package 'go-mode)
 (require-package 'go-eldoc)
 ;; (require-package 'company-go)
 (require-package 'go-autocomplete)
 (add-hook 'go-mode-hook (lambda()
-                          (exec-path-from-shell-copy-env "GOPATH")
+                          (add-hook 'before-save-hook 'gofmt-before-save)
+                          (local-set-key (kbd "M-.") 'godef-jump)
+                          (setenv "GOPATH" GO-MODE-GOPATH)
+                          (setq compilation-environment (list (concat "GOPATH=" GO-MODE-GOPATH)))
+                          (setq compile-command "go build -v && go test -v && go vet")
+                          (define-key (current-local-map) "\C-c\C-c" '(lambda(arg)(interactive "P") (if arg
+                                                                                                   (compile compile-command)
+                                                                                                 (shell-command (format "go run %s" (shell-quote-argument buffer-file-name))))))
                           ;; disable company-mode and use ac-mode for go
                            ;; (set (make-local-variable 'company-backends) '(company-go)) ;only load go backends
                           (company-mode -1)
