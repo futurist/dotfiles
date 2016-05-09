@@ -1,0 +1,12 @@
+# this script is for bash under OSX
+
+export NODE_PATH=/usr/local/lib/node_modules
+export htdoc=/Applications/XAMPP/htdocs
+. ~/.nvm/nvm.sh
+
+export GOPATH=$HOME/gocode
+
+export PATH=/data/mongodb/bin:$GOPATH/bin:$PATH
+
+export EMACS_SERVER_FILE=/tmp/emacsserver/server
+alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -f $EMACS_SERVER_FILE -a "/Applications/Emacs.app/Contents/MacOS/Emacs" '

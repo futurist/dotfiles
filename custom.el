@@ -52,14 +52,18 @@
 (setq system-time-locale "C")
 
 (when *is-a-mac*
+  ;; using TCP instead of UNIX socket to start server
   (setq server-auth-dir "/tmp/emacsserver")
   (setq server-use-tcp t)
+;; ;; set below in your .bash_profile
+;; export EMACS_SERVER_FILE=/tmp/emacsserver/server
+;; alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -f $EMACS_SERVER_FILE -a "/Applications/Emacs.app/Contents/MacOS/Emacs" '
   )
 (server-start)  ;; server seems not stable in windows
 
 ;; go-mode
 (defvar GO-MODE-GOPATH (expand-file-name "" "~/GoCode")
-  "GOPATH for go-mode")
+  "GOPATH for go-mode.")
 (require-package 'go-mode)
 (require-package 'go-eldoc)
 ;; (require-package 'company-go)
