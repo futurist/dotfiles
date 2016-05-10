@@ -139,6 +139,7 @@ Version 2015-06-12"
 (require-package 'ox-twbs)
 (require-package 'org-download)
 (require-package 'ox-reveal)
+(setq org-reveal-root "file:///d:/Emacs/download/reveal.js/")
 (setq org-startup-with-inline-images nil)
 
 
@@ -161,13 +162,49 @@ Version 2015-06-12"
             (goto-char (point-min))
             (replace-regexp key value)))))
 
+;; Some short cuts function
+(defun insert-earmuffs (char)
+  "Insert earmuffs for char."
+  (let ((pointer-position (point)))
+    (if (or (bolp) (string= (string (char-before)) char) )
+        (insert char)
+      (if (looking-back "[^ \t\n]" 1)
+          (if (not (string= (string (char-after)) char))
+              (insert char)
+            (forward-char))
+        (progn
+          (insert (format "%s%s" char char) )
+          (goto-char (+ 1 pointer-position)))))
+    ))
+
+(defun delete-earmuffs (char-list)
+  "Delete earmuffs based on earmuff-char-list var."
+  (let ((not-found t))
+    (dolist (char char-list)
+      (when (and not-found (looking-back char 1) (looking-at char))
+        (delete-forward-char 1 nil)
+        (delete-forward-char -1 nil)
+        (setq not-found nil)
+        )
+      )
+    (when not-found (delete-forward-char -1 nil))
+    )
+  )
+
+
 (add-hook 'org-mode-hook
           (lambda ()
             (org-bullets-mode -1)
             (flycheck-mode -1)
+            (load-library "ox-reveal")
             (define-key org-mode-map (kbd "C-'") nil)
             (define-key org-mode-map (kbd "C-' l") 'org-toggle-link-display)
             (define-key org-mode-map (kbd "C-' c") 'org-unindent-buffer)
+            (defvar earmuff-char-list '("*" "=" "/" "~" "+" "_")
+              "Earmuff chars for Org-mode.")
+            (dolist (char earmuff-char-list)
+              (define-key org-mode-map (kbd char) `(lambda () (interactive) (insert-earmuffs ,char))))
+            (define-key org-mode-map (kbd "<backspace>") '(lambda () (interactive) (delete-earmuffs earmuff-char-list)))
             (define-key global-map (kbd "<M-return>") nil)
             (setq-default org-display-custom-times t)
             (setq org-time-stamp-custom-formats '("<%Y-%m-%d %a>" . "<%Y-%m-%d %H:%M>"))
@@ -1186,6 +1223,8 @@ from Google syntax-forward-syntax func."
   (define-key global-map (kbd "C-;") 'avy-goto-char-timer)
   (guide-key-mode -1)
   (cua-selection-mode -1)
+  (put 'upcase-region 'disabled t)
+  (put 'downcase-region 'disabled t)
   )
 
 ;; use c to create new file in dired
