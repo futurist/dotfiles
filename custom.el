@@ -139,7 +139,8 @@ Version 2015-06-12"
 (require-package 'ox-twbs)
 (require-package 'org-download)
 (require-package 'ox-reveal)
-(setq org-reveal-root "file:///d:/Emacs/download/reveal.js/")
+(require-package 'ox-ioslide)
+(setq org-reveal-root (concat "file:///" (expand-file-name "~/download/reveal.js")))
 (setq org-startup-with-inline-images nil)
 
 
@@ -163,10 +164,10 @@ Version 2015-06-12"
             (replace-regexp key value)))))
 
 ;; Some short cuts function
-(defun insert-earmuffs (char)
+(defun insert-earmuffs (char &optional insert-normal-p)
   "Insert earmuffs for char."
   (let ((pointer-position (point)))
-    (if (or (bolp) (string= (string (char-before)) char) )
+    (if (or insert-normal-p (bolp) (string= (string (char-before)) char) )
         (insert char)
       (if (looking-back "[^ \t\n]" 1)
           (if (not (string= (string (char-after)) char))
@@ -181,7 +182,7 @@ Version 2015-06-12"
   "Delete earmuffs based on earmuff-char-list var."
   (let ((not-found t))
     (dolist (char char-list)
-      (when (and not-found (looking-back char 1) (looking-at char))
+      (when (and not-found (string= (string (char-before)) char) (string= (string (char-after)) char) )
         (delete-forward-char 1 nil)
         (delete-forward-char -1 nil)
         (setq not-found nil)
@@ -200,10 +201,11 @@ Version 2015-06-12"
             (define-key org-mode-map (kbd "C-'") nil)
             (define-key org-mode-map (kbd "C-' l") 'org-toggle-link-display)
             (define-key org-mode-map (kbd "C-' c") 'org-unindent-buffer)
+            (define-key org-mode-map (kbd "C-' e") '(lambda()(interactive) (org-ioslide-export-to-html) (browse-url-of-file (replace-regexp-in-string "\.org$" ".html" (expand-file-name (buffer-file-name))))))
             (defvar earmuff-char-list '("*" "=" "/" "~" "+" "_")
               "Earmuff chars for Org-mode.")
             (dolist (char earmuff-char-list)
-              (define-key org-mode-map (kbd char) `(lambda () (interactive) (insert-earmuffs ,char))))
+              (define-key org-mode-map (kbd char) `(lambda (arg) (interactive "P") (insert-earmuffs ,char arg))))
             (define-key org-mode-map (kbd "<backspace>") '(lambda () (interactive) (delete-earmuffs earmuff-char-list)))
             (define-key global-map (kbd "<M-return>") nil)
             (setq-default org-display-custom-times t)
@@ -391,7 +393,7 @@ Including indent-buffer, which should not be called automatically on save."
 (require-package 'company-restclient)
 (require-package 'company-go)
 (add-hook 'after-init-hook 'global-company-mode)
-(setq company-tooltip-limit 20)                      ; bigger popup window
+(setq company-tooltip-limit 15)                      ; bigger popup window
 (setq company-idle-delay .3)                         ; decrease delay before autocompletion popup shows
 (setq company-echo-delay 0)                          ; remove annoying blinking
 (setq company-begin-commands '(self-insert-command)) ; start autocompletion only after typing
