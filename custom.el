@@ -16,6 +16,10 @@
 
 ;; default fg color: #E5E5DE
 
+;; May need to cleanup .elc file and re-compile:
+;; $ find site-lisp/ -name "*.elc" -print | xargs rm -f
+;; $ emacs --batch --eval "(byte-recompile-directory \"site-lisp/\" 0)"
+
 ;;; Code:
 
 (defconst *is-a-windows* (eq system-type 'windows-nt))
@@ -122,27 +126,18 @@ Version 2015-06-12"
     (setq buffer-offer-save t)))
 ;; (setq initial-major-mode (quote text-mode))
 
-;; package from github/zk-phi
-(require-package 'indent-guide)
-(after-load 'indent-guide
-  (indent-guide-global-mode t)
-  (setq indent-guide-delay 0.1))
-(require-package 'phi-search)
-(global-set-key (kbd "C-S-s") 'phi-search)
-;; (global-set-key (kbd "C-r") 'phi-search-backward)
-
 (require-package 'ascii)
 
 ;; package from Harry Schwartz
-(add-to-list 'load-path "~/download/org-8.3.4/lisp")
-(add-to-list 'load-path "~/download/org-8.3.4/contrib/lisp" t)
+(add-to-list 'load-path "~/.emacs.d/download/org-mode/lisp")
+(add-to-list 'load-path "~/.emacs.d/download/org-mode/contrib/lisp" t)
+(add-to-list 'load-path "~/.emacs.d/download/fs-tree/fs-tree.el" t)
 (require-package 'ox-twbs)
 (require-package 'org-download)
 (require-package 'ox-reveal)
 (require-package 'ox-ioslide)
 (setq org-reveal-root (concat "file:///" (expand-file-name "~/download/reveal.js")))
 (setq org-startup-with-inline-images nil)
-
 
 (defun hrs/de-unicode ()
   "Tidy up a buffer by replacing all special Unicode characters
@@ -195,7 +190,7 @@ Version 2015-06-12"
 
 (add-hook 'org-mode-hook
           (lambda ()
-            (org-bullets-mode -1)
+            ;; (org-bullets-mode -1)
             (flycheck-mode -1)
             (load-library "ox-reveal")
             (define-key org-mode-map (kbd "C-'") nil)
@@ -514,7 +509,7 @@ Including indent-buffer, which should not be called automatically on save."
  '(cua-mode nil nil (cua-base))
  '(display-buffer-reuse-frames t)
  '(safe-local-variable-values '((no-byte-compile t)))
- '(session-use-package t nil (session))
+;; '(session-use-package t nil (session))
  '(show-paren-mode t)
  '(tool-bar-mode nil)
  '(url-automatic-caching t))
@@ -1151,7 +1146,6 @@ from Google syntax-forward-syntax func."
 
 ;; ido to jump to bookmark
 ;; C-' space is my custom space
-(defun phi-complete-after-center(&rest args) (interactive) (phi-search-complete))
 (global-set-key (kbd "M-]") 'syntax-forward-syntax-group)
 (global-set-key (kbd "M-[") '(lambda(arg)(interactive "^p") (syntax-forward-syntax-group (* arg -1))))
 (global-set-key (kbd "C-' x f") 'xah-find-text)
@@ -1160,10 +1154,6 @@ from Google syntax-forward-syntax func."
 (define-key global-map (kbd "C-' o") 'locate-current-file-in-explorer)
 (define-key global-map (kbd "C-' c") 'cleanup-buffer)
 
-(after-load 'phi-search
-  (advice-add 'phi-search-recenter :after #'phi-complete-after-center)
-  ;; (define-key phi-search-default-map (kbd "C-l") 'phi-search-complete)
-  )
 (global-set-key (kbd "C-x r b")
                 (lambda ()
                   (interactive)
@@ -1276,7 +1266,6 @@ from Google syntax-forward-syntax func."
 (define-key global-map (kbd "<up>") 'scroll-down-line)
 (define-key global-map (kbd "C-x C-6") 'my-max-window-size)
 
-;; use phi-search instead
 (define-key global-map (kbd "C-s") 'search-selection)
 (global-set-key (kbd "C-M-d") 'kill-forward-symbol)
 ;; (global-set-key (kbd "M-D") 'kill-word)
