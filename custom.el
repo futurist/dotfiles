@@ -131,13 +131,16 @@ Version 2015-06-12"
 ;; package from Harry Schwartz
 (add-to-list 'load-path "~/.emacs.d/download/org-mode/lisp")
 (add-to-list 'load-path "~/.emacs.d/download/org-mode/contrib/lisp" t)
-(add-to-list 'load-path "~/.emacs.d/download/fs-tree/fs-tree.el" t)
+(require-package 'embrace)
 (require-package 'ox-twbs)
 (require-package 'org-download)
 (require-package 'ox-reveal)
 (require-package 'ox-ioslide)
 (setq org-reveal-root (concat "file:///" (expand-file-name "~/download/reveal.js")))
 (setq org-startup-with-inline-images nil)
+
+(global-set-key (kbd "C-S-SPC") #'embrace-commander)
+(add-hook 'org-mode-hook #'embrace-org-mode-hook)
 
 (require-package 'ox-gfm)
 
@@ -1354,6 +1357,7 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-{") 'my-backward-sexp)
 (global-set-key (kbd "C-}") 'sp-end-of-sexp)
 (global-set-key (kbd "C-M-'") 'sp-rewrap-sexp)
+
 ;; (global-set-key (kbd "C-M-<left>") 'sp-forward-slurp-sexp)
 ;; (global-set-key (kbd "C-M-<right>") 'sp-forward-barf-sexp)
 (global-set-key (kbd "M-<right>") 'move-parent-backwrad-symbol)
