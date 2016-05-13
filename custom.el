@@ -66,8 +66,28 @@
 (server-start)  ;; server seems not stable in windows
 
 ;; go-mode
+
+
 (defvar GO-MODE-GOPATH (expand-file-name "" "~/GoCode")
   "GOPATH for go-mode.")
+
+(defvar hugo-content-dir "~/Hugo/Sites/12345.menu/content/"
+  "Path to Hugo's content directory")
+
+(defvar org-snapshot-image-dir (cond (*is-a-windows* (convert-standard-filename (concat (get-windows-special-folder "Personal") "\\Scrshot")))
+                                (*is-a-mac* "~/Desktop"))
+  "Copy snapshot images from this location.")
+
+(defun org-insert-snapshot ()(interactive)
+       "Copy newest snapshot into current buffer-file dir and insert into org."
+       (let ((file (get-newest-image-file org-snapshot-image-dir)))
+         (when file
+           (shell-command (format "cp %s %s" file (file-name-directory (buffer-file-name)) ))
+           (insert (format "#+CAPTION:\n#+NAME:\n#+ATTR_HTML: :width 300px\n[[./%s.%s]]" (file-name-base file) (file-name-extension file)))))
+       )
+
+(bind-key "C-' i" 'org-insert-snapshot)
+
 (require-package 'go-mode)
 (require-package 'go-eldoc)
 ;; (require-package 'company-go)
@@ -94,6 +114,9 @@
 ;; (require-package 'nodejs-repl)  ;;buggy!!! will freeze emacs
 (require-package 'editorconfig)
 (editorconfig-mode -1)
+
+(require-package 'goto-last-change)
+(bind-key "C-x C-/" 'goto-last-change)
 
 ;; linum mode with highlight
 (require-package 'hlinum)
@@ -144,9 +167,6 @@ Version 2015-06-12"
 
 (require-package 'ox-gfm)
 
-(defvar hugo-content-dir "~/Hugo/Sites/12345.menu/content/"
-  "Path to Hugo's content directory")
-
 
 ;; Hugo convert org to md
 ;; http://www.holgerschurig.de/en/emacs-blog-from-org-to-hugo/
@@ -173,9 +193,11 @@ Returns list of properties that still must be filled in"
     (save-excursion
       (unless (org-entry-get nil "TITLE")
         (org-entry-put nil "TITLE" (nth 4 (org-heading-components))))
-      (setq first (--first it (mapcar #'hugo-ensure-property '("HUGO_TAGS" "HUGO_TOPICS" "HUGO_FILE"))))
+
+      (setq first (--first it (mapcar #'hugo-ensure-property '("HUGO_TAGS" "HUGO_TOPICS"))))
       (unless (org-entry-get nil "HUGO_DATE")
         (org-entry-put nil "HUGO_DATE" current-time)))
+
     (when first
       (goto-char (org-entry-beginning-position))
       ;; The following opens the drawer
@@ -224,7 +246,19 @@ Returns list of properties that still must be filled in"
         (write-file file)
         (message "Exported to %s" file))
       ))))
+
+(defun org-insert-title-as-pinyin(arg start end) (interactive "P\nr")
+       (let ((str (cond (arg (read-string "Enter chinese"))
+                        ((region-active-p) (prog1 (buffer-substring start end) (delete-region start end)))
+                        (t (nth 4 (org-heading-components))) )))
+         (insert (replace-regexp-in-string
+                  " " "-"
+                  (trim-string (shell-command-to-string (concat "pinyin -s NORMAL \"" str "\"")))
+                  )))
+       )
+
 (bind-key "M-g h" #'hugo)
+(bind-key "M-g t" #'org-insert-title-as-pinyin)
 
 (defun gp-org-gfm-publish-to-md (plist filename pub-dir)
   "Publish an org file to Github Flavoured Markdown.
@@ -275,17 +309,25 @@ Return output file name."
 ;; Some short cuts function
 (defun insert-earmuffs (char &optional insert-normal-p)
   "Insert earmuffs for char."
-  (let ((pointer-position (point)))
-    (if (or insert-normal-p (bolp) (string= (string (char-before)) char) )
+  (if (region-active-p)
+      (let ((start (region-beginning))
+            (end (region-end)))
+        (goto-char end)
         (insert char)
-      (if (looking-back "[^ \t\n]" 1)
-          (if (not (string= (string (char-after)) char))
-              (insert char)
-            (forward-char))
-        (progn
-          (insert (format "%s%s" char char) )
-          (goto-char (+ 1 pointer-position)))))
-    ))
+        (goto-char start)
+        (insert char)
+        )
+    (let ((pointer-position (point)))
+      (if (or insert-normal-p (bolp) (string= (string (char-before)) char) )
+          (insert char)
+        (if (looking-back "[^ \t\n]" 1)
+            (if (not (string= (string (char-after)) char))
+                (insert char)
+              (forward-char))
+          (progn
+            (insert (format "%s%s " char char) )
+            (goto-char (+ 1 pointer-position)))))
+      )))
 
 (defun delete-earmuffs (char-list)
   "Delete earmuffs based on earmuff-char-list var."
@@ -297,15 +339,20 @@ Return output file name."
         (setq not-found nil)
         )
       )
-    (when not-found (delete-forward-char -1 nil))
+    (when not-found
+      (if (region-active-p)
+          (delete-region (region-beginning) (region-end))
+        (delete-forward-char -1 nil)))
     )
   )
 
-
+;; soft wrap long lines
+(setq org-startup-truncated nil)
 (add-hook 'org-mode-hook
           (lambda ()
             ;; (org-bullets-mode -1)
             (flycheck-mode -1)
+            (setq truncate-lines 'nil)
             (load-library "ox-reveal")
             (define-key org-mode-map (kbd "C-'") nil)
             (define-key org-mode-map (kbd "C-' l") 'org-toggle-link-display)
@@ -318,7 +365,7 @@ Return output file name."
             (define-key org-mode-map (kbd "<backspace>") '(lambda () (interactive) (delete-earmuffs earmuff-char-list)))
             (define-key global-map (kbd "<M-return>") nil)
             (setq-default org-display-custom-times t)
-            (setq org-time-stamp-custom-formats '("<%Y-%m-%d %a>" . "<%Y-%m-%d %H:%M>"))
+            (setq org-time-stamp-custom-formats '("<%Y-%m-%d>" . "<%Y-%m-%d %H:%M>"))
             (setq org-export-html-postamble-format
                   '( ("zh-CN" "<p class=\"postamble\">最后更新日期: %C</p>")
                      ("en" "<p class=\"postamble\">最后更新日期: %C</p>")
@@ -755,6 +802,28 @@ Including indent-buffer, which should not be called automatically on save."
     ))
 
 
+
+(defun get-windows-special-folder (name)
+  "Get windows current user's special folder location from registry.
+Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup etc."
+  (let ((val (shell-command-to-string (concat "reg query \"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\" /v \"" name "\""))))
+    (trim-string (car (last (split-string val "_SZ\t"))))
+    )
+  )
+
+(defun get-newest-image-file (dir)
+  "Get newest image file in dir."
+  (let ((image-types '("jpg" "png" "gif")))
+    (expand-file-name (car (last (mapcar #'car
+                                         (sort (remove-if '(lambda(x) (and (nth 1 x) (null (member (car x) image-types))) ) (directory-files-and-attributes dir))
+                                               #'(lambda (x y) (time-less-p (nth 6 x) (nth 6 y))))))) dir))
+  )
+
+(defun trim-string (string)
+  "Remove white spaces in beginning and ending of STRING.
+White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
+  (replace-regexp-in-string "\\`[ \t\n]*" "" (replace-regexp-in-string "[ \t\n]*\\'" "" string))
+  )
 
 ;; align rule for js2-mode
 ;; align var = abc; {a:1, b:2} etc
