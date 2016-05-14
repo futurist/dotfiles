@@ -50,6 +50,9 @@
 
 (set-face-attribute 'default t :foreground "#E5E5DE") ;; set default color for fg
 
+;; disable Ido auto merge when C-x C-f
+(setq ido-auto-merge-delay-time 9999)
+
 ;; (setq debug-on-error t)
 
 ;; prevent Chinese date problems
@@ -622,7 +625,6 @@ Including indent-buffer, which should not be called automatically on save."
 (require-package 'flx-ido)
 (require-package 'projectile)
 (projectile-global-mode)
-
 
 
 (require-package 'neotree)
