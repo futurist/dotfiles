@@ -65,8 +65,36 @@
   )
 (server-start)  ;; server seems not stable in windows
 
-;; go-mode
+;; Helper function 
 
+(defun trim-string (string)
+  "Remove white spaces in beginning and ending of STRING.
+White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
+  (replace-regexp-in-string "\\`[ \t\n]*" "" (replace-regexp-in-string "[ \t\n]*\\'" "" string))
+  )
+
+
+(defun get-windows-special-folder (name)
+  "Get windows current user's special folder location from registry.
+Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup etc."
+  (let ((val (shell-command-to-string (concat "reg query \"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\" /v \"" name "\""))))
+    (trim-string (car (last (split-string val "_SZ\t"))))
+    )
+  )
+
+
+(defun get-newest-image-file (dir)
+  "Get newest image file in dir."
+  (let ((image-types '("jpg" "png" "gif")))
+    (expand-file-name (car (last (mapcar #'car
+                                         (sort (remove-if '(lambda(x) (and (nth 1 x) (null (member (car x) image-types))) ) (directory-files-and-attributes dir))
+                                               #'(lambda (x y) (time-less-p (nth 6 x) (nth 6 y))))))) dir))
+  )
+
+;; 
+
+
+;; go-mode
 
 (defvar GO-MODE-GOPATH (expand-file-name "" "~/GoCode")
   "GOPATH for go-mode.")
@@ -802,28 +830,6 @@ Including indent-buffer, which should not be called automatically on save."
     ))
 
 
-
-(defun get-windows-special-folder (name)
-  "Get windows current user's special folder location from registry.
-Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup etc."
-  (let ((val (shell-command-to-string (concat "reg query \"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders\" /v \"" name "\""))))
-    (trim-string (car (last (split-string val "_SZ\t"))))
-    )
-  )
-
-(defun get-newest-image-file (dir)
-  "Get newest image file in dir."
-  (let ((image-types '("jpg" "png" "gif")))
-    (expand-file-name (car (last (mapcar #'car
-                                         (sort (remove-if '(lambda(x) (and (nth 1 x) (null (member (car x) image-types))) ) (directory-files-and-attributes dir))
-                                               #'(lambda (x y) (time-less-p (nth 6 x) (nth 6 y))))))) dir))
-  )
-
-(defun trim-string (string)
-  "Remove white spaces in beginning and ending of STRING.
-White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
-  (replace-regexp-in-string "\\`[ \t\n]*" "" (replace-regexp-in-string "[ \t\n]*\\'" "" string))
-  )
 
 ;; align rule for js2-mode
 ;; align var = abc; {a:1, b:2} etc
