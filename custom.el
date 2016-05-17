@@ -509,7 +509,7 @@ Return output file name."
   (defun te/goto-current-tag-content()
     (interactive)
     (goto-char (te/inner-beg (te/current-tag)))
-    (newline-and-indent)
+    ;; (newline-and-indent)
     )
 
   (defun te/goto-tag-begging()
@@ -546,7 +546,7 @@ Return output file name."
       )
     )
 
-  (define-key tagedit-mode-map (kbd "M-S-<return>") 'te/goto-current-tag-content)
+  (define-key tagedit-mode-map (kbd "M-'") 'te/goto-current-tag-content)
   (define-key tagedit-mode-map (kbd "C-c C-<backspace>") 'te/kill-current-tag)
   (define-key tagedit-mode-map (kbd "C-%") 'te/goto-tag-match)
   (define-key tagedit-mode-map (kbd "C-^") 'te/goto-tag-begging)
