@@ -27,17 +27,20 @@
 (when *is-a-windows*
 
   ;; UTF-8 settings
-  (set-language-environment "UTF-8")
-  (set-default-coding-systems 'utf-8)
-  (set-buffer-file-coding-system 'utf-8-unix)
-  (set-clipboard-coding-system 'utf-8-unix)
-  (set-file-name-coding-system 'utf-8-unix)
-  (set-keyboard-coding-system 'utf-8-unix)
-  (set-next-selection-coding-system 'utf-8-unix)
-  (set-selection-coding-system 'utf-8-unix)
-  (set-terminal-coding-system 'utf-8-unix)
-  (setq locale-coding-system 'utf-8)
-  (prefer-coding-system 'utf-8)
+  ;; (set-language-environment "UTF-8")
+  ;; (prefer-coding-system 'utf-8)
+  (set-language-environment 'chinese-gbk)
+  (prefer-coding-system 'utf-8-auto)
+
+  ;; (set-default-coding-systems 'utf-8)
+  ;; (set-buffer-file-coding-system 'utf-8-unix)
+  ;; (set-clipboard-coding-system 'utf-8-unix)
+  ;; (set-file-name-coding-system 'utf-8-unix)
+  ;; (set-keyboard-coding-system 'utf-8-unix)
+  ;; (set-next-selection-coding-system 'utf-8-unix)
+  ;; (set-selection-coding-system 'utf-8-unix)
+  ;; (set-terminal-coding-system 'utf-8-unix)
+  ;; (setq locale-coding-system 'utf-8)
 
   (set-fontset-font t 'gb18030 '("Microsoft Yahei" . "unicode-bmp"))
   ;; (set-fontset-font t 'han (font-spec :family "Microsoft Yahei" :size 16))
@@ -197,6 +200,20 @@ Version 2015-06-12"
 ;; (setq initial-major-mode (quote text-mode))
 
 (require-package 'ascii)
+
+;; markdown mode
+(add-hook 'markdown-mode-hook '(lambda()
+                                 (whitespace-cleanup-mode -1)
+                                 (define-key markdown-mode-map
+                                   (kbd "C-c C-v")
+                                   '(lambda()(interactive)
+                                      (let ((html-file (replace-regexp-in-string "\.md$" ".html" buffer-file-name)))
+                                        (shell-command (format "marked %s -o %s"
+                                                             (shell-quote-argument buffer-file-name)
+                                                             html-file))
+                                        (find-file html-file))
+                                      ))
+                                 ))
 
 ;; package from Harry Schwartz
 (add-to-list 'load-path "~/.emacs.d/download/org-mode/lisp")
@@ -448,6 +465,19 @@ Return output file name."
 ;; (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 
+
+(after-load 'emmet-mode
+  ;; (-each '("山东" "北京" "上海" "武汉")
+  ;;   (lambda(item) (push item emmet-lorem-words)))
+  )
+
+;; command line install: npm install -g lorem-cn
+(defun insert-lorem-cn (number)
+  (interactive "p")
+  (insert (shell-command-to-string (format "lorem-cn %s %s" number "true")))
+  )
+
+(bind-key "C-' l o" 'insert-lorem-cn)
 
 (defvar html-file-extensions "\\.\\(aspx\\|php\\|\\sw*html*\\)\\'")
 (setq mmm-global-mode nil)
