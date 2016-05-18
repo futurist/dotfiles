@@ -44,7 +44,7 @@
   ;; (setq locale-coding-system 'utf-8)
   ;; (prefer-coding-system 'utf-8-auto)
 
-  (set-fontset-font t 'gbk '("Microsoft Yahei" . "unicode-bmp"))
+  (set-fontset-font t 'gb18030 '("Microsoft Yahei" . "unicode-bmp"))
   ;; (set-fontset-font t 'han (font-spec :family "Microsoft Yahei" :size 16))
   (setq face-font-rescale-alist '( ("Microsoft Yahei" . 1)("WenQuanYi Zen Hei" . 1)))
   )
