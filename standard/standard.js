@@ -68,6 +68,7 @@ const server = http.createServer((req, res) => {
       var result = bodyString || ''
       // var query = querystring.parse(bodyString)
       // console.log(bodyString)
+      result = new Buffer(result, 'base64').toString()
       try {
 
         if (req.url.indexOf('esprima') > -1) {

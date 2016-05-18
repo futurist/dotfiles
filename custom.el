@@ -33,16 +33,14 @@
   (set-language-environment 'chinese-gbk)
   (prefer-coding-system 'utf-8-auto)
 
-  ;; (set-default-coding-systems 'utf-8)
-  ;; (set-buffer-file-coding-system 'utf-8-unix)
-  ;; (set-clipboard-coding-system 'utf-8-unix)
-  ;; (set-file-name-coding-system 'utf-8-unix)
-  ;; (set-keyboard-coding-system 'utf-8-unix)
-  ;; (set-next-selection-coding-system 'utf-8-unix)
-  ;; (set-selection-coding-system 'utf-8-unix)
-  ;; (set-terminal-coding-system 'utf-8-unix)
-  ;; (setq locale-coding-system 'utf-8)
-  ;; (prefer-coding-system 'utf-8-auto)
+  (set-default-coding-systems 'utf-8-unix)
+  (set-buffer-file-coding-system 'utf-8-unix)
+  (set-clipboard-coding-system 'gbk)
+  (set-file-name-coding-system 'gbk)
+  (set-keyboard-coding-system 'gbk)
+  (set-next-selection-coding-system 'utf-8-unix)
+  (set-terminal-coding-system 'gbk)
+  (setq locale-coding-system 'utf-8-unix)
 
   (set-fontset-font t 'gb18030 '("Microsoft Yahei" . "unicode-bmp"))
   ;; (set-fontset-font t 'han (font-spec :family "Microsoft Yahei" :size 16))
@@ -863,7 +861,7 @@ Including indent-buffer, which should not be called automatically on save."
   (let ((url-request-method (car (split-string method "-")))
         (url-request-extra-headers (cond
                                     ((string= method "POST") '(("Content-Type" . "application/x-www-form-urlencoded")))
-                                    ((string= method "POST-PLAIN") '(("Content-Type" . "text/plain")))
+                                    ((string= method "POST-BASE64") '(("Content-Type" . "text/plain")))
                                     ((string= method "POST-JSON") '(("Content-Type" . "application/json")))
                                     ))
         (url-request-data
@@ -875,9 +873,8 @@ Including indent-buffer, which should not be called automatically on save."
                                                          (url-hexify-string (cdr arg))))
                                                args
                                                "&"))
-          ((and t) args)
+          ((and t) (base64-encode-string (encode-coding-string args 'utf-8))) ;base64 encode to pass to node
           )))
-
     (url-retrieve url callback)
     ))
 

@@ -49,7 +49,7 @@ list of strings, giving the binary name and arguments.")
     )
   )
 
-(defun standard-format-region(start end not-jump-p pos-list)
+(defun standard-format-region(start end &optional not-jump-p pos-list)
   (interactive (if (region-active-p)
                    (list (region-beginning) (region-end) current-prefix-arg nil)
                  (list (+ (line-beginning-position) (current-indentation)) (line-end-position) current-prefix-arg nil)
@@ -106,7 +106,7 @@ list of strings, giving the binary name and arguments.")
       "Switch to the buffer returned by `url-retreive'.
     The buffer contains the raw HTTP response sent by the server."
       ;; (decode-coding-string "\\225\\357" 'utf-8) convert  unibyte string to Chinese!!!
-      ;; (message "-------%s -%s -%s" (buffer-name) errorlist (prog1 (buffer-string) (kill-buffer)))
+      ;; (message "-------%s -%s -%s" (buffer-name) errorlist (prog1 (buffer-string) ))
       (when (not errorlist)
         (let ((result (prog2 (search-forward "\n\n" nil t) (buffer-substring (point) (point-max)) (kill-buffer))))
           ;; (message "%s" (decode-coding-string result 'utf-8)))
@@ -122,7 +122,7 @@ list of strings, giving the binary name and arguments.")
   (let* (;; (text "if(a==b)'这是测试sdj要新的';")
          ;; (data (list (cons "text" text) ))
          (host "http://localhost")
-         (method "POST-PLAIN")
+         (method "POST-BASE64")
          server callback runner local-done
          )
     (setf local-done (lambda(s)
@@ -136,7 +136,7 @@ list of strings, giving the binary name and arguments.")
                      ))
     (setf runner (lambda()
                    ;; (my-url-http 'standard-format-result server method `,data) ; using backquote to quote the value of data
-                   (setq server (concat host ":" (number-to-string (or standard-format-proc-port 80))))
+                   (setq server (concat host ":" (number-to-string (or standard-format-proc-port 8000))))
                    (my-url-http local-done server method `,data) ; using backquote to quote the value of data
                    ))
     (if (or (get-process standard-format-proc-name) standard-format-proc-port)
