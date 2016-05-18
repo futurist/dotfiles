@@ -29,6 +29,7 @@
   ;; UTF-8 settings
   ;; (set-language-environment "UTF-8")
   ;; (prefer-coding-system 'utf-8)
+
   (set-language-environment 'chinese-gbk)
   (prefer-coding-system 'utf-8-auto)
 
@@ -41,8 +42,9 @@
   ;; (set-selection-coding-system 'utf-8-unix)
   ;; (set-terminal-coding-system 'utf-8-unix)
   ;; (setq locale-coding-system 'utf-8)
+  ;; (prefer-coding-system 'utf-8-auto)
 
-  (set-fontset-font t 'gb18030 '("Microsoft Yahei" . "unicode-bmp"))
+  (set-fontset-font t 'gbk '("Microsoft Yahei" . "unicode-bmp"))
   ;; (set-fontset-font t 'han (font-spec :family "Microsoft Yahei" :size 16))
   (setq face-font-rescale-alist '( ("Microsoft Yahei" . 1)("WenQuanYi Zen Hei" . 1)))
   )
@@ -472,12 +474,13 @@ Return output file name."
   )
 
 ;; command line install: npm install -g lorem-cn
-(defun insert-lorem-cn (number)
-  (interactive "p")
-  (insert (shell-command-to-string (format "lorem-cn %s %s" number "true")))
+(defun insert-lorem-cn (number arg)
+  (interactive "p\nP")
+  ;; (message "%s---%s" number arg)
+  (insert (shell-command-to-string (format "lorem-cn %s %s" number "-p")))
   )
 
-(bind-key "C-' l o" 'insert-lorem-cn)
+(bind-key "C-' l l" 'insert-lorem-cn)
 
 (defvar html-file-extensions "\\.\\(aspx\\|php\\|\\sw*html*\\)\\'")
 (setq mmm-global-mode nil)
