@@ -893,7 +893,7 @@ Including indent-buffer, which should not be called automatically on save."
                                                          (url-hexify-string (cdr arg))))
                                                args
                                                "&"))
-          ((and t) (base64-encode-string (encode-coding-string args (symbol-value 'buffer-file-coding-system)))) ;base64 encode to pass to node
+          ((and t) (base64-encode-string (encode-coding-string args 'utf-8))) ;base64 encode to pass to node
           )))
     (url-retrieve url callback)
     ))
@@ -1409,6 +1409,12 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-' x f") 'xah-find-text)
 (global-set-key (kbd "C-' f") 'recentf-open-files)
 (global-set-key (kbd "C-' s") 'highlight-symbol-at-point)
+(global-set-key (kbd "C-' TAB") '(lambda()
+                                   (interactive)
+                                   (if (region-active-p)
+                                       (progn (call-interactively 'indent-rigidly))
+                                     (call-interactively 'indent-relative))
+                                   ))
 (define-key global-map (kbd "C-' o") 'locate-current-file-in-explorer)
 (define-key global-map (kbd "C-' c") 'cleanup-buffer)
 
