@@ -873,7 +873,7 @@ Including indent-buffer, which should not be called automatically on save."
                                                          (url-hexify-string (cdr arg))))
                                                args
                                                "&"))
-          ((and t) (base64-encode-string (encode-coding-string args 'utf-8))) ;base64 encode to pass to node
+          ((and t) (base64-encode-string (encode-coding-string args (symbol-value 'buffer-file-coding-system)))) ;base64 encode to pass to node
           )))
     (url-retrieve url callback)
     ))
