@@ -1,3 +1,4 @@
+alias em='emacs'
 alias vi='vim'
 export EDITOR=vim
 PATH=$PATH:$HOME/bin:~/mongo-express/:/root/redis-3.0.3/src/:/usr/local/go/bin:/usr/local/texlive/2014/bin/i386-linux/
@@ -9,6 +10,11 @@ stty -ixon
 alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
+alias ga='git add -A'
+alias gs='git status '
+alias gp='git push'
+alias gm='git commit -m '
+
 
 export GOPATH=$HOME/work
 
@@ -118,6 +124,8 @@ export htdoc=/home/1111hui/public_html
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # This loads nvm
 
+
+export PATH="$HOME/.cask/bin:$PATH"
 
 
 
