@@ -33,18 +33,24 @@
   (set-language-environment 'chinese-gbk)
   (prefer-coding-system 'utf-8-auto)
 
-  (set-default-coding-systems 'utf-8-unix)
-  (set-buffer-file-coding-system 'utf-8-unix)
-  (set-clipboard-coding-system 'gbk)
-  (set-file-name-coding-system 'gbk)
-  (set-keyboard-coding-system 'gbk)
-  (set-next-selection-coding-system 'utf-8-unix)
-  (set-terminal-coding-system 'gbk)
-  (setq locale-coding-system 'utf-8-unix)
+  ;; (set-default-coding-systems 'gbk)
+  ;; (set-buffer-file-coding-system 'gbk)
+  ;; (set-clipboard-coding-system 'gbk)
+  ;; (set-file-name-coding-system 'gbk)
+  ;; (set-keyboard-coding-system 'gbk)
+  ;; (set-next-selection-coding-system 'gbk)
+  ;; (set-terminal-coding-system 'gbk)
+  ;; (setq locale-coding-system 'gbk)
 
   (set-fontset-font t 'gb18030 '("Microsoft Yahei" . "unicode-bmp"))
   ;; (set-fontset-font t 'han (font-spec :family "Microsoft Yahei" :size 16))
   (setq face-font-rescale-alist '( ("Microsoft Yahei" . 1)("WenQuanYi Zen Hei" . 1)))
+
+  ;; (push '("\\*shell" gbk-dos . gbk-dos) process-coding-system-alist)
+  (add-hook 'shell-mode-hook '(lambda()
+                                (set-buffer-process-coding-system 'gbk-dos 'gbk-dos)
+                                ))
+
   )
 
 (setq tramp-auto-save-directory "~/tramp-autosave")
