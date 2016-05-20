@@ -634,7 +634,7 @@ Including indent-buffer, which should not be called automatically on save."
 (require-package 'company-restclient)
 (require-package 'company-go)
 (add-hook 'after-init-hook 'global-company-mode)
-(setq company-tooltip-limit 15)                      ; bigger popup window
+(setq company-tooltip-limit 99)                      ; bigger popup window
 (setq company-idle-delay .3)                         ; decrease delay before autocompletion popup shows
 (setq company-echo-delay 0)                          ; remove annoying blinking
 (setq company-begin-commands '(self-insert-command)) ; start autocompletion only after typing
@@ -643,7 +643,7 @@ Including indent-buffer, which should not be called automatically on save."
   (company-flx-mode +1)
   ;; (company-quickhelp-mode 1)
   (setq company-auto-complete t)
-  (setq company-flx-limit 15)
+  (setq company-flx-limit 99)
   (setq company-dict-dir (concat user-emacs-directory "company-dict/"))
   ;; (setq company-auto-complete-chars '(?\  ?\) ?. ?\t))
   ;; (add-to-list 'company-backends 'company-dict)
@@ -716,7 +716,7 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map "@" 'js-doc-insert-tag)
             (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)
             (define-key js2-mode-map (kbd "C-M-i") 'company-tern)
-            (define-key js2-mode-map (kbd "C-' c") '(lambda()(interactive) (standard-format-region (point-min) (point-max)) (cleanup-buffer) (js2-mode-reset)))
+            (define-key js2-mode-map (kbd "C-' c") 'standard-format-buffer)
             (define-key js2-mode-map (kbd "<M-return>") '(lambda(arg)(interactive "P")
                                                            (let ((node (js2-comment-at-point)) start len comment-start)
                                                              (when node
