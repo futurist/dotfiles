@@ -173,6 +173,7 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
 
 (require-package 'goto-last-change)
 (bind-key "C-x C-/" 'goto-last-change)
+(bind-key "C-S-s" 'swiper)
 
 ;; linum mode with highlight
 (require-package 'hlinum)
@@ -709,7 +710,7 @@ Including indent-buffer, which should not be called automatically on save."
             ) )
 (add-hook 'js2-mode-hook
           (lambda ()
-            (setq page-delimiter "//")
+            (set (make-local-variable 'page-delimiter) "//\f")
             (tern-mode +1)
             (form-feed-mode t)
             (define-key js2-mode-map "\C-ci" 'js-doc-insert-function-doc)
