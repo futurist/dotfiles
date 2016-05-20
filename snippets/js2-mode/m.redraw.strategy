@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: m.redraw.strategy
+# key: mrs
+# --
+m.redraw.strategy("none")

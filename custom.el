@@ -1538,7 +1538,8 @@ from Google syntax-forward-syntax func."
 (define-key global-map (kbd "<up>") 'scroll-down-line)
 (define-key global-map (kbd "C-x C-6") 'my-max-window-size)
 
-(define-key global-map (kbd "C-s") 'swiper-selection)
+(define-key global-map (kbd "C-s") 'search-selection)
+(define-key global-map (kbd "C-S-s") 'swiper-selection)
 (global-set-key (kbd "C-M-d") 'kill-forward-symbol)
 ;; (global-set-key (kbd "M-D") 'kill-word)
 (global-set-key (kbd "C-d") 'er/delete-char-or-word)

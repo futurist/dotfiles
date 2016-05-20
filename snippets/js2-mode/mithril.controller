@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: mithril controller
+# key: c
+# --
+controller : function(){
+  $0
+},
+view       : function(ctrl){
+  return m()
+}
