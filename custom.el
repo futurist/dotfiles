@@ -166,6 +166,12 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
 
 ;; Install extensions if they're missing
 (require-package 'swiper)
+(defun swiper-selection (start end)
+  (interactive "r")
+  (swiper (when (region-active-p)
+            (deactivate-mark)
+            (buffer-substring start end))))
+
 (require-package 'restclient)
 ;; (require-package 'nodejs-repl)  ;;buggy!!! will freeze emacs
 (require-package 'editorconfig)
@@ -173,7 +179,6 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
 
 (require-package 'goto-last-change)
 (bind-key "C-x C-/" 'goto-last-change)
-(bind-key "C-S-s" 'swiper)
 
 ;; linum mode with highlight
 (require-package 'hlinum)
@@ -1533,7 +1538,7 @@ from Google syntax-forward-syntax func."
 (define-key global-map (kbd "<up>") 'scroll-down-line)
 (define-key global-map (kbd "C-x C-6") 'my-max-window-size)
 
-(define-key global-map (kbd "C-s") 'search-selection)
+(define-key global-map (kbd "C-s") 'swiper-selection)
 (global-set-key (kbd "C-M-d") 'kill-forward-symbol)
 ;; (global-set-key (kbd "M-D") 'kill-word)
 (global-set-key (kbd "C-d") 'er/delete-char-or-word)
