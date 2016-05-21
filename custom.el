@@ -907,6 +907,45 @@ Including indent-buffer, which should not be called automatically on save."
 
 
 
+
+
+(defun js2r-universal-expand(arg)
+  "Expand or contract bracketed list using js2r.
+Currently working on array, object, function, call args."
+  (interactive "P")
+  (let ((debug-on-error nil)
+        (pos (point))
+        (pos-array (point-max))
+        (pos-object (point-max))
+        (pos-function (point-max))
+        (pos-call (point-max)))
+    (save-excursion
+      (ignore-errors
+        (js2r--goto-closest-array-start)
+        (setq pos-array (- pos (point)))))
+
+    (save-excursion
+      (ignore-errors
+        (js2r--goto-closest-object-start)
+        (setq pos-object (- pos (point)))))
+
+    (save-excursion
+      (ignore-errors
+        (js2r--goto-closest-function-start)
+        (setq pos-function (- pos (point)))))
+
+    (save-excursion
+      (ignore-errors
+        (js2r--goto-closest-call-start)
+        (setq pos-call (- pos (point)))))
+
+    (setq pos (-min (list pos-array pos-object pos-function pos-call)))
+    (when (= pos pos-array) (if arg (js2r-contract-array) (js2r-expand-array)))
+    (when (= pos pos-object) (if arg (js2r-contract-object) (js2r-expand-object)))
+    (when (= pos pos-function) (if arg (js2r-contract-function) (js2r-expand-function)))
+    (when (= pos pos-call) (if arg (js2r-contract-call-args) (js2r-expand-call-args)))
+    ))
+
 ;; align rule for js2-mode
 ;; align var = abc; {a:1, b:2} etc
 (eval-after-load "align"
@@ -1413,6 +1452,7 @@ from Google syntax-forward-syntax func."
 ;; C-' space is my custom space
 (global-set-key (kbd "M-]") 'syntax-forward-syntax-group)
 (global-set-key (kbd "M-[") '(lambda(arg)(interactive "^p") (syntax-forward-syntax-group (* arg -1))))
+(global-set-key (kbd "C-' 2") 'split-window-right)
 (global-set-key (kbd "C-' x f") 'xah-find-text)
 (global-set-key (kbd "C-' f") 'recentf-open-files)
 (global-set-key (kbd "C-' s") 'highlight-symbol-at-point)
@@ -1439,11 +1479,17 @@ from Google syntax-forward-syntax func."
 
 (add-hook 'js2-mode-hook
           (lambda()
+            (advice-add 'js2r-expand-call-args
+                        :after
+                        '(lambda() (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space) ))
+            (define-key js2-mode-map (kbd "C-x C-m C-e") 'js2r-universal-expand)
+            (define-key js2-mode-map (kbd "C-x C-m C-c") '(lambda()(interactive)(js2r-universal-expand t)))
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
             (define-key js2-mode-map (kbd "C-.") '(lambda(arg)(interactive "P") (if arg (select-current-pair-content) (js2-mark-parent-statement2))))
             (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
             (define-key js2-mode-map (kbd "C-' l") 'align)
             ))
+
 (define-key global-map (kbd "C-x j") 'standard-format-region)
 (global-set-key (kbd "C-c C-k") 'copy-line)
 ;; (global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
