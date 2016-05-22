@@ -1001,8 +1001,7 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
        (t
         (shell-command (concat "start " cmd  "\"" (replace-regexp-in-string "/" "\\\\" default-directory) "\""))))))
   (when *is-a-mac*
-    (reveal-in-osx-finder)
-    )
+    (reveal-in-osx-finder))
   )
 
 (defun duplicate-line-or-region (&optional n)
@@ -1607,6 +1606,19 @@ from Google syntax-forward-syntax func."
   ;; bash complete not run on windows
   (require-package 'bash-completion)
   (bash-completion-setup)
+
+  (advice-add 'reveal-in-osx-finder-as :after
+              '(lambda(&optional dir file)
+                 (if dir
+                     (let ((script         ; Define script variable using revealpath and text.
+                            (concat
+                             "delay 1\n"
+                             "tell application \"Terminal\"\n"
+                             " activate\n"
+                             " do script \"cd " dir "\" in front window \n"
+                             " activate\n"
+                             "end tell\n")))
+                       (start-process "osascript-getinfo" nil "osascript" "-e" script)))))
 
   ;; when in graphic GUI, set proper window size
   (when (display-graphic-p)
