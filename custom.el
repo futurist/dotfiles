@@ -1613,9 +1613,10 @@ from Google syntax-forward-syntax func."
                      (let ((script         ; Define script variable using revealpath and text.
                             (concat
                              "delay 1\n"
+                             "set thePath to POSIX file \"" dir "\"\n"
                              "tell application \"Terminal\"\n"
                              " activate\n"
-                             " do script \"cd " dir "\" in front window \n"
+                             " do script \"cd '" dir "'\" in front window \n"
                              " activate\n"
                              "end tell\n")))
                        (start-process "osascript-getinfo" nil "osascript" "-e" script)))))
