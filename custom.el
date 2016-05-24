@@ -1555,6 +1555,9 @@ from Google syntax-forward-syntax func."
 ;; (define-key global-map "\C-x\C-u" 'undo)
 (global-set-key (kbd "C-S-r") 'anzu-query-replace-at-cursor-thing)
 (after-load 'init-editing-utils
+  (global-set-key [M-up] nil)
+  (global-set-key [M-down] nil)
+
   (define-key global-map (kbd "C-.") 'select-current-pair)
   ;; remmap the old C-M-. is 'find-tag-regexp
   (define-key global-map (kbd "C-M-.") '(lambda(arg)(interactive "P")
