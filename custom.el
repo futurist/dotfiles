@@ -1334,12 +1334,14 @@ from Google syntax-forward-syntax func."
     (when (eq arg 1)
       (let ((pos (point)))
         (goto-char (1- (paredit-current-sexp-end)))
+        (skip-chars-backward "\n\r \t")
         (kill-region pos (point))
         )
       )
     (when (eq arg 2) (call-interactively 'paredit-kill))
     (when (eq arg 3) (paredit-kill))
-    (forward-char 1)
+    (goto-char (paredit-current-sexp-end))
+    (newline-and-indent)
     (yank)
     (pop kill-ring)
     (setq kill-ring-yank-pointer kill-ring)
@@ -1350,7 +1352,7 @@ from Google syntax-forward-syntax func."
        (move-parent-forward (if arg 2 1)))
 (defun move-parent-forward-paredit (arg)(interactive "p")
        (move-parent-forward 3))
-(defun move-parent-backwrad-sexp(arg)(interactive "p")
+(defun move-parent-backward-sexp(arg)(interactive "p")
        (move-parent-backward 1))
 
 
@@ -1594,7 +1596,7 @@ from Google syntax-forward-syntax func."
 
 ;; (global-set-key (kbd "C-M-<left>") 'sp-forward-slurp-sexp)
 ;; (global-set-key (kbd "C-M-<right>") 'sp-forward-barf-sexp)
-(global-set-key (kbd "M-<right>") 'move-parent-backwrad-sexp)
+(global-set-key (kbd "M-<right>") 'move-parent-backward-sexp)
 (global-set-key (kbd "M-<left>") 'move-parent-forward-symbol)
 (global-set-key (kbd "C-M-<left>") 'move-parent-forward-paredit)
 
