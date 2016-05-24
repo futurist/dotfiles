@@ -541,7 +541,6 @@ Return output file name."
 ;; (require 'smartparens-config)
 ;; (add-hook 'js-mode-hook #'smartparens-mode)
 ;; (add-hook 'js2-mode-hook #'smartparens-mode)
-;; (sp-use-smartparens-bindings)
 
 
 ;; github/magnars
@@ -907,6 +906,26 @@ Including indent-buffer, which should not be called automatically on save."
 
 
 
+(defun paredit-rewrap (&optional ARG)
+  "Rewrap current sexp, if ARG, don't remove old delimiter."
+  (interactive "P")
+  (save-excursion
+    (let ((pos (point))
+          (start (paredit-current-sexp-start))
+          (end (paredit-current-sexp-end))
+          (left (read-char-exclusive "Rewrap left char:"))
+          (right (read-char-exclusive "Rewrap right char:"))
+          )
+      (goto-char end)
+      (when (null ARG)
+        (delete-backward-char 1))
+      (insert-char right)
+      (goto-char start)
+      (when (null ARG)
+        (delete-forward-char 1))
+      (insert-char left)
+      )))
+
 (defun paredit-kill-sexp-forward(&optional N)
   "Kill forward-sexp N times."
   (setq N (or N 1))
@@ -936,12 +955,8 @@ Including indent-buffer, which should not be called automatically on save."
 
 (defun select-current-pair(&optional arg)
   (interactive "P")
-  (let ((start (if (paredit-in-string-p)
-                   (paredit-enclosing-string-start)
-                 (paredit-enclosing-list-start)))
-        (end (if (paredit-in-string-p)
-                 (paredit-enclosing-string-end)
-               (paredit-enclosing-list-end))))
+  (let ((start (paredit-current-sexp-start))
+        (end (paredit-current-sexp-end)))
     (when arg
       (incf start)
       (decf end)
@@ -954,44 +969,9 @@ Including indent-buffer, which should not be called automatically on save."
     )
   )
 
-(defun select-current-pair2()
-  (interactive)
-  (let* (
-         (pair-out (cond
-                    ((string= "js2-mode" major-mode) "[]})]")
-                    ((string= "html-mode" major-mode) "[>]")
-                    ("[]})]")         ;default pair
-                    ))
-         (pair-in (cond
-                   ((string= "js2-mode" major-mode) "[[{(]")
-                   ((string= "html-mode" major-mode) "[<]")
-                   ("[[{(]")         ;default pair
-                   ))
-         (cur (point))
-         (str (sp-get-string))
-         )
-    (when (not (region-active-p))
-      (if (looking-at-p pair-in) (forward-char 1)
-        (if (looking-at-p pair-out) ()
-          (if str
-              (if (= (sp-get str :beg) cur) (forward-char 1)
-                (if (= (sp-get str :end) (1- cur)) ())
-                )
-            )
-          )
-        )
-      )
-    (sp-up-sexp)
-    (deactivate-mark)
-    (set-mark-command nil)
-    (transient-mark-mode '(4))
-    (sp-backward-sexp)
-    )
-  )
-
-(defun sp-backward-delete-all (&optional arg)(interactive)
+(defun paredit-backward-delete-all (&optional arg)(interactive)
        (let ((old (point)))
-         (goto-char (1+ (paredit-enclosing-list-start)))
+         (goto-char (1+ (paredit-current-sexp-start)))
          (if (eq old (point))
              (progn
                ;; (move-beginning-of-line nil)
@@ -1003,16 +983,16 @@ Including indent-buffer, which should not be called automatically on save."
 
 
 ;; (require-package 'paredit)
-(after-load 'paredit
+(after-load 'paredit-everywhere
   (advice-add 'paredit-splice-sexp :before '(lambda(&optional arg)
                                               "If in begin of sexp delimiter, then forward-char"
                                               (if (= ?\( (char-syntax (char-after)))
                                                   (forward-char)
                                                 )
                                               ))
-  (define-key paredit-mode-map (kbd "M-}") nil)
-  (define-key paredit-mode-map (kbd "C-M-}") 'paredit-current-sexp-end)
-  (define-key paredit-mode-map (kbd "C-M-{") 'paredit-current-sexp-start)
+  (define-key paredit-everywhere-mode-map (kbd "M-}") nil)
+  (define-key paredit-everywhere-mode-map (kbd "C-M-}") 'paredit-current-sexp-end)
+  (define-key paredit-everywhere-mode-map (kbd "C-M-{") 'paredit-current-sexp-start)
   )
 
 
@@ -1332,12 +1312,11 @@ from Google syntax-forward-syntax func."
   (interactive "p")
   (setq arg (or arg 1))
   (save-excursion
-    (goto-char (paredit-point-at-sexp-end))
-    (forward-char 1)
+    (goto-char (paredit-current-sexp-end))
     (if (eq arg 1)(kill-sexp 1)
       (if (eq arg 2) (let ((char (read-char-exclusive "input a char to zap:")))
                        (if (eq char 13)
-                           (paredit-kill 1)
+                           (kill-line)
                          (zap-up-to-char 1 char))
                        )
         (if (eq arg 3) (paredit-kill 1))
@@ -1351,14 +1330,15 @@ from Google syntax-forward-syntax func."
 
 (defun move-parent-backward (arg)
   (interactive "p")
-  (setq arg (or arg 1))
   (save-excursion
     (when (eq arg 1)
-      (goto-char (paredit-point-at-sexp-end))
-      (backward-kill-sexp 1)
+      (let ((pos (point)))
+        (goto-char (1- (paredit-current-sexp-end)))
+        (kill-region pos (point))
+        )
       )
-    (when (eq arg 2) (paredit-kill 1))
-    (when (eq arg 3) (paredit-kill 1))
+    (when (eq arg 2) (call-interactively 'paredit-kill))
+    (when (eq arg 3) (paredit-kill))
     (forward-char 1)
     (yank)
     (pop kill-ring)
@@ -1368,10 +1348,10 @@ from Google syntax-forward-syntax func."
 
 (defun move-parent-forward-symbol (arg)(interactive "P")
        (move-parent-forward (if arg 2 1)))
-(defun move-parent-forward-up-to-char (arg)(interactive "p")
-       (move-parent-forward 2))
-(defun move-parent-backwrad-symbol()(interactive "p")
-       (move-parent-backward 2))
+(defun move-parent-forward-paredit (arg)(interactive "p")
+       (move-parent-forward 3))
+(defun move-parent-backwrad-sexp(arg)(interactive "p")
+       (move-parent-backward 1))
 
 
 ;; -- define a new command to join multiple lines together --
@@ -1386,7 +1366,6 @@ from Google syntax-forward-syntax func."
   "search for selected text"
   (interactive "P")
   (when (and (thing-at-point 'symbol) (equal arg nil) (not (region-active-p)))
-    ;; (sp-select-next-thing-exchange)
     )
   (if (and (not arg) (region-active-p))
       (let (
@@ -1423,8 +1402,11 @@ from Google syntax-forward-syntax func."
 
 (defun my-backward-sexp(&optional arg)
   (interactive "p")
-  (let ((old (point))) (goto-char (paredit-enclosing-list-start))
-       (if (eq old (point)) (sp-backward-up-sexp arg))
+  (let ((old (point))) (goto-char (1+ (paredit-current-sexp-start)))
+       (when (eq old (point))
+         (paredit-backward-up arg)
+         ;; (goto-char (1+ (paredit-current-sexp-start)))
+         )
        )
   )
 
@@ -1530,6 +1512,8 @@ from Google syntax-forward-syntax func."
                         '(lambda() (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space) ))
             (define-key js2-mode-map (kbd "C-x C-m C-e") 'js2r-universal-expand)
             (define-key js2-mode-map (kbd "C-x C-m C-c") '(lambda()(interactive)(js2r-universal-expand t)))
+            (define-key paredit-everywhere-mode-map (kbd "M-]") nil)
+            (define-key js2-mode-map (kbd "M-]") '(lambda()(interactive)(call-interactively 'paredit-current-sexp-end) (forward-char) (newline-and-indent)))
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
             (define-key js2-mode-map (kbd "C-\"") 'js2-mark-parent-statement2)
             (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
@@ -1547,7 +1531,7 @@ from Google syntax-forward-syntax func."
 ;; (global-set-key (kbd "C-j") 'join-lines)
 (global-set-key (kbd "C-S-d") 'duplicate-line-or-region)
 (global-set-key (kbd "C-<backspace>") 'kill-backward-symbol)
-(global-set-key (kbd "C-S-<backspace>") 'sp-backward-delete-all)
+(global-set-key (kbd "C-S-<backspace>") 'paredit-backward-delete-all)
 (global-set-key (kbd "C-:") 'comment-or-uncomment-line-or-region)
 (global-set-key (kbd "C-S-l") 'mark-paragraph)
 ;; move lines
@@ -1605,14 +1589,14 @@ from Google syntax-forward-syntax func."
 
 ;; (global-set-key (kbd "M-S") 'paredit-unwrap) ; paredit-splice-sexp/string
 (global-set-key (kbd "C-{") 'my-backward-sexp)
-(global-set-key (kbd "C-}") 'sp-end-of-sexp)
-(global-set-key (kbd "C-M-'") 'sp-rewrap-sexp)
+;; (global-set-key (kbd "C-}") 'sp-end-of-sexp)
+(global-set-key (kbd "C-M-'") 'paredit-rewrap)
 
 ;; (global-set-key (kbd "C-M-<left>") 'sp-forward-slurp-sexp)
 ;; (global-set-key (kbd "C-M-<right>") 'sp-forward-barf-sexp)
-(global-set-key (kbd "M-<right>") 'move-parent-backwrad-symbol)
+(global-set-key (kbd "M-<right>") 'move-parent-backwrad-sexp)
 (global-set-key (kbd "M-<left>") 'move-parent-forward-symbol)
-(global-set-key (kbd "C-M-<left>") 'move-parent-forward-up-to-char)
+(global-set-key (kbd "C-M-<left>") 'move-parent-forward-paredit)
 
 
 ;; (global-set-key (kbd "M-] ]") 'paredit-wrap-square)
