@@ -1512,8 +1512,8 @@ from Google syntax-forward-syntax func."
             (advice-add 'js2r-expand-call-args
                         :after
                         '(lambda() (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space) ))
-            (define-key js2-mode-map (kbd "C-x C-m C-e") 'js2r-universal-expand)
-            (define-key js2-mode-map (kbd "C-x C-m C-c") '(lambda()(interactive)(js2r-universal-expand t)))
+            (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-universal-expand)
+            (define-key js2-mode-map (kbd "C-c C-m C-c") '(lambda()(interactive)(js2r-universal-expand t)))
             (define-key paredit-everywhere-mode-map (kbd "M-]") nil)
             (define-key js2-mode-map (kbd "M-]") '(lambda()(interactive)(call-interactively 'paredit-current-sexp-end) (forward-char) (newline-and-indent)))
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
