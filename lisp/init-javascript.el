@@ -100,7 +100,7 @@
 
 (defun js2-insert-umd(arg)
   (interactive "P")
-  (let ((head (format "(function (root, factory) {
+  (let ((head (format ";(function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     define([], factory) // define(['jquery'], factory)
   } else if (typeof exports === 'object') {
