@@ -990,10 +990,21 @@ Including indent-buffer, which should not be called automatically on save."
                                                   (forward-char)
                                                 )
                                               ))
+  (define-key paredit-mode-map (kbd "C-d") nil)
+  (define-key paredit-everywhere-mode-map (kbd "C-d") nil)
+
+  (define-key paredit-mode-map (kbd "M-}") nil)
   (define-key paredit-everywhere-mode-map (kbd "M-}") nil)
+
+  (define-key paredit-mode-map (kbd "C-M-}") 'paredit-current-sexp-end)
   (define-key paredit-everywhere-mode-map (kbd "C-M-}") 'paredit-current-sexp-end)
+
+  (define-key paredit-mode-map (kbd "C-M-{") 'paredit-current-sexp-start)
   (define-key paredit-everywhere-mode-map (kbd "C-M-{") 'paredit-current-sexp-start)
   )
+(add-hook 'js2-mode-hook 'enable-paredit-mode)
+(add-hook 'html-mode-hook 'enable-paredit-mode)
+(add-hook 'web-mode-hook 'enable-paredit-mode)
 
 
 (defun js2r-universal-expand(arg)
@@ -1564,7 +1575,7 @@ from Google syntax-forward-syntax func."
                                           (funcall (global-key-binding (kbd "C-.")) arg)
                                           (kill-ring-save (region-beginning) (region-end))
                                           ))
-  (define-key global-map (kbd "C-;") 'avy-goto-char-timer)
+  (define-key global-map (kbd "C-;") 'avy-goto-char-2)
   (guide-key-mode -1)
   (cua-selection-mode -1)
   (put 'upcase-region 'disabled t)
