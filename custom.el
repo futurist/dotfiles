@@ -1003,8 +1003,6 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key paredit-everywhere-mode-map (kbd "C-M-{") 'paredit-current-sexp-start)
   )
 (add-hook 'js2-mode-hook 'enable-paredit-mode)
-(add-hook 'html-mode-hook 'enable-paredit-mode)
-(add-hook 'web-mode-hook 'enable-paredit-mode)
 
 
 (defun js2r-universal-expand(arg)
