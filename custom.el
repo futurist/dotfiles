@@ -674,7 +674,14 @@ Including indent-buffer, which should not be called automatically on save."
 (require-package 'sws-mode)
 (require-package 'jade-mode)
 (require-package 'stylus-mode)
-(add-to-list 'auto-mode-alist '("\\.styl\\'" . stylus-mode))
+(setq auto-mode-alist
+      (append
+       '(
+         ("\\.styl\\'" . stylus-mode)
+         ("\\.stylus\\'" . stylus-mode)
+         )
+      auto-mode-alist)
+ )
 
 
 (defvar projectile-keymap-prefix (kbd "C-x p"))
@@ -711,6 +718,7 @@ Including indent-buffer, which should not be called automatically on save."
 (add-hook 'js-mode-hook
           (lambda()
             (tern-mode +1)
+            (tagedit-mode -1)
             ) )
 (add-hook 'js2-mode-hook
           (lambda ()
@@ -1002,8 +1010,19 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key paredit-mode-map (kbd "C-M-{") 'paredit-current-sexp-start)
   (define-key paredit-everywhere-mode-map (kbd "C-M-{") 'paredit-current-sexp-start)
   )
-(add-hook 'js2-mode-hook 'enable-paredit-mode)
 
+(dolist (mode '(web html xhtml xml nxml sgml))
+  (add-hook (intern (format "%s-mode-hook" mode))
+            '(lambda ()
+               (tagedit-mode 1)
+               )))
+
+(dolist (mode '(ruby espresso js js2))
+  (add-hook (intern (format "%s-mode-hook" mode))
+            '(lambda ()
+               (add-to-list (make-local-variable 'paredit-space-for-delimiter-predicates)
+                            (lambda (_ _) nil))
+               (enable-paredit-mode))))
 
 (defun js2r-universal-expand(arg)
   "Expand or contract bracketed list using js2r.
@@ -1077,6 +1096,28 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 (add-to-list 'load-path (expand-file-name "standard" user-emacs-directory))
 (require 'init-js-standard)
 
+
+;; magnars version for rename buffer and file
+(defun rename-current-buffer-file ()
+  "Renames current buffer and file it is visiting."
+  (interactive)
+  (let* ((name (buffer-name))
+        (filename (buffer-file-name))
+        (basename (file-name-nondirectory filename)))
+    (if (not (and filename (file-exists-p filename)))
+        (error "Buffer '%s' is not visiting a file!" name)
+      (let ((new-name (read-file-name "New name: " (file-name-directory filename) basename nil basename)))
+        (if (get-buffer new-name)
+            (error "A buffer named '%s' already exists!" new-name)
+          (rename-file filename new-name 1)
+          (rename-buffer new-name)
+          (set-visited-file-name new-name)
+          (set-buffer-modified-p nil)
+          (message "File '%s' successfully renamed to '%s'"
+                   name (file-name-nondirectory new-name)))))))
+(global-set-key (kbd "C-x C-r") 'rename-current-buffer-file)
+
+
 ;; location current file in explorer
 (require-package 'reveal-in-osx-finder)
 (defun locate-current-file-in-explorer (in-tc)
