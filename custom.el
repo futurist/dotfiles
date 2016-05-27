@@ -1093,6 +1093,31 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
                ))
 
 
+
+    (defun mark-current-indentation (&optional ARG)
+      "Select surrounding lines with current indentation.
+    if ARG is 'C-u', mark forward; if ARG is 'C-u C-u', mark backward."
+      (interactive "P")
+      (let ((is-forward (not (equal ARG '(16))))
+            (is-backward (not (equal ARG '(4))))
+            (indentation (if (not (current-line-empty-p))
+                             (current-indentation)
+                           (skip-chars-forward "\s\t\n")
+                           (current-indentation))))
+        (if (= indentation 0)
+            (mark-whole-buffer)
+          (if (not is-forward) (push-mark (point) nil t))
+          (while (and (not (bobp)) is-backward
+                      (or (current-line-empty-p) (<= indentation (current-indentation))))
+            (forward-line -1))
+          (if is-backward (forward-line 1) (move-beginning-of-line nil))
+          (if (not (use-region-p)) (push-mark (point) nil t))
+          (while (and (not (eobp)) is-forward
+                      (or (current-line-empty-p) (<= indentation (current-indentation))))
+            (forward-line 1))
+          (if is-forward (backward-char)))))
+(bind-key "C-' C-l" 'mark-current-indentation)
+
 (add-to-list 'load-path (expand-file-name "standard" user-emacs-directory))
 (require 'init-js-standard)
 
@@ -1569,7 +1594,7 @@ from Google syntax-forward-syntax func."
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
             (define-key js2-mode-map (kbd "C-\"") 'js2-mark-parent-statement2)
             (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
-            (define-key js2-mode-map (kbd "C-' l") 'align)
+            (define-key js2-mode-map (kbd "C-' a") 'align)
             ))
 
 (define-key global-map (kbd "C-x j") 'standard-format-region)
