@@ -100,20 +100,23 @@
 
 (defun js2-insert-umd(arg)
   (interactive "P")
-  (let ((head (format ";(function (root, factory) {
+  (let* ((export (read-from-minibuffer "Enter export symbol for global:"))
+        (head (format ";(function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     define([], factory) // define(['jquery'], factory)
   } else if (typeof exports === 'object') {
     exports = module.exports = factory() // factory(require('jquery'))
   } else {
-    root.popupOverlay = factory() // should return obj in factory
+    root.%s = factory() // should return obj in factory
   }
 }(this, function () {%s
-" (if arg "\n\"use strict\";\n" "")))
+" (if (or (null export) (string-empty-p export)) (format-time-string "s%s") export)
+  (if arg "\n\"use strict\";\n" "")))
 (foot "
 }))
 "))
 (goto-char (point-min))
+(delete-blank-lines)
 (insert head)
 (goto-char (point-max))
 (insert foot)
