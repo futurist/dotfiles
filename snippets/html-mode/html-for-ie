@@ -1,0 +1,25 @@
+# -*- mode: snippet -*-
+# name: html-for-ie
+# key: html:ie
+# --
+<!doctype html>
+<!--[if lt IE 7]> <html class="lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>    <html class="lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>    <html class="lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <title>$1</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <!--[if lte IE 9]>
+        <script src="http://1111hui.com/js/polyfill.min.js"></script>
+        <style>
+          html.lt-ie9 body{}
+        </style>
+        <![endif]-->
+  </head>
+  <body>
+    $0
+  </body>
+</html>
