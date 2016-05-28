@@ -1727,24 +1727,29 @@ from Google syntax-forward-syntax func."
 
 ;; (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
 
+(defun osx-open-terminal (&optional dir file)
+  (interactive)
+  (let ((filename (buffer-file-name)))
+  (if (and filename (null dir)) (setq dir (file-name-directory filename)))
+  (if (and filename (null file)) (setq file (file-name-nondirectory filename)))
+  (if dir
+      (let ((script         ; Define script variable using revealpath and text.
+             (concat
+              ;; "delay 1\n"
+              "tell application \"Terminal\"\n"
+              " activate\n"
+              " do script \"cd '" dir "'\" in front window \n"
+              " activate\n"
+              "end tell\n")))
+        (start-process "osascript-getinfo" nil "osascript" "-e" script)))))
+
 (when *is-a-mac*
   ;; bash complete not run on windows
   (require-package 'bash-completion)
   (bash-completion-setup)
 
-  (advice-add 'reveal-in-osx-finder-as :after
-              '(lambda(&optional dir file)
-                 (if dir
-                     (let ((script         ; Define script variable using revealpath and text.
-                            (concat
-                             "delay 1\n"
-                             "set thePath to POSIX file \"" dir "\"\n"
-                             "tell application \"Terminal\"\n"
-                             " activate\n"
-                             " do script \"cd '" dir "'\" in front window \n"
-                             " activate\n"
-                             "end tell\n")))
-                       (start-process "osascript-getinfo" nil "osascript" "-e" script)))))
+  ;; (advice-add 'reveal-in-osx-finder-as :after 'osx-open-terminal)
+  (bind-key "C-' d" 'osx-open-terminal)
 
   ;; when in graphic GUI, set proper window size
   (when (display-graphic-p)
