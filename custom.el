@@ -1011,17 +1011,16 @@ Including indent-buffer, which should not be called automatically on save."
                                                   (forward-char)
                                                 )
                                               ))
-  (define-key paredit-mode-map (kbd "C-d") nil)
   (define-key paredit-everywhere-mode-map (kbd "C-d") nil)
 
-  (define-key paredit-mode-map (kbd "M-}") nil)
   (define-key paredit-everywhere-mode-map (kbd "M-}") nil)
 
-  (define-key paredit-mode-map (kbd "C-M-}") 'paredit-current-sexp-end)
   (define-key paredit-everywhere-mode-map (kbd "C-M-}") 'paredit-current-sexp-end)
 
-  (define-key paredit-mode-map (kbd "C-M-{") 'paredit-current-sexp-start)
   (define-key paredit-everywhere-mode-map (kbd "C-M-{") 'paredit-current-sexp-start)
+
+  (define-key paredit-everywhere-mode-map (kbd "C-M-p") 'paredit-backward-down)
+  (define-key paredit-everywhere-mode-map (kbd "C-M-n") 'paredit-forward-up)
   )
 
 (dolist (mode '(web html xhtml xml nxml sgml))
@@ -1035,7 +1034,8 @@ Including indent-buffer, which should not be called automatically on save."
             '(lambda ()
                (add-to-list (make-local-variable 'paredit-space-for-delimiter-predicates)
                             (lambda (_ _) nil))
-               (enable-paredit-mode))))
+               ;; (enable-paredit-mode)
+               )))
 
 (defun js2r-universal-expand(arg)
   "Expand or contract bracketed list using js2r.
