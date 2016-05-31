@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: cc for ie
+# key: cc
+# --
+<!--[if lte IE 9]>
+<![endif]-->
