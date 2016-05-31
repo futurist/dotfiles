@@ -548,6 +548,39 @@ Return output file name."
 (require-package 'dash)
 (require-package 'tagedit)
 (after-load 'tagedit
+
+  (defun te/my-forward-tag ()
+    "Alway goto the end tag of currnet scope."
+    (interactive)
+    (let* ((tag (te/current-tag))
+           (in-opening-tag (and (> (point) (te/get tag :beg)) (< (point) (te/inner-beg tag))))
+           (in-closing-tag (and (< (point) (te/get tag :end)) (> (point) (te/inner-end tag))))
+           )
+      (if in-opening-tag
+          (te/goto-current-tag-content)
+        (goto-char (te/get tag :end))
+        )
+      )
+    )
+
+  (defun te/my-backward-tag ()
+    "Always goto the begin of current scope."
+    (interactive)
+    (let* ((tag (te/current-tag))
+           (in-opening-tag (and (> (point) (te/get tag :beg)) (< (point) (te/inner-beg tag))))
+           (in-closing-tag (and (< (point) (te/get tag :end)) (> (point) (te/inner-end tag))))
+           )
+      (if in-opening-tag
+          (goto-char (te/get tag :beg))
+        (backward-char)
+        (te/goto-tag-begging)
+        )
+      )
+    )
+
+  (bind-key "C-M-n" 'te/my-forward-tag tagedit-mode-map)
+  (bind-key "C-M-p" 'te/my-backward-tag tagedit-mode-map)
+
   (defun te/goto-current-tag-content()
     (interactive)
     (goto-char (te/inner-beg (te/current-tag)))
@@ -588,7 +621,7 @@ Return output file name."
       )
     )
 
-  (define-key tagedit-mode-map (kbd "M-'") 'te/goto-current-tag-content)
+  (define-key tagedit-mode-map (kbd "M-]") 'te/goto-current-tag-content)
   (define-key tagedit-mode-map (kbd "C-c C-<backspace>") 'te/kill-current-tag)
   (define-key tagedit-mode-map (kbd "C-%") 'te/goto-tag-match)
   (define-key tagedit-mode-map (kbd "C-^") 'te/goto-tag-begging)
@@ -1021,6 +1054,7 @@ Including indent-buffer, which should not be called automatically on save."
 
   (define-key paredit-everywhere-mode-map (kbd "C-M-p") 'paredit-backward-down)
   (define-key paredit-everywhere-mode-map (kbd "C-M-n") 'paredit-forward-up)
+  (define-key paredit-everywhere-mode-map (kbd "C-M-d") 'paredit-forward-down)
   )
 
 (dolist (mode '(web html xhtml xml nxml sgml))
