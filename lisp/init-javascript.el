@@ -105,7 +105,7 @@
   if (typeof define === 'function' && define.amd) {
     define([], factory) // define(['jquery'], factory)
   } else if (typeof exports === 'object') {
-    exports = module.exports = factory() // factory(require('jquery'))
+    module.exports = factory() // factory(require('jquery'))
   } else {
     root.%s = factory() // should return obj in factory
   }

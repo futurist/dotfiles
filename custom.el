@@ -1636,10 +1636,10 @@ from Google syntax-forward-syntax func."
                         '(lambda() (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space) ))
             (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-universal-expand)
             (define-key js2-mode-map (kbd "C-c C-m C-c") '(lambda()(interactive)(js2r-universal-expand t)))
+            (define-key js2-mode-map (kbd "C-c C-m C-.") 'js2-mark-parent-statement2)
             (define-key paredit-everywhere-mode-map (kbd "M-]") nil)
             (define-key js2-mode-map (kbd "M-]") '(lambda()(interactive)(call-interactively 'paredit-current-sexp-end) (forward-char) (newline-and-indent)))
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
-            (define-key js2-mode-map (kbd "C-\"") 'js2-mark-parent-statement2)
             (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
             (define-key js2-mode-map (kbd "C-' a") 'align)
             ))
@@ -1863,11 +1863,11 @@ from Google syntax-forward-syntax func."
     (interactive)
     (e-normal) (e-maximize))    ; #xf120 normalimize
 
-  (define-key global-map (kbd "C-' C-' d") 'au3-activate-cmd)
-  (define-key global-map (kbd "C-' C-' t") 'au3-activate-tc)
-  (define-key global-map (kbd "C-' C-' c") 'au3-activate-chrome)
-  (define-key global-map (kbd "C-' C-' s") 'au3-activate-xshell)
-  (define-key global-map (kbd "C-' C-' '") 'au3-activate-last)
+  ;; (define-key global-map (kbd "C-' C-' d") 'au3-activate-cmd)
+  ;; (define-key global-map (kbd "C-' C-' t") 'au3-activate-tc)
+  ;; (define-key global-map (kbd "C-' C-' c") 'au3-activate-chrome)
+  ;; (define-key global-map (kbd "C-' C-' s") 'au3-activate-xshell)
+  ;; (define-key global-map (kbd "C-' C-' '") 'au3-activate-last)
 
   ;; Start maximised (cross-platf)
   (add-hook 'window-setup-hook 'toggle-frame-maximized t)
