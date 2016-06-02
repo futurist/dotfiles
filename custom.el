@@ -1686,7 +1686,7 @@ from Google syntax-forward-syntax func."
                                           (funcall (global-key-binding (kbd "C-.")) arg)
                                           (kill-ring-save (region-beginning) (region-end))
                                           ))
-  (define-key global-map (kbd "C-;") 'avy-goto-char-timer)
+  (define-key global-map (kbd "C-;") 'avy-goto-word-or-subword-1)
   (guide-key-mode -1)
   (cua-selection-mode -1)
   (put 'upcase-region 'disabled t)

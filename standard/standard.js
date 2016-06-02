@@ -45,9 +45,9 @@ var options = {
   verbatim: undefined
 }
 
-try{
+try {
   options = JSON.parse(fs.readFileSync(path.join(__dirname, 'escodegen.json'), 'utf-8'))
-}catch(e){}
+} catch(e) {}
 
 var format = require('standard-format').transform
 var http = require('http')
@@ -55,8 +55,17 @@ var querystring = require('querystring')
 
 var errorsign = '#!!#'
 var port = 8000
+var timeout = 10000
 const server = http.createServer((req, res) => {
   var bodyString = ''
+
+  // prevent node died to set a timeout
+  req.resume()
+  res.setTimeout(timeout, function () {
+    console.log('server', 'request timeout')
+    res.end('server hello from request timeout')
+  })
+
   res.setHeader('Content-Type', 'text/html')
   res.writeHead(200, {'Content-Type': 'text/plain'})
   if (req.method == 'POST') {
@@ -70,7 +79,6 @@ const server = http.createServer((req, res) => {
       // console.log(bodyString)
       result = new Buffer(result, 'base64').toString()
       try {
-
         if (req.url.indexOf('esprima') > -1) {
           // Stage 1 escodegen format
           var syntax = esprima.parse(result, esprimaOptions)
@@ -78,14 +86,13 @@ const server = http.createServer((req, res) => {
             escodegen.attachComments(syntax, syntax.comments, syntax.tokens)
           }
           result = escodegen.generate(syntax, options)
+
+          // make newline before /** */ comment
+          result = result.replace(/\/\*\*/g, '\n$&')
         }
 
         // Stage 2 standard format
         result = format(result)
-
-        // Stage 3 make newline before /** */ comment
-        result = result.replace(/\/\*\*/g, '\n$&')
-
       } catch(e) {
         console.log(JSON.stringify(e))
         result = errorsign + JSON.stringify(e)
