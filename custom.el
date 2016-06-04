@@ -1125,7 +1125,15 @@ Currently working on array, object, function, call args."
 The same result can also be be achieved by \\[universal-argument] \\[unhighlight-regexp]."
   (interactive)
   (unhighlight-regexp t))
-(define-key search-map "hu" #'my/unhighlight-all-in-buffer)
+(defun my/highlight-symbole()
+  (interactive)
+  (if (region-active-p)
+      (highlight-symbol-add-symbol (buffer-substring (region-beginning) (region-end)))
+    (highlight-symbol-at-point)
+    )
+  )
+(define-key search-map "hu" #'my/unhighlight-all-in-buffer) ;paredit use M-s, so add global-map below
+(bind-key "C-' u" 'highlight-symbol-remove-all)
 (define-key global-map (kbd "M-n") #'highlight-symbol-next)
 (define-key global-map (kbd "M-p") #'highlight-symbol-prev)
 
@@ -1607,7 +1615,7 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-' 2") 'split-window-right)
 (global-set-key (kbd "C-' x f") 'xah-find-text)
 (global-set-key (kbd "C-' f") 'recentf-open-files)
-(global-set-key (kbd "C-' s") 'highlight-symbol-at-point)
+(global-set-key (kbd "C-' s") 'my/highlight-symbole)
 (global-set-key (kbd "C-' TAB") '(lambda()
                                    (interactive)
                                    (if (region-active-p)
@@ -1633,10 +1641,10 @@ from Google syntax-forward-syntax func."
           (lambda()
             (advice-add 'js2r-expand-call-args
                         :after
-                        '(lambda() (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space) ))
+                        '(lambda() (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space) (cycle-spacing) ))
             (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-universal-expand)
             (define-key js2-mode-map (kbd "C-c C-m C-c") '(lambda()(interactive)(js2r-universal-expand t)))
-            (define-key js2-mode-map (kbd "C-c C-m C-.") 'js2-mark-parent-statement2)
+            (define-key js2-mode-map (kbd "C-c C-m C-.") 'js2-mark-parent-statement)
             (define-key paredit-everywhere-mode-map (kbd "M-]") nil)
             (define-key js2-mode-map (kbd "M-]") '(lambda()(interactive)(call-interactively 'paredit-current-sexp-end) (forward-char) (newline-and-indent)))
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
