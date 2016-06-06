@@ -959,6 +959,24 @@ Including indent-buffer, which should not be called automatically on save."
 
 
 
+(defvar pop-mark-pos-ring nil
+  "Store popped mark posision.")
+
+(defun pop-mark-large (ARG)
+  (interactive "P")
+  (if (and ARG pop-mark-pos-ring)
+      (goto-char (pop pop-mark-pos-ring))
+    (let ((line (line-number-at-pos)))
+      (pop-to-mark-command)
+      (while (and mark-ring (= line (line-number-at-pos)))
+        (setf line (line-number-at-pos))
+        (pop-to-mark-command)
+        )
+      (when mark-ring (push (point) pop-mark-pos-ring))
+      ))
+  )
+(bind-key "C-' C-SPC" 'pop-mark-large)
+
 (defun paredit-rewrap (&optional ARG)
   "Rewrap current sexp, if ARG, don't remove old delimiter."
   (interactive "P")
