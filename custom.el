@@ -850,6 +850,7 @@ Including indent-buffer, which should not be called automatically on save."
   )
 (defun trigger-isearch-when-focus ()
   (if (and (string= "*Open Recent*" (buffer-name)) )
+      (goto-line 3)
       (isearch-mode t nil nil nil)
     )
   )
@@ -960,25 +961,25 @@ Including indent-buffer, which should not be called automatically on save."
 
 
 (defvar pop-mark-pos-ring nil
-  "Store popped mark posision.")
+  "Store popped mark posision.
+TODO: save mark position for each buffer.")
 
 (defun pop-mark-large-redo (ARG)
   (interactive "P")
-  (if pop-mark-pos-ring
-      (goto-char (pop pop-mark-pos-ring))
-      )
-  )
+  (when pop-mark-pos-ring
+    (goto-char (pop pop-mark-pos-ring))))
+
 (defun pop-mark-large (ARG)
   (interactive "P")
   (if (and ARG pop-mark-pos-ring)
       (goto-char (pop pop-mark-pos-ring))
     (let ((line (line-number-at-pos)))
+      (when mark-ring (push (point) pop-mark-pos-ring))
       (pop-to-mark-command)
       (while (and mark-ring (= line (line-number-at-pos)))
         (setf line (line-number-at-pos))
         (pop-to-mark-command)
         )
-      (when mark-ring (push (point) pop-mark-pos-ring))
       ))
   )
 (bind-key "C-' C-SPC" 'pop-mark-large)
@@ -1666,7 +1667,9 @@ from Google syntax-forward-syntax func."
           (lambda()
             (advice-add 'js2r-expand-call-args
                         :after
-                        '(lambda() (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space) (cycle-spacing) ))
+                        '(lambda() (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space)
+                           ;; (delete-horizontal-space)
+                           ))
             (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-universal-expand)
             (define-key js2-mode-map (kbd "C-c C-m C-c") '(lambda()(interactive)(js2r-universal-expand t)))
             (define-key js2-mode-map (kbd "C-c C-m C-.") 'js2-mark-parent-statement)
