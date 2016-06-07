@@ -850,7 +850,7 @@ Including indent-buffer, which should not be called automatically on save."
   )
 (defun trigger-isearch-when-focus ()
   (if (and (string= "*Open Recent*" (buffer-name)) )
-      (goto-line 3)
+      ;; (goto-line 3)
       (isearch-mode t nil nil nil)
     )
   )
