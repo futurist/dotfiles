@@ -1667,8 +1667,9 @@ from Google syntax-forward-syntax func."
           (lambda()
             (advice-add 'js2r-expand-call-args
                         :after
-                        '(lambda() (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space)
-                           ;; (delete-horizontal-space)
+                        '(lambda()
+                           ;; (js2r--goto-closest-call-start) (forward-char) (newline-and-indent)
+                           ;; (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space)
                            ))
             (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-universal-expand)
             (define-key js2-mode-map (kbd "C-c C-m C-c") '(lambda()(interactive)(js2r-universal-expand t)))
