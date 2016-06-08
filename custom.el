@@ -743,9 +743,18 @@ Including indent-buffer, which should not be called automatically on save."
 ;; add tern-auto-complete
 (after-load 'tern
   '(progn
-     (require-package 'tern-auto-complete)
+     ;; (require-package 'tern-auto-complete)
      ;; (tern-ac-setup)
      ))
+(add-hook 'tern-mode-hook
+          (lambda()
+            (unbind-key "M-." tern-mode-keymap)
+            (unbind-key "C-M-." tern-mode-keymap)
+            (unbind-key "M-," tern-mode-keymap)
+            (unbind-key "C-c C-r" tern-mode-keymap)
+            ;; C-c C-c to get type and C-c C-d to get doc
+            )
+          )
 
 (global-set-key (kbd "<f8>") 'flycheck-mode)
 (add-hook 'js-mode-hook
@@ -780,12 +789,14 @@ Including indent-buffer, which should not be called automatically on save."
 (add-hook 'js2-mode-hook
           (lambda ()
             (set (make-local-variable 'page-delimiter) "//\f")
-            (tern-mode +1)
+            ;; (tern-mode +1)
             (form-feed-mode t)
             (define-key js2-mode-map "\C-ci" 'js-doc-insert-function-doc)
             (define-key js2-mode-map "@" 'js-doc-insert-tag)
             (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)
             (define-key js2-mode-map (kbd "C-M-i") 'company-tern)
+            (define-key global-map (kbd "M-.") 'js2-jump-to-definition)
+            (define-key global-map (kbd "M-,") 'js2-mark-parent-statement)
             (define-key js2-mode-map (kbd "C-' c") 'standard-format-buffer)
             (define-key js2-mode-map (kbd "C-M-]") 'js2-insert-comma-new-line)
             (define-key js2-mode-map (kbd "<M-return>") 'js2-enter-next-line)
@@ -960,7 +971,7 @@ Including indent-buffer, which should not be called automatically on save."
 
 
 
-(defvar pop-mark-pos-ring nil
+(defvar-local pop-mark-pos-ring nil
   "Store popped mark posision.
 TODO: save mark position for each buffer.")
 
@@ -973,15 +984,16 @@ TODO: save mark position for each buffer.")
   (interactive "P")
   (if (and ARG pop-mark-pos-ring)
       (goto-char (pop pop-mark-pos-ring))
-    (let ((line (line-number-at-pos)))
+    (let ((line (line-number-at-pos)) (count 99))
       (when mark-ring (push (point) pop-mark-pos-ring))
       (pop-to-mark-command)
-      (while (and mark-ring (= line (line-number-at-pos)))
+      (while (and (> (decf count) 0) mark-ring (= line (line-number-at-pos)))
         (setf line (line-number-at-pos))
         (pop-to-mark-command)
         )
       ))
   )
+
 (bind-key "C-' C-SPC" 'pop-mark-large)
 (bind-key "C-' C-g" 'pop-mark-large-redo)
 
@@ -1665,6 +1677,14 @@ from Google syntax-forward-syntax func."
 
 (add-hook 'js2-mode-hook
           (lambda()
+            (advice-add 'js2-jump-to-definition
+                        :after
+                        '(lambda(&optional ARG)
+                           "Move to function name when jump to definition."
+                           (when (js2r--is-function-declaration (js2-node-at-point))
+                               (forward-word 2)
+                               )
+                           ))
             (advice-add 'js2r-expand-call-args
                         :after
                         '(lambda()
@@ -1682,7 +1702,7 @@ from Google syntax-forward-syntax func."
             ))
 
 (define-key global-map (kbd "C-x j") 'standard-format-region)
-(global-set-key (kbd "C-c C-k") 'copy-line)
+;; (global-set-key (kbd "C-c C-k") 'copy-line)
 ;; (global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
 ;; (global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
 (global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
