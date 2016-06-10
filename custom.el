@@ -1,6 +1,6 @@
 ;;; custom.el --- based on purcell's .emacs.d  -*- no-byte-compile: t; -*-
 
-;; Copyright (C) 2016 Micheal.Yang
+;; Copyright (C) 2016 Micheal Yang
 
 ;; Maintainer: noambitions@126.com
 ;; Keywords: lisp, languages
@@ -795,8 +795,8 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map "@" 'js-doc-insert-tag)
             (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)
             (define-key js2-mode-map (kbd "C-M-i") 'company-tern)
-            (define-key global-map (kbd "M-.") 'js2-jump-to-definition)
-            (define-key global-map (kbd "M-,") 'js2-mark-parent-statement)
+            (define-key js2-mode-map (kbd "M-.") 'js2-jump-to-definition)
+            (define-key js2-mode-map (kbd "M-,") 'js2-mark-parent-statement)
             (define-key js2-mode-map (kbd "C-' c") 'standard-format-buffer)
             (define-key js2-mode-map (kbd "C-M-]") 'js2-insert-comma-new-line)
             (define-key js2-mode-map (kbd "<M-return>") 'js2-enter-next-line)
@@ -980,6 +980,12 @@ TODO: save mark position for each buffer.")
   (when pop-mark-pos-ring
     (goto-char (pop pop-mark-pos-ring))))
 
+(advice-add 'set-mark-command :before '(lambda(arg)
+                                         (if (consp arg)
+                                             (push (point) pop-mark-pos-ring)
+                                           )
+                                         ))
+
 (defun pop-mark-large (ARG)
   (interactive "P")
   (if (and ARG pop-mark-pos-ring)
@@ -1109,7 +1115,7 @@ TODO: save mark position for each buffer.")
                ;; (enable-paredit-mode)
                )))
 
-(defun js2r-universal-expand(arg)
+(defun js2r-universal-expand(arg &optional is-contract)
   "Expand or contract bracketed list using js2r.
 Currently working on array, object, function, call args."
   (interactive "P")
@@ -1140,10 +1146,10 @@ Currently working on array, object, function, call args."
         (setq pos-call (- pos (point)))))
 
     (setq pos (-min (list pos-array pos-object pos-function pos-call)))
-    (when (= pos pos-array) (if arg (js2r-contract-array) (js2r-expand-array)))
-    (when (= pos pos-object) (if arg (js2r-contract-object) (js2r-expand-object)))
-    (when (= pos pos-function) (if arg (js2r-contract-function) (js2r-expand-function)))
-    (when (= pos pos-call) (if arg (js2r-contract-call-args) (js2r-expand-call-args)))
+    (when (= pos pos-array) (if is-contract (js2r-contract-array) (js2r-expand-array)))
+    (when (= pos pos-object) (if is-contract (js2r-contract-object) (js2r-expand-object)))
+    (when (= pos pos-function) (if is-contract (js2r-contract-function) (js2r-expand-function)))
+    (when (= pos pos-call) (if is-contract (js2r-contract-call-args) (js2r-expand-call-args)))
     ))
 
 ;; align rule for js2-mode
@@ -1688,14 +1694,16 @@ from Google syntax-forward-syntax func."
             (advice-add 'js2r-expand-call-args
                         :after
                         '(lambda()
-                           ;; (js2r--goto-closest-call-start) (forward-char) (newline-and-indent)
-                           ;; (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space)
+                           "Format for compact expand call args."
+                           (when (consp current-prefix-arg)
+                             (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space))
                            ))
             (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-universal-expand)
-            (define-key js2-mode-map (kbd "C-c C-m C-c") '(lambda()(interactive)(js2r-universal-expand t)))
+            (define-key js2-mode-map (kbd "C-c C-m C-c") '(lambda()(interactive)(js2r-universal-expand current-prefix-arg t)))
             (define-key js2-mode-map (kbd "C-c C-m C-.") 'js2-mark-parent-statement)
             (define-key paredit-everywhere-mode-map (kbd "M-]") nil)
             (define-key js2-mode-map (kbd "M-]") '(lambda()(interactive)(call-interactively 'paredit-current-sexp-end) (forward-char) (newline-and-indent)))
+            (define-key js2-mode-map (kbd "C-,") '(lambda()(interactive)(call-interactively 'move-end-of-line) (insert ",") (newline-and-indent)))
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
             (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
             (define-key js2-mode-map (kbd "C-' a") 'align)
@@ -1736,6 +1744,10 @@ from Google syntax-forward-syntax func."
 (after-load 'init-editing-utils
   (global-set-key [M-up] nil)
   (global-set-key [M-down] nil)
+
+  (advice-add 'backward-up-sexp :before '(lambda(arg)
+                                          (push-mark (point) nil nil)
+                                          ))
 
   (define-key global-map (kbd "C-.") 'select-current-pair)
   ;; remmap the old C-M-. is 'find-tag-regexp
