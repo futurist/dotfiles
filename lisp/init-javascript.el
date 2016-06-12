@@ -72,7 +72,7 @@
 ;; ---------------------------------------------------------------------------
 
 (when (maybe-require-package 'js-comint)
-  (setq inferior-js-program-command "js")
+  (setq inferior-js-program-command "node")
 
   (defvar inferior-js-minor-mode-map (make-sparse-keymap))
   (define-key inferior-js-minor-mode-map "\C-x\C-e" 'js-send-last-sexp)
@@ -113,6 +113,10 @@
 " (if (or (null export) (string-empty-p export)) (format-time-string "s%s") export)
   (if arg "\n\"use strict\";\n" "")))
 (foot "
+  // module exports
+  return {
+
+  }
 }))
 "))
 (goto-char (point-min))

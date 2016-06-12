@@ -1,12 +1,12 @@
 # -*- mode: snippet -*-
-# name: mithril controller
+# name: mithril-controller-view
 # key: mcom
 # --
 {
-  controller : function(){
+  controller : function(arg){
     $0
   },
-  view       : function(ctrl){
+  view : function(ctrl, arg){
     return m()
   }
 }
