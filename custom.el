@@ -691,6 +691,7 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key global-map (kbd "M-\\") 'hippie-expand)
   ;; (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (self-insert-command 1) (undo-boundary) (company-complete-selection)))
   (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (company-abort) (insert " ")))
+  (define-key company-active-map (kbd ".") '(lambda()(interactive) (company-abort) (insert ".")))
   (define-key company-active-map (kbd "C-j") 'company-abort)
   (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
   (define-key company-active-map "\C-n" 'company-select-next-or-abort)
