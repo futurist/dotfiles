@@ -679,6 +679,7 @@ Including indent-buffer, which should not be called automatically on save."
 (setq company-minimum-prefix-length 2)
 (after-load 'company
   (company-flx-mode +1)
+  (setq company-auto-complete-chars "")
   ;; (company-quickhelp-mode 1)
   (setq company-auto-complete t)
   (setq company-flx-limit 99)
@@ -690,7 +691,7 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key global-map (kbd "C-M-/") 'company-dict)
   (define-key global-map (kbd "M-\\") 'hippie-expand)
   ;; (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (self-insert-command 1) (undo-boundary) (company-complete-selection)))
-  (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (company-abort) (insert " ")))
+  ;; (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (company-abort) (insert " ")))
   (define-key company-active-map (kbd ".") '(lambda()(interactive) (company-abort) (insert ".")))
   (define-key company-active-map (kbd "C-j") 'company-abort)
   (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
@@ -1817,7 +1818,7 @@ from Google syntax-forward-syntax func."
 
 (define-key global-map (kbd "C-s") 'search-selection)
 (define-key global-map (kbd "C-S-s") 'swiper-selection)
-(global-set-key (kbd "C-M-d") 'kill-forward-symbol)
+;; (global-set-key (kbd "C-M-d") 'paredit-forward-down)
 ;; (global-set-key (kbd "M-D") 'kill-word)
 (global-set-key (kbd "C-d") 'my-delete-char-or-word)
 (global-set-key (kbd "C-z") 'undo)
@@ -1878,7 +1879,7 @@ from Google syntax-forward-syntax func."
 
   (setq grep-command "~/bin/grep.exe")
 
-  (setq tramp-default-method "plink")
+  (setq tramp-default-method "plinkx")
 
   (setq w32-lwindow-modifier 'meta)
   (setq w32-rwindow-modifier 'meta)
