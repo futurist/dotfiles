@@ -19,7 +19,6 @@
 ;; May need to cleanup .elc file and re-compile:
 ;; $ find site-lisp/ -name "*.elc" -print | xargs rm -f
 ;; $ emacs --batch --eval "(byte-recompile-directory \"site-lisp/\" 0)"
-
 ;;; Code:
 
 (defconst *is-a-windows* (eq system-type 'windows-nt))
@@ -540,6 +539,9 @@ Return output file name."
 
 ;; github/magnars
 
+(require-package 'feature-mode)
+(add-to-list 'auto-mode-alist '("\.feature$" . feature-mode))
+
 (require-package 's)
 (require-package 'dash)
 (require-package 'tagedit)
@@ -633,12 +635,19 @@ Return output file name."
   :config
   (js2r-add-keybindings-with-prefix "C-c C-m"))
 
+(defun tagedit-toggle-experimental()
+  (interactive)
+  (if tagedit-experimental-features-on?
+      (tagedit-disable-experimental-features)
+    (tagedit-add-experimental-features)))
+
 (eval-after-load "sgml-mode"
   '(progn
      (tagedit-add-paredit-like-keybindings)
      (add-hook 'html-mode-hook (lambda ()
                                  (tagedit-mode 1)
                                  (tagedit-add-experimental-features)
+                                 (bind-key "C-' t t" 'tagedit-toggle-experimental)
                                  ))))
 
 ;; from magnars/.emacs.d/defuns/buffer-defuns.el
