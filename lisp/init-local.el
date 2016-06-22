@@ -539,6 +539,20 @@ Return output file name."
 
 ;; github/magnars
 
+(require 'mc-cycle-cursors)
+
+(advice-add 'mc/mark-next-like-this
+            :after
+            '(lambda(ARG)(interactive "p")
+               (mc/cycle-forward)))
+
+(advice-add 'mc/skip-to-next-like-this
+            :before
+            '(lambda()(interactive)
+               (when (> (mc/num-cursors) 1)
+                 (mc/cycle-backward))))
+
+
 (require-package 'feature-mode)
 (add-to-list 'auto-mode-alist '("\.feature$" . feature-mode))
 

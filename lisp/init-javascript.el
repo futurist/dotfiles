@@ -104,7 +104,7 @@
         (head (format ";(function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     define([], factory) // define(['jquery'], factory)
-  } else if (typeof exports === 'object') {
+  } else if (typeof exports === 'object' && typeof module !== 'undefined') {
     module.exports = factory() // factory(require('jquery'))
   } else {
     root.%s = factory() // should return obj in factory
