@@ -541,16 +541,17 @@ Return output file name."
 
 (require 'mc-cycle-cursors)
 
-(advice-add 'mc/mark-next-like-this
-            :after
-            '(lambda(ARG)(interactive "p")
-               (mc/cycle-forward)))
+;;;;;;;;;;;HELPER FOR MC;;;;;;;;;;;;;;;;;
 
-(advice-add 'mc/skip-to-next-like-this
-            :before
-            '(lambda()(interactive)
-               (when (> (mc/num-cursors) 1)
-                 (mc/cycle-backward))))
+;; when C-- C-> (to unmark next)
+;; cycle-backward first, then do unmark
+(advice-add 'mc/mark-next-like-this :before '(lambda(arg)(interactive "p") (when (< arg 0) (mc/cycle-backward))))
+(advice-add 'mc/mark-next-like-this :after '(lambda(arg)(interactive "p") (unless (< arg 0) (mc/cycle-forward))))
+(advice-add 'mc/skip-to-next-like-this :before '(lambda()(interactive) (when (> (mc/num-cursors) 1) (mc/cycle-backward))))
+
+(advice-add 'mc/mark-previous-like-this :before '(lambda(arg)(interactive "p") (when (< arg 0) (mc/cycle-forward))))
+(advice-add 'mc/mark-previous-like-this :after '(lambda(arg)(interactive "p") (unless (< arg 0) (mc/cycle-backward))))
+(advice-add 'mc/skip-to-previous-like-this :before '(lambda()(interactive) (when (> (mc/num-cursors) 1) (mc/cycle-forward))))
 
 
 (require-package 'feature-mode)
