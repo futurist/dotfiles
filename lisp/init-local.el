@@ -1125,7 +1125,7 @@ TODO: save mark position for each buffer.")
                )))
 
 (defun js2r-universal-expand(arg &optional is-contract)
-  "Expand or contract bracketed list using js2r.
+  "Expand or contract bracketed list using js2r-refactor.
 Currently working on array, object, function, call args."
   (interactive "P")
   (let ((debug-on-error nil)

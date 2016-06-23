@@ -111,7 +111,7 @@
   }
 }(this, function () {%s
 " (if (or (null export) (string-empty-p export)) (format-time-string "s%s") export)
-  (if arg "\n\"use strict\";\n" "")))
+  (if (not arg) "\n\"use strict\";\n" "")))
 (foot "
   // module exports
   return {
