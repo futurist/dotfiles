@@ -101,7 +101,7 @@
 (defun js2-insert-umd(arg)
   (interactive "P")
   (let* ((export (read-from-minibuffer "Enter export symbol for global:"))
-        (head (format ";(function (root, factory) {
+        (head (format "!(function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     define([], factory) // define(['jquery'], factory)
   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
