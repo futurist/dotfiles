@@ -174,7 +174,7 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
 (require-package 'restclient)
 ;; (require-package 'nodejs-repl)  ;;buggy!!! will freeze emacs
 (require-package 'editorconfig)
-(editorconfig-mode -1)
+(editorconfig-mode +1)
 
 (require-package 'goto-last-change)
 (bind-key "C-x C-/" 'goto-last-change)
@@ -1155,10 +1155,22 @@ Currently working on array, object, function, call args."
         (setq pos-call (- pos (point)))))
 
     (setq pos (-min (list pos-array pos-object pos-function pos-call)))
-    (when (= pos pos-array) (if is-contract (js2r-contract-array) (js2r-expand-array)))
-    (when (= pos pos-object) (if is-contract (js2r-contract-object) (js2r-expand-object)))
-    (when (= pos pos-function) (if is-contract (js2r-contract-function) (js2r-expand-function)))
-    (when (= pos pos-call) (if is-contract (js2r-contract-call-args) (js2r-expand-call-args)))
+    (when (= pos pos-array) (if is-contract
+                                (js2r-contract-array)
+                              (js2r-expand-array)
+                              (when arg (js2r--goto-closest-array-start) (forward-char) (js2r--ensure-just-one-space))))
+    (when (= pos pos-object) (if is-contract
+                                 (js2r-contract-object)
+                               (js2r-expand-object)
+                               (when arg (js2r--goto-closest-object-start) (forward-char) (js2r--ensure-just-one-space))))
+    (when (= pos pos-function) (if is-contract
+                                   (js2r-contract-function)
+                                 (js2r-expand-function)
+                                 (when arg (js2r--goto-closest-function-start) (forward-char) (js2r--ensure-just-one-space))))
+    (when (= pos pos-call) (if is-contract
+                               (js2r-contract-call-args)
+                             (js2r-expand-call-args)
+                             (when arg (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space))))
     ))
 
 ;; align rule for js2-mode
@@ -1228,6 +1240,11 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 
 (add-to-list 'load-path (expand-file-name "standard" user-emacs-directory))
 (require 'init-js-standard)
+
+
+(require-package 'powerline)
+(powerline-default-theme)
+
 
 
 ;; magnars version for rename buffer and file
@@ -1666,6 +1683,7 @@ from Google syntax-forward-syntax func."
 
 ;; ido to jump to bookmark
 ;; C-' space is my custom space
+(global-set-key [double-mouse-1] 'er/expand-region)
 (global-set-key (kbd "M-]") 'syntax-forward-syntax-group)
 (global-set-key (kbd "M-[") '(lambda(arg)(interactive "^p") (syntax-forward-syntax-group (* arg -1))))
 (global-set-key (kbd "C-' 2") 'split-window-right)
@@ -1709,8 +1727,8 @@ from Google syntax-forward-syntax func."
                         '(lambda()
                            "Format for compact expand call args."
                            (when (consp current-prefix-arg)
-                             (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space))
-                           ))
+                             ;; (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space)
+                             )))
             (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-universal-expand)
             (define-key js2-mode-map (kbd "C-c C-m C-c") '(lambda()(interactive)(js2r-universal-expand current-prefix-arg t)))
             (define-key js2-mode-map (kbd "C-c C-m C-.") 'js2-mark-parent-statement)
