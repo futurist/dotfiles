@@ -39,12 +39,13 @@ list of strings, giving the binary name and arguments.")
 
 (defun standard-format-buffer (&optional arg)
   (interactive "P")
+  (goto-char (point-min))
+  ;; skip # line for cli.js
+  (while (and (not (eobp)) (looking-at-p "\s*\#")) (next-line 1))
+  (skip-chars-forward "\t \n\r")
   (save-excursion
     (let* ((col (current-column))
            (line (line-number-at-pos)))
-      (goto-char (point-min))
-      ;; skip # line for cli.js
-      (while (and (not (eobp)) (looking-at-p "\s*\#")) (next-line 1))
       (standard-format-region (point) (point-max) nil `(,line ,col) t) ))
   ;; (cleanup-buffer)
   )
