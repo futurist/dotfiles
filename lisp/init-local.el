@@ -21,6 +21,11 @@
 ;; $ emacs --batch --eval "(byte-recompile-directory \"site-lisp/\" 0)"
 ;;; Code:
 
+;; no sound
+(setq ring-bell-function 'ignore)
+
+(menu-bar-mode -1)
+
 (defconst *is-a-windows* (eq system-type 'windows-nt))
 
 (when *is-a-windows*
@@ -874,8 +879,16 @@ Including indent-buffer, which should not be called automatically on save."
       (isearch-mode t nil nil nil)
     )
   )
+
+(add-to-list 'recentf-exclude "/recentf\\'")
+(add-to-list 'recentf-exclude "ido\\.last\\'")
 (add-hook 'recentf-dialog-mode-hook 'trigger-isearch-when-focus)
-;; (add-hook 'focus-out-hook 'save-current-file)
+(add-hook 'find-file-hook '(lambda()
+                             (recentf-save-list)
+                             ))
+(add-hook 'focus-out-hook '(lambda()
+                             ;; (save-current-file)
+                             ))
 
 (defun do-lines-in-region (fun &optional arg start end)
   "Invoke function FUN on the text of each line from START to END."
