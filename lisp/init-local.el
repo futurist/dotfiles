@@ -35,7 +35,7 @@
   ;; (prefer-coding-system 'utf-8)
 
   (set-language-environment 'chinese-gbk)
-  (prefer-coding-system 'utf-8-auto)
+  (prefer-coding-system 'utf-8-unix)
 
   ;; (set-default-coding-systems 'gbk)
   ;; (set-buffer-file-coding-system 'gbk)
@@ -66,6 +66,9 @@
 ;; disable Ido auto merge when C-x C-f
 (setq ido-auto-merge-delay-time 9999)
 
+;; M-s SPC (isearch-toggle-lax-whitespace) to toggle it when C-s
+(setq search-whitespace-regexp ".*?")
+
 ;; (setq debug-on-error t)
 
 ;; prevent Chinese date problems
@@ -75,6 +78,7 @@
   ;; using TCP instead of UNIX socket to start server
   (setq server-auth-dir "/tmp/emacsserver")
   (setq server-use-tcp t)
+  (toggle-frame-fullscreen)
 ;; ;; set below in your .bash_profile
 ;; export EMACS_SERVER_FILE=/tmp/emacsserver/server
 ;; alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -f $EMACS_SERVER_FILE -a "/Applications/Emacs.app/Contents/MacOS/Emacs" '
@@ -528,6 +532,10 @@ Return output file name."
 ;; (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
 ;; (multi-web-global-mode 1)
 
+(require-package 'yaml-mode)
+(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+
+
 (require-package 'yasnippet)
 (require-package 'react-snippets)
 (yas-global-mode 1)
@@ -541,10 +549,24 @@ Return output file name."
 ;; (add-hook 'js-mode-hook #'smartparens-mode)
 ;; (add-hook 'js2-mode-hook #'smartparens-mode)
 
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
 
 ;; github/magnars
 
 (require 'mc-cycle-cursors)
+
+(setq mc/cmds-to-run-once
+      '(
+        mac-mwheel-scroll
+        mouse-set-region
+        smex
+        ))
 
 ;;;;;;;;;;;HELPER FOR MC;;;;;;;;;;;;;;;;;
 
@@ -700,7 +722,7 @@ Including indent-buffer, which should not be called automatically on save."
 (setq company-tooltip-limit 99)                      ; bigger popup window
 (setq company-idle-delay .3)                         ; decrease delay before autocompletion popup shows
 (setq company-echo-delay 0)                          ; remove annoying blinking
-(setq company-begin-commands '(self-insert-command)) ; start autocompletion only after typing
+;; (setq company-begin-commands '(self-insert-command)) ; start autocompletion only after typing
 (setq company-minimum-prefix-length 2)
 (after-load 'company
   (company-flx-mode +1)
@@ -853,7 +875,6 @@ Including indent-buffer, which should not be called automatically on save."
 
 (setq cua-enable-cua-keys nil)
 (setq display-buffer-reuse-frames t)
-(setq search-whitespace-regexp ".*?")
 (setq avy-timeout-seconds 0.4)
 (setq avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
 
@@ -882,6 +903,7 @@ Including indent-buffer, which should not be called automatically on save."
 
 (add-to-list 'recentf-exclude "/recentf\\'")
 (add-to-list 'recentf-exclude "ido\\.last\\'")
+(add-to-list 'recentf-exclude "\\.tidyrc")
 (add-hook 'recentf-dialog-mode-hook 'trigger-isearch-when-focus)
 (add-hook 'find-file-hook '(lambda()
                              (recentf-save-list)
