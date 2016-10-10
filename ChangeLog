@@ -1,3 +1,11 @@
+2016-10-10  James Yang  <jamesyang999@gmail.com>
+
+	* lisp/init-local.el:
+	remove all <kbd>C-:</kbd> for comment toggle key binding, since 25.1 has C-x C-;
+	remove indent-guide mode
+	add upcase-region / downcase-region advice to check if active region selected
+	add change log mode settings
+
 2016-03-29    <Administrator@PC33>
 
 	* custom.el: change font to source-code-pro

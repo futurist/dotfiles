@@ -69,6 +69,27 @@
 ;; M-s SPC (isearch-toggle-lax-whitespace) to toggle it when C-s
 (setq search-whitespace-regexp ".*?")
 
+;; ChangeLog mode settings
+(setq change-log-version-info-enabled t)
+(defun change-log-sort ()
+  "Sort a changelog in the format used by change-log-mode by date"
+  (interactive)
+  (goto-char (point-max))
+  (do ((expression "^[0-9]\\{4\\}-[0-1][0-9]-[0-3][0-9]")
+       (pos (point) (point))
+       (list nil (cons
+                  (cons
+                   (match-string 0)
+                   (buffer-substring (match-beginning 0) pos)) list)))
+      ((not (re-search-backward expression nil t))
+       (erase-buffer)
+       (mapc (lambda (item)
+               (insert (cdr item)))
+             (nreverse (sort* list #'string< :key 'car))))))
+(add-hook 'change-log-mode-hook
+          (lambda()
+             (define-key change-log-mode-map (kbd "C-' s") 'change-log-sort)))
+
 ;; (setq debug-on-error t)
 
 ;; prevent Chinese date problems
@@ -1771,7 +1792,7 @@ from Google syntax-forward-syntax func."
             (define-key js2-mode-map (kbd "M-]") '(lambda()(interactive)(call-interactively 'paredit-current-sexp-end) (forward-char) (newline-and-indent)))
             (define-key js2-mode-map (kbd "C-,") '(lambda()(interactive)(call-interactively 'move-end-of-line) (insert ",") (newline-and-indent)))
             (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
-            (define-key js2-mode-map (kbd "C-x C-;") 'remove-add-last-comma)
+            (define-key js2-mode-map (kbd "C-' ;") 'remove-add-last-comma)
             (define-key js2-mode-map (kbd "C-' a") 'align)
             ))
 
@@ -1787,7 +1808,7 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-S-d") 'duplicate-line-or-region)
 (global-set-key (kbd "C-<backspace>") 'kill-backward-symbol)
 (global-set-key (kbd "C-S-<backspace>") 'paredit-backward-delete-all)
-(global-set-key (kbd "C-:") 'comment-or-uncomment-line-or-region)
+;; (global-set-key (kbd "C-:") 'comment-or-uncomment-line-or-region)
 (global-set-key (kbd "C-S-l") 'mark-paragraph)
 ;; move lines
 (global-set-key (kbd "C-x C-n") 'md/move-lines-down)
@@ -1826,10 +1847,23 @@ from Google syntax-forward-syntax func."
                                           ))
   (define-key global-map (kbd "C-;") 'avy-goto-word-or-subword-1)
   (guide-key-mode -1)
+  (after-load 'indent-guide
+    (indent-guide-mode -1))
   (cua-selection-mode -1)
-  (put 'upcase-region 'disabled t)
-  (put 'downcase-region 'disabled t)
-  )
+  (put 'upcase-region 'disabled nil)
+  (put 'downcase-region 'disabled nil)
+  (advice-add 'upcase-region
+              :around
+              '(lambda(oldfun &rest args)
+                 "Only apply upcase-region when region active."
+                 (when (region-active-p)
+                   (apply oldfun args))))
+  (advice-add 'downcase-region
+              :around
+              '(lambda(oldfun &rest args)
+                 "Only apply upcase-region when region active."
+                 (when (region-active-p)
+                   (apply oldfun args)))))
 
 ;; use c to create new file in dired
 (after-load 'dired
