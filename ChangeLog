@@ -1,3 +1,8 @@
+2016-10-11  James Yang  <jamesyang999@gmail.com>
+
+	* lisp/init-local.el (init-editing-utils):
+	remove guide-key-mode -1
+
 2016-10-10  James Yang  <jamesyang999@gmail.com>
 
 	* lisp/init-local.el:

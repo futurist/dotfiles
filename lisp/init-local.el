@@ -1846,7 +1846,7 @@ from Google syntax-forward-syntax func."
                                           (kill-ring-save (region-beginning) (region-end))
                                           ))
   (define-key global-map (kbd "C-;") 'avy-goto-word-or-subword-1)
-  (guide-key-mode -1)
+  ;; (guide-key-mode -1)
   (after-load 'indent-guide
     (indent-guide-mode -1))
   (cua-selection-mode -1)
