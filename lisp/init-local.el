@@ -245,13 +245,22 @@ Version 2015-06-12"
 ;; markdown mode
 (add-hook 'markdown-mode-hook '(lambda()
                                  (whitespace-cleanup-mode -1)
+                                 (bind-key "C-' w" 'whitespace-cleanup)
+
+                                 ;; earmuff function for markdown mode
+                                 (defvar markdown-earmuff-char-list '("*" "_" "\`")
+                                   "Earmuff chars for Org-mode.")
+                                 (dolist (char markdown-earmuff-char-list)
+                                   (define-key markdown-mode-map (kbd char) `(lambda (arg) (interactive "P") (insert-earmuffs ,char nil arg))))
+                                 (define-key markdown-mode-map (kbd "<backspace>") '(lambda () (interactive) (delete-earmuffs nil markdown-earmuff-char-list)))
+
                                  (define-key markdown-mode-map
                                    (kbd "C-c C-v")
                                    '(lambda()(interactive)
                                       (let ((html-file (replace-regexp-in-string "\.md$" ".html" buffer-file-name)))
                                         (shell-command (format "marked %s -o %s"
-                                                             (shell-quote-argument buffer-file-name)
-                                                             html-file))
+                                                               (shell-quote-argument buffer-file-name)
+                                                               html-file))
                                         (find-file html-file))
                                       ))
                                  ))
@@ -412,7 +421,7 @@ Return output file name."
             (replace-regexp key value)))))
 
 ;; Some short cuts function
-(defun insert-earmuffs (char &optional insert-normal-p)
+(defun insert-earmuffs (char &optional with-space insert-normal-p)
   "Insert earmuffs for char."
   (if (region-active-p)
       (let ((start (region-beginning))
@@ -422,22 +431,29 @@ Return output file name."
         (goto-char start)
         (insert char)
         )
-    (if (and (> (current-column) 0) (not insert-normal-p)  (looking-back "[ \t\n]" 1))
-        (progn
-          (insert char)
-          ;; you can just UNDO the insert, back to normal char
-          (undo-boundary)
-          (insert (format "%s " char) )
-          (backward-char 2))
+    (if (and (not insert-normal-p)
+             (or (not with-space)
+               (and (> (current-column) 0)
+                    (looking-back "[ \t\n]" 1))))
+        (let ((space 1))
+          (progn
+            (insert char)
+            ;; you can just UNDO the insert, back to normal char
+            (undo-boundary)
+            (insert char)
+            (when with-space
+              (insert " ")
+              (incf space))
+            (backward-char space)))
       (insert char))
     ))
 
-(defun delete-earmuffs (char-list)
+(defun delete-earmuffs (with-space char-list)
   "Delete earmuffs based on earmuff-char-list var."
   (let ((not-found t))
     (dolist (char char-list)
       (when (and (char-before) (char-after) not-found (string= (string (char-before)) char) (string= (string (char-after)) char) )
-        (delete-forward-char 2 nil)
+        (delete-forward-char (if with-space 2 1) nil)
         (delete-forward-char -1 nil)
         (setq not-found nil)
         )
@@ -461,11 +477,11 @@ Return output file name."
             (define-key org-mode-map (kbd "C-' l") 'org-toggle-link-display)
             (define-key org-mode-map (kbd "C-' c") 'org-unindent-buffer)
             (define-key org-mode-map (kbd "C-' e") '(lambda()(interactive) (org-ioslide-export-to-html) (browse-url-of-file (replace-regexp-in-string "\.org$" ".html" (expand-file-name (buffer-file-name))))))
-            (defvar earmuff-char-list '("*" "=" "/" "~" "+" "_")
+            (defvar org-earmuff-char-list '("*" "=" "/" "~" "+" "_")
               "Earmuff chars for Org-mode.")
-            (dolist (char earmuff-char-list)
-              (define-key org-mode-map (kbd char) `(lambda (arg) (interactive "P") (insert-earmuffs ,char arg))))
-            (define-key org-mode-map (kbd "<backspace>") '(lambda () (interactive) (delete-earmuffs earmuff-char-list)))
+            (dolist (char org-earmuff-char-list)
+              (define-key org-mode-map (kbd char) `(lambda (arg) (interactive "P") (insert-earmuffs ,char t arg))))
+            (define-key org-mode-map (kbd "<backspace>") '(lambda () (interactive) (delete-earmuffs t org-earmuff-char-list)))
             (define-key global-map (kbd "<M-return>") nil)
             (setq-default org-display-custom-times t)
             (setq org-time-stamp-custom-formats '("<%Y-%m-%d>" . "<%Y-%m-%d %H:%M>"))
