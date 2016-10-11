@@ -422,24 +422,22 @@ Return output file name."
         (goto-char start)
         (insert char)
         )
-    (let ((pointer-position (point)))
-      (if (or insert-normal-p (bolp) (string= (string (char-before)) char) )
+    (if (and (> (current-column) 0) (not insert-normal-p)  (looking-back "[ \t\n]" 1))
+        (progn
           (insert char)
-        (if (looking-back "[^ \t\n]" 1)
-            (if (not (string= (string (char-after)) char))
-                (insert char)
-              (forward-char))
-          (progn
-            (insert (format "%s%s " char char) )
-            (goto-char (+ 1 pointer-position)))))
-      )))
+          ;; you can just UNDO the insert, back to normal char
+          (undo-boundary)
+          (insert (format "%s " char) )
+          (backward-char 2))
+      (insert char))
+    ))
 
 (defun delete-earmuffs (char-list)
   "Delete earmuffs based on earmuff-char-list var."
   (let ((not-found t))
     (dolist (char char-list)
-      (when (and not-found (string= (string (char-before)) char) (string= (string (char-after)) char) )
-        (delete-forward-char 1 nil)
+      (when (and (char-before) (char-after) not-found (string= (string (char-before)) char) (string= (string (char-after)) char) )
+        (delete-forward-char 2 nil)
         (delete-forward-char -1 nil)
         (setq not-found nil)
         )
@@ -593,6 +591,7 @@ Return output file name."
 
 ;; when C-- C-> (to unmark next)
 ;; cycle-backward first, then do unmark
+(bind-key "C-c c l" 'mc/mark-all-dwim)
 (advice-add 'mc/mark-next-like-this :before '(lambda(arg)(interactive "p") (when (< arg 0) (mc/cycle-backward))))
 (advice-add 'mc/mark-next-like-this :after '(lambda(arg)(interactive "p") (unless (< arg 0) (mc/cycle-forward))))
 (advice-add 'mc/skip-to-next-like-this :before '(lambda()(interactive) (when (> (mc/num-cursors) 1) (mc/cycle-backward))))
