@@ -504,6 +504,10 @@ Return output file name."
 (setq org-hide-leading-stars t)
 (setq org-ellipsis " ⇒⇒")
 
+;; abbrev settings
+(setq abbrev-file-name             ;; tell emacs where to read abbrev
+      "~/.emacs.d/abbrev_defs")    ;; definitions from...
+(setq save-abbrevs t)              ;; save abbrevs when files are saved
 
 ;; package from github
 (require-package 'emmet-mode)
@@ -1861,7 +1865,8 @@ from Google syntax-forward-syntax func."
                                           (kill-ring-save (region-beginning) (region-end))
                                           ))
   (define-key global-map (kbd "C-;") 'avy-goto-word-or-subword-1)
-  ;; (guide-key-mode -1)
+  (when (fboundp 'guide-key-mode)
+    (guide-key-mode -1))
   (after-load 'indent-guide
     (indent-guide-mode -1))
   (cua-selection-mode -1)
