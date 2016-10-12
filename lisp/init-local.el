@@ -67,7 +67,17 @@
 (setq ido-auto-merge-delay-time 9999)
 
 ;; M-s SPC (isearch-toggle-lax-whitespace) to toggle it when C-s
+(add-hook 'isearch-mode-hook
+          (function
+           (lambda ()
+             (define-key isearch-mode-map "\C-h" 'isearch-mode-help)
+             (define-key isearch-mode-map "\C-t" 'isearch-toggle-regexp)
+             (define-key isearch-mode-map "\C-c" 'isearch-toggle-case-fold)
+             (define-key isearch-mode-map "\C-j" 'isearch-edit-string))))
+;; space will match any string
 (setq search-whitespace-regexp ".*?")
+;; show case-fold status, CFS if case-insensitive
+(add-to-list 'minor-mode-alist '(case-fold-search " CFS"))
 
 ;; ChangeLog mode settings
 (setq change-log-version-info-enabled t)
