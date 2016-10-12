@@ -77,7 +77,7 @@
 ;; space will match any string
 (setq search-whitespace-regexp ".*?")
 ;; show case-fold status, CFS if case-insensitive
-(add-to-list 'minor-mode-alist '(case-fold-search " CFS"))
+;; (add-to-list 'minor-mode-alist '(case-fold-search " CFS"))
 
 ;; ChangeLog mode settings
 (setq change-log-version-info-enabled t)
