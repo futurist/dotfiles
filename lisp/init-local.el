@@ -767,17 +767,17 @@ Including indent-buffer, which should not be called automatically on save."
 
 (require-package 'company)
 (require-package 'company-flx)
-(require-package 'company-tern)
+;; (require-package 'company-tern)
 (require-package 'company-quickhelp)
 (require-package 'company-dict)
 (require-package 'company-restclient)
 (require-package 'company-go)
 (add-hook 'after-init-hook 'global-company-mode)
-(setq company-tooltip-limit 99)                      ; bigger popup window
+(setq company-tooltip-limit 30)                      ; bigger popup window
 (setq company-idle-delay .3)                         ; decrease delay before autocompletion popup shows
 (setq company-echo-delay 0)                          ; remove annoying blinking
 ;; (setq company-begin-commands '(self-insert-command)) ; start autocompletion only after typing
-(setq company-minimum-prefix-length 2)
+(setq company-minimum-prefix-length 1)
 (after-load 'company
   (company-flx-mode +1)
   (setq company-auto-complete-chars "")
@@ -799,10 +799,10 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key company-active-map "\C-n" 'company-select-next-or-abort)
   (define-key company-active-map "\C-p" 'company-select-previous-or-abort)
   )
-(after-load 'company-tern
-  (add-to-list 'company-backends 'company-tern)
-  ;; (setq company-tern-property-marker "")
-  )
+;; (after-load 'company-tern
+;;   (add-to-list 'company-backends 'company-tern)
+;;   ;; (setq company-tern-property-marker "")
+;;   )
 (after-load 'company-go
   (add-to-list 'company-backends 'company-go)
   )
@@ -873,7 +873,7 @@ Including indent-buffer, which should not be called automatically on save."
   (sanityinc/newline-at-end-of-line)
   )
 
-(defun js2-enter-next-line (arg)
+(defun js-comment-block-newline (arg)
   (interactive "P")
   (let ((node (js2-comment-at-point)) start len comment-start)
     (when node
@@ -881,9 +881,10 @@ Including indent-buffer, which should not be called automatically on save."
       (setq len (+ start (aref node 3)))
       (setq comment-start (buffer-substring start (+ start 2)) )
       (sanityinc/newline-at-end-of-line)
-      (if (string= comment-start "/*")
-          (insert "* ")
-        (insert "// ")))
+      (if (not (string= comment-start "/*"))
+          (insert "// ")
+        (delete-horizontal-space)
+        (insert " * ")))
     (when (null node)
       (sanityinc/newline-at-end-of-line)
       ))
@@ -902,7 +903,7 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map (kbd "M-,") 'js2-mark-parent-statement)
             (define-key js2-mode-map (kbd "C-' c") 'standard-format-buffer)
             (define-key js2-mode-map (kbd "C-M-]") 'js2-insert-comma-new-line)
-            (define-key js2-mode-map (kbd "<M-return>") 'js2-enter-next-line)
+            (define-key js2-mode-map (kbd "<M-return>") 'js-comment-block-newline)
             (flycheck-select-checker 'javascript-standard)
             ))
 
