@@ -430,6 +430,39 @@ Return output file name."
             (goto-char (point-min))
             (replace-regexp key value)))))
 
+
+(require-package 'string-inflection)
+(defun un-camelcase-word-at-point ()
+  "un-camelcase the word at point, replacing uppercase chars with
+the lowercase version preceded by an underscore.
+
+The first char, if capitalized (eg, PascalCase) is just
+downcased, no preceding underscore.
+"
+  (interactive)
+  (save-excursion
+    (let ((bounds (bounds-of-thing-at-point 'word)))
+      (replace-regexp "\\([A-Z]\\)" "-\\1" nil
+                      (car bounds) (cdr bounds))
+      (downcase-region (car bounds) (cdr bounds)))))
+
+(defun toggle-camelcase-underscores ()
+  "Toggle between camelcase and underscore notation for the symbol at point."
+  (interactive)
+  (save-excursion
+    (let* ((bounds (bounds-of-thing-at-point 'symbol))
+           (start (car bounds))
+           (end (cdr bounds))
+           (currently-using-underscores-p (progn (goto-char start)
+                                                 (re-search-forward "_" end t))))
+      (if currently-using-underscores-p
+          (progn
+            (upcase-initials-region start end)
+            (replace-string "_" "" nil start end)
+            (downcase-region start (1+ start)))
+        (replace-regexp "\\([A-Z]\\)" "_\\1" nil (1+ start) end)
+        (downcase-region start (cdr (bounds-of-thing-at-point 'symbol)))))))
+
 (defun mc/eval-and-replace-region ()
   (interactive)
   (mc/execute-command-for-all-fake-cursors 'eval-and-replace-region))
@@ -1910,13 +1943,13 @@ from Google syntax-forward-syntax func."
               :around
               '(lambda(oldfun &rest args)
                  "Only apply upcase-region when region active."
-                 (when (region-active-p)
+                 (when (or (not (called-interactively-p 'any)) (region-active-p) )
                    (apply oldfun args))))
   (advice-add 'downcase-region
               :around
               '(lambda(oldfun &rest args)
                  "Only apply upcase-region when region active."
-                 (when (region-active-p)
+                 (when (or (not (called-interactively-p 'any)) (region-active-p) )
                    (apply oldfun args)))))
 
 ;; use c to create new file in dired
