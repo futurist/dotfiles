@@ -276,8 +276,8 @@ Version 2015-06-12"
                                  ))
 
 ;; package from Harry Schwartz
-(add-to-list 'load-path "~/.emacs.d/download/org-mode/lisp")
-(add-to-list 'load-path "~/.emacs.d/download/org-mode/contrib/lisp" t)
+;; (add-to-list 'load-path "~/.emacs.d/download/org-mode/lisp")
+;; (add-to-list 'load-path "~/.emacs.d/download/org-mode/contrib/lisp" t)
 (require-package 'embrace)
 (require-package 'ox-twbs)
 (require-package 'org-download)
@@ -430,6 +430,24 @@ Return output file name."
             (goto-char (point-min))
             (replace-regexp key value)))))
 
+(defun mc/eval-and-replace-region ()
+  (interactive)
+  (mc/execute-command-for-all-fake-cursors 'eval-and-replace-region))
+
+(defun eval-and-replace-region ()
+  "Replace the region with its sexp value."
+  (interactive)
+  (when (region-active-p)
+    (call-interactively 'kill-region)
+    (condition-case nil
+        (prin1 (eval (read (current-kill 0)))
+               (current-buffer))
+      (error (message "Invalid expression")
+             (insert (current-kill 0))))))
+
+(defun eval-string (string)
+  (eval (car (read-from-string (format "(progn %s)" string)))))
+
 ;; Some short cuts function
 (defun insert-earmuffs (char &optional with-space insert-normal-p)
   "Insert earmuffs for char."
@@ -440,6 +458,7 @@ Return output file name."
         (insert char)
         (goto-char start)
         (insert char)
+        ;; (call-interactively 'exchange-point-and-mark)
         )
     (if (and (not insert-normal-p)
              (or (not with-space)
