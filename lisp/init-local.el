@@ -474,6 +474,7 @@ Typically used in CSS and JS."
                (current-buffer))
       (error (message "Invalid expression")
              (insert (current-kill 0))))))
+(bind-key "C-' e" 'eval-and-replace-region)
 
 (defun eval-string (string)
   (eval (car (read-from-string (format "(progn %s)" string)))))
