@@ -431,37 +431,34 @@ Return output file name."
             (replace-regexp key value)))))
 
 
+(require-package 'shift-number)
+(global-set-key (kbd "C-' +") 'shift-number-up)
+(global-set-key (kbd "C-' -") 'shift-number-down)
+
 (require-package 'string-inflection)
-(defun un-camelcase-word-at-point ()
-  "un-camelcase the word at point, replacing uppercase chars with
-the lowercase version preceded by an underscore.
 
-The first char, if capitalized (eg, PascalCase) is just
-downcased, no preceding underscore.
-"
+(defun toggle-camelcase-dash ()
+  "Toggle between camelcase and dash notation for the symbol at point.
+Typically used in CSS and JS."
   (interactive)
   (save-excursion
-    (let ((bounds (bounds-of-thing-at-point 'word)))
-      (replace-regexp "\\([A-Z]\\)" "-\\1" nil
-                      (car bounds) (cdr bounds))
-      (downcase-region (car bounds) (cdr bounds)))))
-
-(defun toggle-camelcase-underscores ()
-  "Toggle between camelcase and underscore notation for the symbol at point."
-  (interactive)
-  (save-excursion
-    (let* ((bounds (bounds-of-thing-at-point 'symbol))
-           (start (car bounds))
-           (end (cdr bounds))
-           (currently-using-underscores-p (progn (goto-char start)
-                                                 (re-search-forward "_" end t))))
-      (if currently-using-underscores-p
+    (skip-chars-backward "a-zA-Z-" 255)
+    (let* ((start (point))
+           (end (progn (skip-chars-forward "a-zA-Z-") (point)))
+           (currently-using-dash-p (re-search-backward "-" start t)))
+      (goto-char start)
+      (if currently-using-dash-p
           (progn
-            (upcase-initials-region start end)
-            (replace-string "_" "" nil start end)
-            (downcase-region start (1+ start)))
-        (replace-regexp "\\([A-Z]\\)" "_\\1" nil (1+ start) end)
-        (downcase-region start (cdr (bounds-of-thing-at-point 'symbol)))))))
+            (skip-chars-forward "a-zA-Z")
+            (upcase-initials-region (point) end)
+            (replace-string "-" "" nil start end))
+        (replace-regexp "\\([A-Z]\\)" "-\\1" nil start end)
+        (skip-chars-forward "a-zA-Z-")
+        (downcase-region start (point))))))
+
+;; toggle between camelcase and dahs, camelcase and underscore
+(bind-key "C-' -" 'toggle-camelcase-dash)
+(bind-key "C-' _" 'string-inflection-toggle)
 
 (defun mc/eval-and-replace-region ()
   (interactive)
