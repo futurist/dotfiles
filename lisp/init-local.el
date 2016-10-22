@@ -239,6 +239,21 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
 
 ;; package from github/xahlee
 (require-package 'xah-find)
+(defun xah-toggle-line-spacing ()
+  "Toggle line spacing between no extra space to extra half line height.
+URL `http://ergoemacs.org/emacs/emacs_toggle_line_spacing.html'
+Version 2015-12-17"
+  (interactive)
+  (if (null line-spacing)
+      (setq line-spacing 0.5) ; add 0.5 height between lines
+    (setq line-spacing nil)   ; no extra heigh between lines
+    )
+  (redraw-frame (selected-frame)))
+
+;; set initial line spacing
+(setq line-spacing 0.5)
+(bind-key "C-' x h" 'xah-toggle-line-spacing)
+
 (defun xah-new-empty-buffer ()
   "Open a new empty buffer.
 URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
@@ -258,7 +273,7 @@ Version 2015-06-12"
                                  (bind-key "C-' w" 'whitespace-cleanup)
 
                                  ;; earmuff function for markdown mode
-                                 (defvar markdown-earmuff-char-list '("*" "_" "\`")
+                                 (defvar markdown-earmuff-char-list '("*" "_" "\`" "~")
                                    "Earmuff chars for Org-mode.")
                                  (dolist (char markdown-earmuff-char-list)
                                    (define-key markdown-mode-map (kbd char) `(lambda (arg) (interactive "P") (insert-earmuffs ,char nil arg))))
@@ -830,7 +845,14 @@ Including indent-buffer, which should not be called automatically on save."
 (setq company-minimum-prefix-length 1)
 (after-load 'company
   (company-flx-mode +1)
-  (setq company-auto-complete-chars "")
+  ;; use <tab> as complete, unset <tab> bind
+  (setq company-auto-complete-chars '(?\	))
+  (define-key company-active-map (kbd "<tab>") nil)
+  (define-key company-active-map (kbd "<return>") nil)
+  (define-key company-active-map (kbd "RET") nil)
+  (define-key company-active-map (kbd "C-SPC") #'company-complete-selection)
+  (define-key company-active-map (kbd "M-SPC") #'company-complete-selection)
+  (define-key company-active-map (kbd "<tab>") #'company-complete-selection)
   ;; (company-quickhelp-mode 1)
   (setq company-auto-complete t)
   (setq company-flx-limit 99)
@@ -845,7 +867,7 @@ Including indent-buffer, which should not be called automatically on save."
   ;; (define-key company-active-map (kbd "<SPC>") '(lambda()(interactive) (company-abort) (insert " ")))
   (define-key company-active-map (kbd ".") '(lambda()(interactive) (company-abort) (insert ".")))
   (define-key company-active-map (kbd "C-j") 'company-abort)
-  (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
+  ;; (define-key company-active-map (kbd "<tab>") 'company-complete-common-or-cycle)
   (define-key company-active-map "\C-n" 'company-select-next-or-abort)
   (define-key company-active-map "\C-p" 'company-select-previous-or-abort)
   )
@@ -1013,7 +1035,13 @@ Including indent-buffer, which should not be called automatically on save."
 (add-hook 'find-file-hook '(lambda()
                              (recentf-save-list)
                              ))
+(add-hook 'focus-in-hook '(lambda()
+                             (when (boundp 'tern-idle-time)
+                               (setf tern-idle-time 2.5))
+                            ))
 (add-hook 'focus-out-hook '(lambda()
+                             (when (boundp 'tern-idle-time)
+                               (setf tern-idle-time 1e10))
                              ;; (save-current-file)
                              ))
 
