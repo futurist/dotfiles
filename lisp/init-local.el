@@ -98,7 +98,7 @@
              (nreverse (sort* list #'string< :key 'car))))))
 (add-hook 'change-log-mode-hook
           (lambda()
-             (define-key change-log-mode-map (kbd "C-' s") 'change-log-sort)))
+            (define-key change-log-mode-map (kbd "C-' s") 'change-log-sort)))
 
 ;; (setq debug-on-error t)
 
@@ -110,9 +110,9 @@
   (setq server-auth-dir "/tmp/emacsserver")
   (setq server-use-tcp t)
   (toggle-frame-fullscreen)
-;; ;; set below in your .bash_profile
-;; export EMACS_SERVER_FILE=/tmp/emacsserver/server
-;; alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -f $EMACS_SERVER_FILE -a "/Applications/Emacs.app/Contents/MacOS/Emacs" '
+  ;; ;; set below in your .bash_profile
+  ;; export EMACS_SERVER_FILE=/tmp/emacsserver/server
+  ;; alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -f $EMACS_SERVER_FILE -a "/Applications/Emacs.app/Contents/MacOS/Emacs" '
   )
 (server-start)  ;; server seems not stable in windows
 
@@ -170,7 +170,7 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
   "Path to Hugo's content directory")
 
 (defvar org-snapshot-image-dir (cond (*is-a-windows* (convert-standard-filename (concat (get-windows-special-folder "Personal") "\\Scrshot")))
-                                (*is-a-mac* "~/Desktop"))
+                                     (*is-a-mac* "~/Desktop"))
   "Copy snapshot images from this location.")
 
 (defun org-insert-snapshot ()(interactive)
@@ -194,13 +194,13 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
                           (setq compilation-environment (list (concat "GOPATH=" GO-MODE-GOPATH)))
                           (setq compile-command "go build -v && go test -v && go vet")
                           (define-key (current-local-map) "\C-c\C-c" '(lambda(arg)(interactive "P") (if arg
-                                                                                                   (compile compile-command)
-                                                                                                 (shell-command (format "go run %s" (shell-quote-argument buffer-file-name))))))
+                                                                                                        (compile compile-command)
+                                                                                                      (shell-command (format "go run %s" (shell-quote-argument buffer-file-name))))))
                           ;; disable company-mode and use ac-mode for go
-                           ;; (set (make-local-variable 'company-backends) '(company-go)) ;only load go backends
+                          ;; (set (make-local-variable 'company-backends) '(company-go)) ;only load go backends
                           (company-mode -1)
                           (auto-complete-mode 1)
-                           (go-eldoc-setup)))
+                          (go-eldoc-setup)))
 
 
 ;; Install extensions if they're missing
@@ -374,17 +374,17 @@ Returns list of properties that still must be filled in"
       ;; Normalize save file path
       (unless (string-match "^[/~]" file)
         (setq file (concat hugo-content-dir file))
-      (unless (string-match "\\.md$" file)
-        (setq file (concat file ".md")))
-      (message "%s" file)
-      ;; save markdown
-      (with-temp-buffer
-        (insert fm)
-        (insert blog)
-        (untabify (point-min) (point-max))
-        (write-file file)
-        (message "Exported to %s" file))
-      ))))
+        (unless (string-match "\\.md$" file)
+          (setq file (concat file ".md")))
+        (message "%s" file)
+        ;; save markdown
+        (with-temp-buffer
+          (insert fm)
+          (insert blog)
+          (untabify (point-min) (point-max))
+          (write-file file)
+          (message "Exported to %s" file))
+        ))))
 
 (defun org-insert-title-as-pinyin(arg start end) (interactive "P\nr")
        (let ((str (cond (arg (read-string "Enter chinese"))
@@ -452,23 +452,40 @@ Return output file name."
 
 (require-package 'string-inflection)
 
+(defun un-camelcase-string (s &optional sep start)
+  "Convert CamelCase string S to lower case with word separator SEP.
+Default for SEP is a hyphen \"-\".
+
+If third argument START is non-nil, convert words after that
+index in STRING."
+  (let ((case-fold-search nil))
+    (while (string-match "[A-Z]" s (or start 1))
+      (setq s (replace-match
+               (concat
+                (or sep "-")
+                (downcase (match-string 0 s)))
+               t nil s)))
+    (downcase s)))
+
 (defun toggle-camelcase-dash ()
   "Toggle between camelcase and dash notation for the symbol at point.
 Typically used in CSS and JS."
   (interactive)
   (save-excursion
-    (skip-chars-backward "a-zA-Z\-" 255)
-    (let* ((start (point))
-           (end (progn (skip-chars-forward "a-zA-Z\-") (point)))
-           (currently-using-dash-p (re-search-backward "-" start t)))
+    (let* ((sep "-")
+           (case-fold-search nil)
+           (symbol-char-list "a-zA-Z0-9$_-")
+           (start (progn (skip-chars-backward symbol-char-list (- (point) 255)) (point)))
+           (end (progn (skip-chars-forward symbol-char-list) (point)))
+           (currently-using-dash-p (re-search-backward sep start t)))
       (goto-char start)
       (if currently-using-dash-p
-          (progn
-            (skip-chars-forward "a-zA-Z")
-            (upcase-initials-region (point) end)
-            (replace-string "-" "" nil start end))
+          (while (re-search-forward (concat sep "\\(.\\)") end t)
+            (replace-match (upcase (match-string 1)))
+            ;; the dash removed, end - 1
+            (decf end))
         (replace-regexp "\\([A-Z]\\)" "-\\1" nil start end)
-        (skip-chars-forward "a-zA-Z-")
+        (skip-chars-forward symbol-char-list)
         (downcase-region start (point))))))
 
 ;; toggle between camelcase and dahs, camelcase and underscore
@@ -508,8 +525,8 @@ Typically used in CSS and JS."
         )
     (if (and (not insert-normal-p)
              (or (not with-space)
-               (and (> (current-column) 0)
-                    (looking-back "[ \t\n]" 1))))
+                 (and (> (current-column) 0)
+                      (looking-back "[ \t\n]" 1))))
         (let ((space 1))
           (progn
             (insert char)
@@ -569,10 +586,10 @@ Typically used in CSS and JS."
             ))
 
 (setq user-full-name "James Yang"
-        user-mail-address "jamesyang999@gmail.com"
-        calendar-latitude 30.26
-        calendar-longitude 120.19
-        calendar-location-name "Hangzhou, China")
+      user-mail-address "jamesyang999@gmail.com"
+      calendar-latitude 30.26
+      calendar-longitude 120.19
+      calendar-location-name "Hangzhou, China")
 
 
 
@@ -846,7 +863,7 @@ Including indent-buffer, which should not be called automatically on save."
 (after-load 'company
   (company-flx-mode +1)
   ;; use <tab> as complete, unset <tab> bind
-  (setq company-auto-complete-chars '(?\	))
+  (setq company-auto-complete-chars '(?\  ))
   (define-key company-active-map (kbd "<tab>") nil)
   (define-key company-active-map (kbd "<return>") nil)
   (define-key company-active-map (kbd "RET") nil)
@@ -888,8 +905,8 @@ Including indent-buffer, which should not be called automatically on save."
          ("\\.styl\\'" . stylus-mode)
          ("\\.stylus\\'" . stylus-mode)
          )
-      auto-mode-alist)
- )
+       auto-mode-alist)
+      )
 
 
 (defvar projectile-keymap-prefix (kbd "C-x p"))
@@ -1036,8 +1053,8 @@ Including indent-buffer, which should not be called automatically on save."
                              (recentf-save-list)
                              ))
 (add-hook 'focus-in-hook '(lambda()
-                             (when (boundp 'tern-idle-time)
-                               (setf tern-idle-time 2.5))
+                            (when (boundp 'tern-idle-time)
+                              (setf tern-idle-time 2.5))
                             ))
 (add-hook 'focus-out-hook '(lambda()
                              (when (boundp 'tern-idle-time)
@@ -1382,28 +1399,28 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 
 
 
-    (defun mark-current-indentation (&optional ARG)
-      "Select surrounding lines with current indentation.
+(defun mark-current-indentation (&optional ARG)
+  "Select surrounding lines with current indentation.
     if ARG is 'C-u', mark forward; if ARG is 'C-u C-u', mark backward."
-      (interactive "P")
-      (let ((is-forward (not (equal ARG '(16))))
-            (is-backward (not (equal ARG '(4))))
-            (indentation (if (not (current-line-empty-p))
-                             (current-indentation)
-                           (skip-chars-forward "\s\t\n")
-                           (current-indentation))))
-        (if (= indentation 0)
-            (mark-whole-buffer)
-          (if (not is-forward) (push-mark (point) nil t))
-          (while (and (not (bobp)) is-backward
-                      (or (current-line-empty-p) (<= indentation (current-indentation))))
-            (forward-line -1))
-          (if is-backward (forward-line 1) (move-beginning-of-line nil))
-          (if (not (use-region-p)) (push-mark (point) nil t))
-          (while (and (not (eobp)) is-forward
-                      (or (current-line-empty-p) (<= indentation (current-indentation))))
-            (forward-line 1))
-          (if is-forward (backward-char)))))
+  (interactive "P")
+  (let ((is-forward (not (equal ARG '(16))))
+        (is-backward (not (equal ARG '(4))))
+        (indentation (if (not (current-line-empty-p))
+                         (current-indentation)
+                       (skip-chars-forward "\s\t\n")
+                       (current-indentation))))
+    (if (= indentation 0)
+        (mark-whole-buffer)
+      (if (not is-forward) (push-mark (point) nil t))
+      (while (and (not (bobp)) is-backward
+                  (or (current-line-empty-p) (<= indentation (current-indentation))))
+        (forward-line -1))
+      (if is-backward (forward-line 1) (move-beginning-of-line nil))
+      (if (not (use-region-p)) (push-mark (point) nil t))
+      (while (and (not (eobp)) is-forward
+                  (or (current-line-empty-p) (<= indentation (current-indentation))))
+        (forward-line 1))
+      (if is-forward (backward-char)))))
 (bind-key "C-' C-l" 'mark-current-indentation)
 
 (add-to-list 'load-path (expand-file-name "standard" user-emacs-directory))
@@ -1420,8 +1437,8 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
   "Renames current buffer and file it is visiting."
   (interactive)
   (let* ((name (buffer-name))
-        (filename (buffer-file-name))
-        (basename (file-name-nondirectory filename)))
+         (filename (buffer-file-name))
+         (basename (file-name-nondirectory filename)))
     (if (not (and filename (file-exists-p filename)))
         (error "Buffer '%s' is not visiting a file!" name)
       (let ((new-name (read-file-name "New name: " (file-name-directory filename) basename nil basename)))
@@ -1887,8 +1904,8 @@ from Google syntax-forward-syntax func."
                         '(lambda(&optional ARG)
                            "Move to function name when jump to definition."
                            (when (js2r--is-function-declaration (js2-node-at-point))
-                               (forward-word 2)
-                               )
+                             (forward-word 2)
+                             )
                            ))
             (advice-add 'js2r-expand-call-args
                         :after
@@ -1948,8 +1965,8 @@ from Google syntax-forward-syntax func."
   (global-set-key [M-down] nil)
 
   (advice-add 'backward-up-sexp :before '(lambda(arg)
-                                          (push-mark (point) nil nil)
-                                          ))
+                                           (push-mark (point) nil nil)
+                                           ))
 
   (define-key global-map (kbd "C-.") 'select-current-pair)
   ;; remmap the old C-M-. is 'find-tag-regexp
@@ -2049,18 +2066,18 @@ from Google syntax-forward-syntax func."
 (defun osx-open-terminal (&optional dir file)
   (interactive)
   (let ((filename (buffer-file-name)))
-  (if (and filename (null dir)) (setq dir (file-name-directory filename)))
-  (if (and filename (null file)) (setq file (file-name-nondirectory filename)))
-  (if dir
-      (let ((script         ; Define script variable using revealpath and text.
-             (concat
-              ;; "delay 1\n"
-              "tell application \"Terminal\"\n"
-              " activate\n"
-              " do script \"cd '" dir "'\" in front window \n"
-              " activate\n"
-              "end tell\n")))
-        (start-process "osascript-getinfo" nil "osascript" "-e" script)))))
+    (if (and filename (null dir)) (setq dir (file-name-directory filename)))
+    (if (and filename (null file)) (setq file (file-name-nondirectory filename)))
+    (if dir
+        (let ((script         ; Define script variable using revealpath and text.
+               (concat
+                ;; "delay 1\n"
+                "tell application \"Terminal\"\n"
+                " activate\n"
+                " do script \"cd '" dir "'\" in front window \n"
+                " activate\n"
+                "end tell\n")))
+          (start-process "osascript-getinfo" nil "osascript" "-e" script)))))
 
 (when *is-a-mac*
   ;; bash complete not run on windows
@@ -2169,7 +2186,7 @@ from Google syntax-forward-syntax func."
 
 ;; save to remote custom file
 (fset 'my-macro-save-to-remote-dotfile-custom
-   [?\C-x ?h ?\M-w ?\C-x ?p ?p ?d ?o ?t ?f ?i ?l ?e ?s return ?i ?n ?i ?t ?- ?l ?o return ?\C-x ?h ?\C-y ?\C-x ?\C-s])
+      [?\C-x ?h ?\M-w ?\C-x ?p ?p ?d ?o ?t ?f ?i ?l ?e ?s return ?i ?n ?i ?t ?- ?l ?o return ?\C-x ?h ?\C-y ?\C-x ?\C-s])
 
 ;; save custom.el into remote
 (define-key global-map (kbd "C-' m s") 'my-macro-save-to-remote-dotfile-custom)
