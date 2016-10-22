@@ -457,9 +457,9 @@ Return output file name."
 Typically used in CSS and JS."
   (interactive)
   (save-excursion
-    (skip-chars-backward "a-zA-Z-" 255)
+    (skip-chars-backward "a-zA-Z\-" 255)
     (let* ((start (point))
-           (end (progn (skip-chars-forward "a-zA-Z-") (point)))
+           (end (progn (skip-chars-forward "a-zA-Z\-") (point)))
            (currently-using-dash-p (re-search-backward "-" start t)))
       (goto-char start)
       (if currently-using-dash-p
