@@ -863,7 +863,7 @@ Including indent-buffer, which should not be called automatically on save."
 (after-load 'company
   (company-flx-mode +1)
   ;; use <tab> as complete, unset <tab> bind
-  (setq company-auto-complete-chars '(?\  ))
+  (setq company-auto-complete-chars '(?\t))
   (define-key company-active-map (kbd "<tab>") nil)
   (define-key company-active-map (kbd "<return>") nil)
   (define-key company-active-map (kbd "RET") nil)
@@ -1283,12 +1283,11 @@ TODO: save mark position for each buffer.")
                                                 )
                                               ))
   (define-key paredit-everywhere-mode-map (kbd "C-d") nil)
-
   (define-key paredit-everywhere-mode-map (kbd "M-}") nil)
-
-  (define-key paredit-everywhere-mode-map (kbd "C-M-}") 'paredit-current-sexp-end)
-
-  (define-key paredit-everywhere-mode-map (kbd "C-M-{") 'paredit-current-sexp-start)
+  (define-key paredit-everywhere-mode-map (kbd "C-}") 'paredit-current-sexp-end)
+  (define-key paredit-everywhere-mode-map (kbd "C-{") 'paredit-current-sexp-start)
+  ;; (define-key paredit-everywhere-mode-map (kbd "C-<right>") 'paredit-forward-slurp-sexp) ;C-) can do the job
+  (define-key paredit-everywhere-mode-map (kbd "C-<left>") 'paredit-backward-slurp-sexp)
 
   (define-key paredit-everywhere-mode-map (kbd "C-M-p") 'paredit-backward-down)
   (define-key paredit-everywhere-mode-map (kbd "C-M-n") 'paredit-forward-up)
@@ -1308,6 +1307,49 @@ TODO: save mark position for each buffer.")
                             (lambda (_ _) nil))
                ;; (enable-paredit-mode)
                )))
+
+(defun js2-node-child-list-all (target-node)
+  "Get all child nodes recursively for target-node, for type array,object,function,call."
+  (let ((result nil)
+        (nodes nil))
+    (dolist (node (js2-node-child-list target-node))
+      (if (or (js2-array-node-p node)
+              (js2-object-node-p node)
+              (js2-function-node-p node)
+              (js2-call-node-p node))
+          (setq result
+                (nconc result
+                       (cons node (js2-node-child-list-all node))))
+        (push node nodes)))
+    (nconc result (nreverse nodes))))
+
+(defun epnode (&optional is-contract)
+  (let* ((target
+          (js2-node-at-point))
+         (child-nodes
+          (js2-node-child-list-all target))
+         (pos-list nil)
+         (sum-space 0))
+    (setq pos-list (--filter (not (js2-comment-node-p (js2-node-find-child-before it target)))
+                             (-non-nil (append
+                              (--map (js2-node-abs-pos it) child-nodes)
+                              ;; (--map (js2-node-abs-end it) child-nodes)
+                              ))))
+    (sort pos-list '<)
+    (message "---%s" pos-list)
+    (dolist (pos pos-list)
+      (goto-char (- pos sum-space))
+      (while (looking-back "[\n\s]")
+        (delete-char -1)
+        (incf sum-space))
+      (if (js2-comment-at-point (point))
+          (newline)
+        (insert " "))
+      (decf sum-space)
+      )
+    (goto-char (1- (- (js2-node-abs-end target) sum-space)))
+    (js2r--ensure-just-one-space)
+    ))
 
 (defun js2r-universal-expand(arg &optional is-contract)
   "Expand or contract bracketed list using js2r-refactor.
@@ -1746,11 +1788,7 @@ from Google syntax-forward-syntax func."
 
 ;; -- define a new command to join multiple lines together --
 (defun join-lines () (interactive)
-       (next-line)
-       (join-line)
-       (delete-horizontal-space)
-       (insert " ")
-       )
+       (delete-indentation t))
 
 (defun search-selection (&optional arg)
   "search for selected text"
@@ -1789,16 +1827,6 @@ from Google syntax-forward-syntax func."
       (search-forward-regexp
        (rx symbol-start ,(thing-at-point 'symbol) symbol-end))
       (beginning-of-thing 'symbol))))
-
-(defun my-backward-sexp(&optional arg)
-  (interactive "p")
-  (let ((old (point))) (goto-char (1+ (paredit-current-sexp-start)))
-       (when (eq old (point))
-         (paredit-backward-up arg)
-         ;; (goto-char (1+ (paredit-current-sexp-start)))
-         )
-       )
-  )
 
 (require-package 'youdao-dictionary)
 ;; FIX Problem for youdao-dict
@@ -1844,8 +1872,8 @@ from Google syntax-forward-syntax func."
              (setq deactivate-mark nil))
     (self-insert-command N)))
 
-(global-set-key ">" 'my-indent-region)
-(global-set-key "<" 'my-unindent-region)
+  (global-set-key ">" 'my-indent-region)
+  (global-set-key "<" 'my-unindent-region)
 
 (defun my-max-window-size (restore)
   "Max window size of window."
@@ -2017,8 +2045,6 @@ from Google syntax-forward-syntax func."
 ;; (global-set-key (kbd "M-[") 'sp-backward-sexp)
 
 ;; (global-set-key (kbd "M-S") 'paredit-unwrap) ; paredit-splice-sexp/string
-(global-set-key (kbd "C-{") 'my-backward-sexp)
-;; (global-set-key (kbd "C-}") 'sp-end-of-sexp)
 (global-set-key (kbd "C-M-'") 'paredit-rewrap)
 
 ;; (global-set-key (kbd "C-M-<left>") 'sp-forward-slurp-sexp)
