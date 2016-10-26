@@ -701,7 +701,7 @@ Typically used in CSS and JS."
 
 ;;;;;;;;;;;Commonly used;;;;;;;;;;;;;;;;;
 
-(bind-key "C-c C-m a" 'mc/mark-all-dwim)
+(bind-key "C-' m a" 'mc/mark-all-dwim)
 (bind-key "C-' a" 'align-regexp)
 
 ;;;;;;;;;;;HELPER FOR MC;;;;;;;;;;;;;;;;;
@@ -909,12 +909,12 @@ Including indent-buffer, which should not be called automatically on save."
       )
 
 
-(defvar projectile-keymap-prefix (kbd "C-x p"))
 (require-package 'ag)
 (require-package 'flx)
 (require-package 'flx-ido)
-(require-package 'projectile)
-(projectile-global-mode)
+;; (defvar projectile-keymap-prefix (kbd "C-x p"))
+;; (require-package 'projectile)
+;; (projectile-global-mode)
 
 
 (require-package 'neotree)
@@ -2212,7 +2212,7 @@ from Google syntax-forward-syntax func."
 
 ;; save to remote custom file
 (fset 'my-macro-save-to-remote-dotfile-custom
-      [?\C-x ?h ?\M-w ?\C-x ?p ?p ?d ?o ?t ?f ?i ?l ?e ?s return ?i ?n ?i ?t ?- ?l ?o return ?\C-x ?h ?\C-y ?\C-x ?\C-s])
+      [?\C-x ?h ?\M-w ?\C-' ?f ?d ?o ?t ?f ?i ?l ?e ?s space ?i ?n ?i ?t ?- ?l ?o ?c ?a ?l ?\. ?e ?l return return ?\C-x ?h ?\C-y ?\C-x ?\C-s])
 
 ;; save custom.el into remote
 (define-key global-map (kbd "C-' m s") 'my-macro-save-to-remote-dotfile-custom)
