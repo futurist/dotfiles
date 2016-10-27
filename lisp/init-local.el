@@ -239,13 +239,15 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
 
 ;; package from github/xahlee
 (require-package 'xah-find)
+(defvar line-height-base 0.5
+  "Line height increment value.")
 (defun xah-toggle-line-spacing ()
   "Toggle line spacing between no extra space to extra half line height.
 URL `http://ergoemacs.org/emacs/emacs_toggle_line_spacing.html'
 Version 2015-12-17"
   (interactive)
   (if (null line-spacing)
-      (setq line-spacing 0.5) ; add 0.5 height between lines
+      (setq line-spacing line-height-base) ; add 0.5 height between lines
     (setq line-spacing nil)   ; no extra heigh between lines
     )
   (redraw-frame (selected-frame)))
@@ -912,9 +914,9 @@ Including indent-buffer, which should not be called automatically on save."
 (require-package 'ag)
 (require-package 'flx)
 (require-package 'flx-ido)
-;; (defvar projectile-keymap-prefix (kbd "C-x p"))
-;; (require-package 'projectile)
-;; (projectile-global-mode)
+(defvar projectile-keymap-prefix (kbd "C-x p"))
+(require-package 'projectile)
+(projectile-global-mode)
 
 
 (require-package 'neotree)
@@ -2212,7 +2214,7 @@ from Google syntax-forward-syntax func."
 
 ;; save to remote custom file
 (fset 'my-macro-save-to-remote-dotfile-custom
-      [?\C-x ?h ?\M-w ?\C-' ?f ?d ?o ?t ?f ?i ?l ?e ?s space ?i ?n ?i ?t ?- ?l ?o ?c ?a ?l ?\. ?e ?l return return ?\C-x ?h ?\C-y ?\C-x ?\C-s])
+      [?\C-x ?h ?\M-w ?\C-x ?p ?p ?d ?o ?t ?f ?i ?l ?e ?s return ?i ?n ?i ?t ?- ?l ?o return ?\C-x ?h ?\C-y ?\C-x ?\C-s])
 
 ;; save custom.el into remote
 (define-key global-map (kbd "C-' m s") 'my-macro-save-to-remote-dotfile-custom)
