@@ -253,7 +253,7 @@ Version 2015-12-17"
   (redraw-frame (selected-frame)))
 
 ;; set initial line spacing
-(setq line-spacing 0.5)
+(setq line-spacing line-height-base)
 (bind-key "C-' x h" 'xah-toggle-line-spacing)
 
 (defun xah-new-empty-buffer ()
