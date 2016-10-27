@@ -26,6 +26,9 @@
 
 (menu-bar-mode -1)
 
+;; allow delete region when paste
+(delete-selection-mode 1)
+
 (defconst *is-a-windows* (eq system-type 'windows-nt))
 
 (when *is-a-windows*
@@ -253,7 +256,7 @@ Version 2015-12-17"
   (redraw-frame (selected-frame)))
 
 ;; set initial line spacing
-(setq line-spacing line-height-base)
+(xah-toggle-line-spacing)
 (bind-key "C-' x h" 'xah-toggle-line-spacing)
 
 (defun xah-new-empty-buffer ()
