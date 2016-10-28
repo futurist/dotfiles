@@ -21,6 +21,8 @@
 ;; $ emacs --batch --eval "(byte-recompile-directory \"site-lisp/\" 0)"
 ;;; Code:
 
+(require-package 'use-package)
+
 ;; no sound
 (setq ring-bell-function 'ignore)
 
@@ -59,6 +61,45 @@
                                 ))
 
   )
+
+
+;; when it's windows, setting below
+(defvar default-font-family "Source Code Pro")
+(defvar default-font-size 120)
+;; (set-face-attribute 'default (selected-frame) :height 140)
+
+;; when it's mac, setting below
+(when *is-a-mac*
+  (setq default-font-family "Source Code Pro")
+  (setq default-font-size 164)
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier 'meta))
+
+(defvar line-height-base 0.5
+  "Line height increment value.")
+(setq-default tab-width 2)
+(setq-default indent-tabs-mode nil)
+(setq-default line-spacing line-height-base)
+
+(defun get-default-font()
+  `(default ((t (:family "Source Code Pro" :foundry "outline" :slant normal :weight normal :height ,default-font-size :width normal)))))
+
+(setq cua-enable-cua-keys nil)
+(setq display-buffer-reuse-frames t)
+(setq avy-timeout-seconds 0.4)
+(setq avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ (get-default-font))
+
+
+
+(require-package 'monokai-theme)
+(load-theme 'monokai t)
 
 (setq tramp-auto-save-directory "~/tramp-autosave")
 ;; (setq tramp-chunksize "500")
@@ -235,40 +276,6 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
 (after-load "expand-region"
   (setq expand-region-fast-keys-enabled nil)
   )
-
-(require-package 'use-package)
-
-(require-package 'monokai-theme)
-
-;; package from github/xahlee
-(require-package 'xah-find)
-(defvar line-height-base 0.5
-  "Line height increment value.")
-(defun xah-toggle-line-spacing ()
-  "Toggle line spacing between no extra space to extra half line height.
-URL `http://ergoemacs.org/emacs/emacs_toggle_line_spacing.html'
-Version 2015-12-17"
-  (interactive)
-  (if (null line-spacing)
-      (setq line-spacing line-height-base) ; add 0.5 height between lines
-    (setq line-spacing nil)   ; no extra heigh between lines
-    )
-  (redraw-frame (selected-frame)))
-
-;; set initial line spacing
-(xah-toggle-line-spacing)
-(bind-key "C-' x h" 'xah-toggle-line-spacing)
-
-(defun xah-new-empty-buffer ()
-  "Open a new empty buffer.
-URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
-Version 2015-06-12"
-  (interactive)
-  (let (($buf (generate-new-buffer "untitled")))
-    (switch-to-buffer $buf)
-    (funcall (and 'text-mode))
-    (setq buffer-offer-save t)))
-;; (setq initial-major-mode (quote text-mode))
 
 (require-package 'ascii)
 
@@ -693,6 +700,34 @@ Typically used in CSS and JS."
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
 
+
+;; package from github/xahlee
+(require-package 'xah-find)
+(defun xah-toggle-line-spacing ()
+  "Toggle line spacing between no extra space to extra half line height.
+URL `http://ergoemacs.org/emacs/emacs_toggle_line_spacing.html'
+Version 2015-12-17"
+  (interactive)
+  (if (null line-spacing)
+      (setq line-spacing line-height-base) ; add 0.5 height between lines
+    (setq line-spacing nil)   ; no extra heigh between lines
+    )
+  (redraw-frame (selected-frame)))
+
+;; set initial line spacing
+(bind-key "C-' x h" 'xah-toggle-line-spacing)
+
+(defun xah-new-empty-buffer ()
+  "Open a new empty buffer.
+URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
+Version 2015-06-12"
+  (interactive)
+  (let (($buf (generate-new-buffer "untitled")))
+    (switch-to-buffer $buf)
+    (funcall (and 'text-mode))
+    (setq buffer-offer-save t)))
+;; (setq initial-major-mode (quote text-mode))
+
 ;; github/magnars
 
 (require 'mc-cycle-cursors)
@@ -1000,42 +1035,6 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map (kbd "<M-return>") 'js-comment-block-newline)
             (flycheck-select-checker 'javascript-standard)
             ))
-
-
-;; when it's windows, setting below
-(defvar default-font-family "Source Code Pro")
-(defvar default-font-size 120)
-;; (set-face-attribute 'default (selected-frame) :height 140)
-
-
-;; when it's mac, setting below
-(when *is-a-mac*
-  (setq default-font-family "Source Code Pro")
-  (setq default-font-size 164)
-  (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier 'meta))
-
-(setq-default tab-width 2)
-(setq-default indent-tabs-mode nil)
-(setq-default line-spacing 0.2)
-
-(defun get-default-font()
-  `(default ((t (:family "Source Code Pro" :foundry "outline" :slant normal :weight normal :height ,default-font-size :width normal)))))
-
-(setq cua-enable-cua-keys nil)
-(setq display-buffer-reuse-frames t)
-(setq avy-timeout-seconds 0.4)
-(setq avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- (get-default-font))
-
-
-(load-theme 'monokai t)
 
 ;; save buffer when outof focus
 (defun save-current-file ()
