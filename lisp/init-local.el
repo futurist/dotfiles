@@ -1318,21 +1318,21 @@ TODO: save mark position for each buffer.")
       (js2-function-node-p node)
       (js2-call-node-p node)))
 
-(defun js2r--node-child-list-all (target-node)
-  "Get all child nodes recursively for target-node, for type array,object,function,call."
+(defun js2r--node-child-list (target-node &optional recursive)
+  "Get all child nodes for target-node, test with (js2r--node-is-list), recursively when recursive is t."
   (let ((result nil)
         (nodes nil))
     (dolist (node (js2-node-child-list target-node))
       (if (js2r--node-is-list node)
           (setq result
                 (nconc result
-                       (cons node (js2r--node-child-list-all node))))
+                       (cons node (when recursive (js2r--node-child-list node recursive)))))
         (push node nodes)))
     (nconc result (nreverse nodes))))
 
 (defun js2-comments-between (start end)
   "Return comment nodes between START and END, nil if not found.
-START and END are positions in current buffer."
+START and END are absolute positions in current buffer."
   (let ((ast js2-mode-ast)
         (comments nil)
         c-start c-end)
@@ -1340,14 +1340,19 @@ START and END are positions in current buffer."
       (error "No JavaScript AST available"))
     (dolist (comment (js2-ast-root-comments ast) comments)
       (setq c-start (js2-node-abs-pos comment)
-            c-end (+ c-start (js2-node-len comment)))
+            c-end (1- (+ c-start (js2-node-len comment))))
       (when (or (and (>= c-start start) (<= c-start end))
+                (and (< c-start start) (> c-start end))
                 (and (>= c-end start) (<= c-end end)))
         (push comment comments)))))
 
-(defun epnode (&optional is-expand)
-  (let* ((target (js2-node-at-point))
-         (child-nodes (js2r--node-child-list-all target))
+(defun js2r--expand-contract-node-at-point (&optional is-contract is-recursive)
+  (let* ((node (js2-node-at-point))
+         (target (if (and (not (js2-comment-node-p node))
+                          (not (js2r--node-is-list node)))
+                     (setq node (js2-node-parent node))
+                   node))
+         (child-nodes (js2r--node-child-list target is-recursive))
          (target-start (js2-node-abs-pos target))
          (target-end (js2-node-abs-end target))
          (pos-list (list (1+ target-start) (1- target-end)))
@@ -1356,7 +1361,7 @@ START and END are positions in current buffer."
     (dolist (n child-nodes)
       (push (setq start (js2-node-abs-pos n)) pos-list)
       (push (setq end (js2-node-abs-end n)) pos-list)
-      (when (js2r--node-is-list n)
+      (when (and is-recursive (js2r--node-is-list n))
         (push (1+ start) pos-list)
         (push (1- end) pos-list)))
     (setq pos-list (sort pos-list '<))
@@ -1374,12 +1379,12 @@ START and END are positions in current buffer."
         (while (looking-back "[\n\s]")
           (delete-char -1)
           (incf sum-space))
-        (if is-expand
-            (newline)
-          (insert " "))
+        (if is-contract
+            (insert " ")
+          (newline))
         (decf sum-space)
         ))
-    (when is-expand
+    (when (not is-contract)
       (js2-indent-region target-start (- target-end sum-space)))
     ))
 
@@ -1974,8 +1979,8 @@ from Google syntax-forward-syntax func."
                            (when (consp current-prefix-arg)
                              ;; (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space)
                              )))
-            (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-universal-expand)
-            (define-key js2-mode-map (kbd "C-c C-m C-c") '(lambda()(interactive)(js2r-universal-expand current-prefix-arg t)))
+            (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-expand-node-at-point)
+            (define-key js2-mode-map (kbd "C-c C-m C-c") 'js2r-contract-node-at-point)
             (define-key js2-mode-map (kbd "C-c C-m C-.") 'js2-mark-parent-statement)
             (define-key paredit-everywhere-mode-map (kbd "M-]") nil)
             (define-key js2-mode-map (kbd "M-]") '(lambda()(interactive)(call-interactively 'paredit-current-sexp-end) (forward-char) (newline-and-indent)))
