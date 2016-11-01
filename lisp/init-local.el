@@ -1312,17 +1312,36 @@ TODO: save mark position for each buffer.")
                ;; (enable-paredit-mode)
                )))
 
+
 (defun js2r--node-is-list (node)
-  (or (js2-array-node-p node)
-      (js2-object-node-p node)
-      (js2-function-node-p node)
-      (js2-call-node-p node)))
+  (or
+   (js2-function-node-p node)
+   (js2-block-node-p node)
+   (js2-array-node-p node)
+   (js2-object-node-p node)
+   (js2-new-node-p node)
+   (js2-call-node-p node)))
 
 (defun js2r--node-child-list (target-node &optional recursive)
   "Get all child nodes for target-node, test with (js2r--node-is-list), recursively when recursive is t."
   (let ((result nil)
-        (nodes nil))
-    (dolist (node (js2-node-child-list target-node))
+        (nodes nil)
+        (children (cond
+                   ((js2-function-node-p target-node)
+                    (js2-block-node-kids (js2-function-node-body target-node)))
+                   ((js2-block-node-p target-node)
+                    (js2-block-node-kids target-node))
+                   ((js2-array-node-p target-node)
+                    (js2-array-node-elems target-node))
+                   ((js2-object-node-p target-node)
+                    (js2-object-node-elems target-node))
+                   ((js2-call-node-p target-node)
+                    (js2-call-node-args target-node))
+                   ((js2-new-node-p target-node)
+                    (js2-new-node-args target-node))
+                   (t
+                    nil))))
+    (dolist (node children)
       (if (js2r--node-is-list node)
           (setq result
                 (nconc result
@@ -1358,6 +1377,7 @@ START and END are absolute positions in current buffer."
            (pos-list (list (1+ target-start) (1- target-end)))
            (sum-space 0)
            child-nodes
+           asi
            start
            end)
       (when (js2r--node-is-list target)
@@ -1369,12 +1389,14 @@ START and END are absolute positions in current buffer."
             (push (1+ start) pos-list)
             (push (1- end) pos-list)))
         (setq pos-list (sort pos-list '<))
-        ;; (message "222-------%s" pos-list)
         (dotimes (i (length pos-list))
           (setq start (nth i pos-list))
           (incf i)
           (setq end (nth i pos-list))
-          (unless (js2-comments-between start end)
+          ;; for automatic semicolon insertion (ASI) sperated list, don't contract
+          ;; TODO: add ; when it's ASI children list (block-node-kids)
+          (setq asi (js2-block-node-p (js2-node-parent (js2-node-at-point start))))
+          (unless (or (js2-comments-between start end) (and asi is-contract))
             (goto-char (- start sum-space))
             (while (looking-at "[\n\s]")
               (delete-char 1)
