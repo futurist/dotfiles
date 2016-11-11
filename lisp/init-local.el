@@ -1966,7 +1966,7 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-' x f") 'xah-find-text)
 (global-set-key (kbd "C-' n") 'xah-new-empty-buffer)
 (global-set-key (kbd "C-' f") 'recentf-open-files)
-(global-set-key (kbd "C-' s") 'my/highlight-symbole)
+(global-set-key (kbd "C-' h") 'my/highlight-symbole)
 (global-set-key (kbd "C-' TAB") '(lambda()
                                    (interactive)
                                    (if (region-active-p)
