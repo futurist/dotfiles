@@ -39,14 +39,18 @@ list of strings, giving the binary name and arguments.")
 
 (defun standard-format-buffer (&optional arg)
   (interactive "P")
-  (goto-char (point-min))
-  ;; skip # line for cli.js
-  (while (and (not (eobp)) (looking-at-p "\s*\#")) (next-line 1))
-  (skip-chars-forward "\t \n\r")
-  (save-excursion
-    (let* ((col (current-column))
-           (line (line-number-at-pos)))
-      (standard-format-region (point) (point-max) nil `(,line ,col) t) ))
+  (let ((cur (point))
+        start)
+    (goto-char (point-min))
+    ;; skip # line for cli.js
+    (while (and (not (eobp)) (looking-at-p "\\s *\#")) (next-line 1))
+    (skip-chars-forward "\r\n[:blank:]")
+    (setq start (point))
+    (goto-char cur)
+    (save-excursion
+      (let* ((col (current-column))
+             (line (line-number-at-pos)))
+        (standard-format-region start (point-max) nil `(,line ,col) t) )))
   ;; (cleanup-buffer)
   )
 
@@ -65,7 +69,7 @@ list of strings, giving the binary name and arguments.")
 (defun standard-format-region(start end &optional not-jump-p pos-list reset-after)
   (interactive (if (region-active-p)
                    (list (region-beginning) (region-end) current-prefix-arg nil)
-                 (list (+ (line-beginning-position) (current-indentation)) (line-end-position) current-prefix-arg nil)
+                 (list (save-excursion (back-to-indentation) (point)) (line-end-position) current-prefix-arg nil)
                  ))
   (save-excursion
     (let ((kill-ring nil)

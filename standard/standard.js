@@ -4,6 +4,8 @@ var path = require('path')
 var fs = require('fs')
 var esprima = require('esprima')
 var escodegen = require('escodegen')
+var loc = require('src-location')
+
 var esprimaOptions = {
   raw: true,
   tokens: true,
@@ -49,15 +51,16 @@ try {
   options = JSON.parse(fs.readFileSync(path.join(__dirname, 'escodegen.json'), 'utf-8'))
 } catch(e) {}
 
-var format = require('standard-format').transform
-var http = require('http')
-var querystring = require('querystring')
+// var format = require('standard-format').transform
+const standard = require('standard')
+const http = require('http')
+const querystring = require('querystring')
 
-var errorsign = '#!!#'
-var port = 8000
-var timeout = 10000
+const errorsign = '#!!#'
+const port = 8000
+const timeout = 10000
 const server = http.createServer((req, res) => {
-  var bodyString = ''
+  let bodyString = ''
 
   // prevent node died to set a timeout
   req.resume()
@@ -92,12 +95,25 @@ const server = http.createServer((req, res) => {
         }
 
         // Stage 2 standard format
-        result = format(result)
+        // result = format(result)
+				standard.lintText(result, {fix: true}, (err, out) => {
+					console.log(err, result)
+					const ret = out.results[0]
+					const msg = ret.messages.filter(v=>v.fatal).shift()
+					if(msg) {
+						// convert line+column into zero-based index
+						msg.index = loc.locationToIndex(result, msg.line, msg.column) - 1
+						console.log(JSON.stringify(msg))
+						return res.end(errorsign + JSON.stringify(msg))
+					}
+					res.end(ret.output)
+				})
+
       } catch(e) {
         console.log(JSON.stringify(e))
         result = errorsign + JSON.stringify(e)
       }
-      res.end(result)
+      // res.end(result)
     })
   }
   if (req.method == 'GET') {
