@@ -1029,7 +1029,7 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)
             (define-key js2-mode-map (kbd "C-M-i") 'company-tern)
             (define-key js2-mode-map (kbd "M-.") 'js2-jump-to-definition)
-            (define-key js2-mode-map (kbd "M-,") 'js2-mark-parent-statement)
+            (define-key js2-mode-map (kbd "M-,") 'js2-mark-parent-statement2)
             (define-key js2-mode-map (kbd "C-' c") 'standard-format-buffer)
             (define-key js2-mode-map (kbd "C-M-]") 'js2-insert-comma-new-line)
             (define-key js2-mode-map (kbd "<M-return>") 'js-comment-block-newline)
