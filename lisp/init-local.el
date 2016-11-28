@@ -280,6 +280,7 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
 (require-package 'ascii)
 
 ;; markdown mode
+(require-package 'markdown-toc)
 (add-hook 'markdown-mode-hook '(lambda()
                                  (whitespace-cleanup-mode -1)
                                  (bind-key "C-' w" 'whitespace-cleanup)
