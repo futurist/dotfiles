@@ -89,6 +89,26 @@
 (setq avy-timeout-seconds 0.4)
 (setq avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
 
+;; Github/better-defaults
+
+(require-package 'saveplace)
+(setq-default save-place t)
+
+(show-paren-mode 1)
+(setq-default indent-tabs-mode nil)
+(setq x-select-enable-clipboard t
+      x-select-enable-primary t
+      save-interprogram-paste-before-kill t
+      apropos-do-all t
+      mouse-yank-at-point t
+      require-final-newline t
+      visible-bell t
+      load-prefer-newer t
+      ediff-window-setup-function 'ediff-setup-windows-plain
+      save-place-file (concat user-emacs-directory "places")
+      backup-directory-alist `(("." . ,(concat user-emacs-directory
+                                               "backups"))))
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -569,6 +589,20 @@ Typically used in CSS and JS."
         (delete-forward-char -1 nil)))
     )
   )
+
+
+;;; Different mode hooks
+
+;; Run C programs directly from within emacs
+(defun execute-c-program ()
+  (interactive)
+  (defvar foo)
+  (setq foo (concat "gcc " (buffer-name) " -o a && ./a" ))
+  (shell-command foo))
+
+(add-hook 'c-mode-hook
+          (lambda ()
+            (bind-key "C-<f2>" 'execute-c-program)))
 
 ;; soft wrap long lines
 (setq org-startup-truncated nil)
