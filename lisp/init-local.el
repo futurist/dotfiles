@@ -290,7 +290,7 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
 (require-package 'swiper)
 (defun swiper-selection (start end)
   (interactive "r")
-  (swiper (when (region-active-p)
+  (swiper (when (use-region-p)
             (deactivate-mark)
             (buffer-substring start end))))
 
@@ -440,7 +440,7 @@ Returns list of properties that still must be filled in"
 
 (defun org-insert-title-as-pinyin(arg start end) (interactive "P\nr")
        (let ((str (cond (arg (read-string "Enter chinese"))
-                        ((region-active-p) (prog1 (buffer-substring start end) (delete-region start end)))
+                        ((use-region-p) (prog1 (buffer-substring start end) (delete-region start end)))
                         (t (nth 4 (org-heading-components))) )))
          (insert (replace-regexp-in-string
                   " " "-"
@@ -551,7 +551,7 @@ Typically used in CSS and JS."
 (defun eval-and-replace-region ()
   "Replace the region with its sexp value."
   (interactive)
-  (when (region-active-p)
+  (when (use-region-p)
     (call-interactively 'kill-region)
     (condition-case nil
         (prin1 (eval (read (current-kill 0)))
@@ -566,7 +566,7 @@ Typically used in CSS and JS."
 ;; Some short cuts function
 (defun insert-earmuffs (char &optional with-space insert-normal-p)
   "Insert earmuffs for char."
-  (if (region-active-p)
+  (if (use-region-p)
       (let ((start (region-beginning))
             (end (region-end)))
         (goto-char end)
@@ -603,7 +603,7 @@ Typically used in CSS and JS."
         )
       )
     (when not-found
-      (if (region-active-p)
+      (if (use-region-p)
           (delete-region (region-beginning) (region-end))
         (delete-forward-char -1 nil)))
     )
@@ -1313,10 +1313,7 @@ TODO: save mark position for each buffer.")
     (goto-char start)
     (deactivate-mark)
     (set-mark-command nil)
-    (transient-mark-mode '(4))
-    (goto-char end)
-    )
-  )
+    (goto-char end)))
 
 (defun paredit-backward-delete-all (&optional arg)(interactive)
        (let ((old (point))
@@ -1536,7 +1533,7 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
   (unhighlight-regexp t))
 (defun my/highlight-symbole()
   (interactive)
-  (if (region-active-p)
+  (if (use-region-p)
       (highlight-symbol-add-symbol (buffer-substring (region-beginning) (region-end)))
     (highlight-symbol-at-point)
     )
@@ -1663,7 +1660,7 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 (defun comment-or-uncomment-line-or-region (arg)
   "Comments or uncomments the current line or region."
   (interactive "p")
-  (if (region-active-p)
+  (if (use-region-p)
       (comment-or-uncomment-region (region-beginning) (region-end))
     (save-excursion
       (let (cur)
@@ -1750,7 +1747,7 @@ from Google syntax-forward-syntax func."
 
 (defun my-delete-char-or-word(&optional arg)
   (interactive "P")
-  (if (region-active-p)
+  (if (use-region-p)
       (kill-region (region-beginning) (region-end))
     (if (consp arg)
         (let* ((int (car arg))
@@ -1910,8 +1907,8 @@ from Google syntax-forward-syntax func."
 (defun search-selection (&optional arg)
   "search for selected text"
   (interactive "P")
-  (when (and (thing-at-point 'symbol) (equal arg nil) (not (region-active-p))))
-  (if (and (not arg) (region-active-p))
+  (when (and (thing-at-point 'symbol) (equal arg nil) (not (use-region-p))))
+  (if (and (not arg) (use-region-p))
       (let (
             (selection (buffer-substring-no-properties (region-beginning) (region-end)))
             )
@@ -2022,7 +2019,7 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-' h") 'my/highlight-symbole)
 (global-set-key (kbd "C-' TAB") '(lambda()
                                    (interactive)
-                                   (if (region-active-p)
+                                   (if (use-region-p)
                                        (progn (call-interactively 'indent-rigidly))
                                      (call-interactively 'indent-relative))
                                    ))
@@ -2130,13 +2127,13 @@ from Google syntax-forward-syntax func."
               :around
               '(lambda(oldfun &rest args)
                  "Only apply upcase-region when region active."
-                 (when (or (not (called-interactively-p 'any)) (region-active-p) )
+                 (when (or (not (called-interactively-p 'any)) (use-region-p) )
                    (apply oldfun args))))
   (advice-add 'downcase-region
               :around
               '(lambda(oldfun &rest args)
                  "Only apply upcase-region when region active."
-                 (when (or (not (called-interactively-p 'any)) (region-active-p) )
+                 (when (or (not (called-interactively-p 'any)) (use-region-p) )
                    (apply oldfun args)))))
 
 ;; use c to create new file in dired
