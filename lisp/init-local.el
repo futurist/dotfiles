@@ -115,6 +115,8 @@
 (if (version< emacs-version "25")
     (setq-default save-place t)
   (save-place-mode 1))
+;; exit fast by not check saveplace
+(setq save-place-forget-unreadable-files nil)
 
 (setq visible-bell t
       load-prefer-newer t
