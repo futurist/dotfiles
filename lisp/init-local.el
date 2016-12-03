@@ -1079,8 +1079,8 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)
             (define-key js2-mode-map (kbd "C-M-i") 'company-tern)
             (define-key js2-mode-map (kbd "M-.") 'js2-jump-to-definition)
-            (define-key js2-mode-map (kbd "M-,") 'js2-mark-parent-statement2)
-            (define-key js2-mode-map (kbd "C-' c") 'standard-format-buffer)
+            (define-key js2-mode-map (kbd "M-,") 'js2-format-mark-statement)
+            (define-key js2-mode-map (kbd "C-' c") 'js2-format-buffer)
             (define-key js2-mode-map (kbd "C-M-]") 'js2-insert-comma-new-line)
             (define-key js2-mode-map (kbd "<M-return>") 'js-comment-block-newline)
             (flycheck-select-checker 'javascript-standard)
@@ -1576,7 +1576,7 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 (bind-key "C-' C-l" 'mark-current-indentation)
 
 (add-to-list 'load-path (expand-file-name "standard" user-emacs-directory))
-(require 'init-js-standard)
+(require 'js2-format)
 
 
 (require-package 'powerline)
@@ -2062,7 +2062,7 @@ from Google syntax-forward-syntax func."
             (define-key js2-mode-map (kbd "C-' a") 'align)
             ))
 
-(define-key global-map (kbd "C-x j") 'standard-format-region)
+(define-key global-map (kbd "C-x j") 'js2-format-region)
 ;; (global-set-key (kbd "C-c C-k") 'copy-line)
 ;; (global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
 ;; (global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
