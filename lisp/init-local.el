@@ -94,7 +94,7 @@
 
 ;; query replace all from buffer start
 (require-package 'replace-from-region)
-(fset 'my-query-replace-all 'query-replace)
+(fset 'my-query-replace-all 'query-replace-from-region)
 (advice-add 'my-query-replace-all
             :around
             #'(lambda(oldfun &rest args)
@@ -102,14 +102,10 @@
                 ;; set start pos
                 (unless (nth 3 args)
                   (setf (nth 3 args)
-                        (if (region-active-p)
-                            (region-beginning)
-                          (point-min))))
+                        (point-min)))
                 (unless (nth 4 args)
                   (setf (nth 4 args)
-                        (if (region-active-p)
-                            (region-end)
-                          (point-max))))
+                        (point-max)))
                 (apply oldfun args)))
 (global-set-key "\C-cr" 'my-query-replace-all)
 
