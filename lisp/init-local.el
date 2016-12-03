@@ -89,6 +89,30 @@
 (setq avy-timeout-seconds 0.4)
 (setq avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
 
+
+;; native function enhancement
+
+;; query replace all from buffer start
+(require-package 'replace-from-region)
+(fset 'my-query-replace-all 'query-replace)
+(advice-add 'my-query-replace-all
+            :around
+            #'(lambda(oldfun &rest args)
+                "Query replace the whole buffer."
+                ;; set start pos
+                (unless (nth 3 args)
+                  (setf (nth 3 args)
+                        (if (region-active-p)
+                            (region-beginning)
+                          (point-min))))
+                (unless (nth 4 args)
+                  (setf (nth 4 args)
+                        (if (region-active-p)
+                            (region-end)
+                          (point-max))))
+                (apply oldfun args)))
+(global-set-key "\C-cr" 'my-query-replace-all)
+
 ;; Github/better-defaults
 
 (require-package 'saveplace)
@@ -132,12 +156,11 @@
 
 ;; M-s SPC (isearch-toggle-lax-whitespace) to toggle it when C-s
 (add-hook 'isearch-mode-hook
-          (function
-           (lambda ()
-             (define-key isearch-mode-map "\C-h" 'isearch-mode-help)
-             (define-key isearch-mode-map "\C-t" 'isearch-toggle-regexp)
-             (define-key isearch-mode-map "\C-c" 'isearch-toggle-case-fold)
-             (define-key isearch-mode-map "\C-j" 'isearch-edit-string))))
+          (lambda ()
+            (define-key isearch-mode-map "\C-h" 'isearch-mode-help)
+            (define-key isearch-mode-map "\C-t" 'isearch-toggle-regexp)
+            (define-key isearch-mode-map "\C-c" 'isearch-toggle-case-fold)
+            (define-key isearch-mode-map "\C-j" 'isearch-edit-string)))
 ;; space will match any string
 (setq search-whitespace-regexp ".*?")
 ;; show case-fold status, CFS if case-insensitive
@@ -1891,8 +1914,7 @@ from Google syntax-forward-syntax func."
 (defun search-selection (&optional arg)
   "search for selected text"
   (interactive "P")
-  (when (and (thing-at-point 'symbol) (equal arg nil) (not (region-active-p)))
-    )
+  (when (and (thing-at-point 'symbol) (equal arg nil) (not (region-active-p))))
   (if (and (not arg) (region-active-p))
       (let (
             (selection (buffer-substring-no-properties (region-beginning) (region-end)))
