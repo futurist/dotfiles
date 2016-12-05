@@ -88,6 +88,9 @@
 (setq display-buffer-reuse-frames t)
 (setq avy-timeout-seconds 0.4)
 (setq avy-keys '(?a ?b ?c ?d ?e ?f ?g ?h ?i ?j ?k ?l ?m ?n ?o ?p ?q ?r ?s ?t ?u ?v ?w ?x ?y))
+;; set emtpy scratch message
+(setq initial-scratch-message "")
+;; (setq initial-major-mode 'js2-mode)
 
 
 ;; native function enhancement
@@ -1079,8 +1082,8 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)
             (define-key js2-mode-map (kbd "C-M-i") 'company-tern)
             (define-key js2-mode-map (kbd "M-.") 'js2-jump-to-definition)
-            (define-key js2-mode-map (kbd "M-,") 'js2-format-mark-statement)
-            (define-key js2-mode-map (kbd "C-' c") 'js2-format-buffer)
+            (define-key js2-mode-map (kbd "M-,") 'js-format-mark-statement)
+            (define-key js2-mode-map (kbd "C-' c") 'js-format-buffer)
             (define-key js2-mode-map (kbd "C-M-]") 'js2-insert-comma-new-line)
             (define-key js2-mode-map (kbd "<M-return>") 'js-comment-block-newline)
             (flycheck-select-checker 'javascript-standard)
@@ -1576,7 +1579,7 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 (bind-key "C-' C-l" 'mark-current-indentation)
 
 (add-to-list 'load-path (expand-file-name "standard" user-emacs-directory))
-(require 'js2-format)
+(require 'js-format)
 
 
 (require-package 'powerline)
@@ -2062,7 +2065,7 @@ from Google syntax-forward-syntax func."
             (define-key js2-mode-map (kbd "C-' a") 'align)
             ))
 
-(define-key global-map (kbd "C-x j") 'js2-format-region)
+(define-key global-map (kbd "C-x j") 'js-format-region)
 ;; (global-set-key (kbd "C-c C-k") 'copy-line)
 ;; (global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
 ;; (global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)

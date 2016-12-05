@@ -1,23 +1,22 @@
 ;; Enable lexical-binding by default, so can inter-process pass arg  -*- lexical-binding: t; -*-
 
 
-;; js2-format for javascript
-(defvar js2-format-proc-name "JS2FORMAT")
-(defvar js2-format-proc-port nil)
-(defvar js2-format-command
+;; js-format for javascript
+(defvar js-format-proc-name "JSFORMAT")
+(defvar js-format-proc-port nil)
+(defvar js-format-command
   (let* ((script-file (or load-file-name
                           (and (boundp 'bytecomp-filename) bytecomp-filename)
                           buffer-file-name))
-         (bin-file (expand-file-name "./formatter.js" (file-name-directory (file-truename script-file))))
-         (standard-itself (list (if (file-exists-p bin-file) bin-file (error "js2-format: cannot find formatter.js")))))
+         (bin-file (expand-file-name "./server.js" (file-name-directory (file-truename script-file))))
+         (standard-itself (list (if (file-exists-p bin-file) bin-file (error "js-format: cannot find server.js")))))
     (if (eq system-type 'windows-nt000) standard-itself (cons "node" standard-itself)))
-  "The command to be run to start the js2-format server. Should be a
+  "The command to be run to start the js-format server. Should be a
 list of strings, giving the binary name and arguments.")
 
-(defun js2-format-mark-statement (&optional arg)
+(defun js-format-mark-statement (&optional skip-non-statement)
   (interactive "P")
   (let* ((cur (point))
-         (count (and (car arg)  (log (car arg) 4) ))
          (back (js2-backward-sws))
          (last (when (looking-at-p "[\t \n\r]") (forward-char -1)))
          (region-beg (if (use-region-p) (region-beginning) (point-max)))
@@ -25,21 +24,23 @@ list of strings, giving the binary name and arguments.")
          (cur-node (js2-node-at-point))
          (parent cur-node)
          beg end)
-    ;; blacklist: 33=prop-get, 39=name, 128=scope, 108=arrow function
+    ;; blacklist: 33=prop-get, 39=name, 40=number, 45=keyword
+    ;; 128=scope, 108=arrow function, 66=object
     (while (and parent (or
-                        (memq (js2-node-type parent) '(33 39))
-                        (and (= (js2-node-type parent) 108) (eq (js2-function-node-form parent) 'FUNCTION_ARROW))
+                        (memq (js2-node-type parent) '(33 39 40 45)) ; always skip name, prop-get, number, keyword
+                        (and skip-non-statement (memq (js2-node-type parent) '(66))) ;pure object will fail format
+                        ;; (and (= (js2-node-type parent) 108) (eq (js2-function-node-form parent) 'FUNCTION_ARROW)) ;skip arrow function
                         (<= region-beg (js2-node-abs-pos parent))))
       (setq parent (js2-node-parent-stmt parent)))
     (setq beg (and parent (js2-node-abs-pos parent)))
-    (setq end (and parent (+ beg (js2-node-len parent))))
+    (setq end (and parent (js2-node-abs-end parent)))
     (when (and beg end (/= (- end beg) (- (point-max) (point-min))))
       (transient-mark-mode '(4))
       (goto-char beg)
       (set-mark-command nil)
       (goto-char end))))
 
-(defun js2-format-buffer (&optional arg)
+(defun js-format-buffer (&optional arg)
   (interactive "P")
   (let ((cur (point)) start)
     (goto-char (point-min))
@@ -51,9 +52,9 @@ list of strings, giving the binary name and arguments.")
     (save-excursion
       (let* ((col (current-column))
              (line (line-number-at-pos)))
-        (js2-format-region start (point-max) nil `(,line ,col) t)))))
+        (js-format-region start (point-max) nil `(,line ,col) t)))))
 
-(defun js2-format-line (&optional arg)
+(defun js-format-line (&optional arg)
   (interactive "P")
   (save-excursion
     (let* ((pos (point))
@@ -61,12 +62,12 @@ list of strings, giving the binary name and arguments.")
            (line (line-number-at-pos)))
       (goto-char (line-beginning-position))
       (skip-chars-forward "\t \n\r")
-      (js2-format-region (point) pos nil `(,line ,col)))))
+      (js-format-region (point) pos nil `(,line ,col)))))
 
-(defun js2-format-region (start end &optional not-jump-p pos-list reset-after)
+(defun js-format-region (start end &optional not-jump-p pos-list reset-after)
   (interactive (progn
                  (when (not (use-region-p))
-                   (js2-format-mark-statement))
+                   (js-format-mark-statement t))
                  (list (region-beginning) (region-end) current-prefix-arg nil)))
   (save-excursion
     (let ((kill-ring nil)
@@ -87,17 +88,17 @@ list of strings, giving the binary name and arguments.")
               (setq success (not (string-prefix-p errorsign formatted) ))
               (switch-to-buffer cur-buffer)
               (if (string= "" formatted)
-                  (message "js2-format return nil")
+                  (message "js-format return nil")
                 (if (not success)
                     (progn (deactivate-mark)
                            (string-match "\"index\":\\([0-9]+\\)" formatted)
                            (setq error-pos (+ start (string-to-number (or (match-string 1 formatted) "")) ))
                            (unless not-jump-p  (goto-char error-pos))
-                           (message "js2-format error: %s" (car (split-string formatted errorsign t)) ) )
+                           (message "js-format error: %s" (car (split-string formatted errorsign t)) ) )
                   (delete-region start end)
                   (when (string-prefix-p ";" formatted) (setq formatted (substring formatted 1)))
                   (insert formatted)
-                  (delete-char -1)  ;; js2-format will add new line, don't need it
+                  (delete-char -1)  ;; js-format will add new line, don't need it
                   (js2-indent-region start (point))
                   ;; try to restore previous position
                   (when pos-list
@@ -107,9 +108,9 @@ list of strings, giving the binary name and arguments.")
                   ;; js2-mode-reset after format
                   (when reset-after
                     (js2-mode-reset))))))
-      (js2-format-run result get-formatted))))
+      (js-format-run result get-formatted))))
 
-(defun js2-format-result (errorlist)
+(defun js-format-result (errorlist)
   "Switch to the buffer returned by `url-retreive'.
     The buffer contains the raw HTTP response sent by the server."
   ;; (decode-coding-string "\\225\\357" 'utf-8) convert  unibyte string to Chinese!!!
@@ -121,10 +122,8 @@ list of strings, giving the binary name and arguments.")
 
 
 
-(defun js2-format-run (data done)
-  (let* (;; (text "if(a==b)'这是测试sdj要新的';")
-         ;; (data (list (cons "text" text) ))
-         (host "http://localhost")
+(defun js-format-run (data done)
+  (let* ((host "http://localhost")
          (method "POST-BASE64")
          server callback runner local-done)
     (setf local-done (lambda(s)
@@ -134,39 +133,40 @@ list of strings, giving the binary name and arguments.")
     (setf callback (lambda ()
                      (funcall runner)))
     (setf runner (lambda()
-                   ;; (my-url-http 'js2-format-result server method `,data) ; using backquote to quote the value of data
-                   (setq server (concat host ":" (number-to-string (or js2-format-proc-port 8000))))
+                   ;; (my-url-http 'js-format-result server method `,data) ; using backquote to quote the value of data
+                   (setq server (concat host ":" (number-to-string (or js-format-proc-port 8000))))
                    ;; using backquote to quote the value of data
                    (my-url-http local-done server method `,data)))
-    (if (or (get-process js2-format-proc-name) js2-format-proc-port)
+    (if (or (get-process js-format-proc-name) js-format-proc-port)
         (funcall runner)
-      (js2-format-start-server callback))))
+      (js-format-start-server callback))))
 
-(defun js2-format-start-server (cb-success)
-  (let* ((cmd (append js2-format-command))
-         (proc (apply #'start-process js2-format-proc-name nil cmd))
+(defun js-format-start-server (cb-success)
+  (let* ((cmd (append js-format-command))
+         (proc (apply #'start-process js-format-proc-name nil cmd))
          (all-output ""))
     (message "%s" cmd)
     (set-process-query-on-exit-flag proc nil)
     (set-process-sentinel proc (lambda (_proc _event)
                                  (delete-process proc)
-                                 (setf js2-format-proc-port nil)
-                                 (message "js2-format: %s" (concat "Could not start node server\n" all-output))))
+                                 (setf js-format-proc-port nil)
+                                 (message "js-format: %s" (concat "Could not start node server\n" all-output))))
     (set-process-filter proc
                         (lambda (proc output)
                           (if (and (not (string-match "Listening on port \\([0-9][0-9]*\\)" output))
                                    (not (string-match "EADDRINUSE .*:\\([0-9][0-9]*\\)" output))
                                    )
                               (setf all-output (concat all-output output))
-                            (setf js2-format-proc-port (string-to-number (match-string 1 output)))
+                            (setf js-format-proc-port (string-to-number (match-string 1 output)))
                             (set-process-sentinel proc (lambda (proc _event)
                                                          (delete-process proc)
-                                                         (setf js2-format-proc-port nil)
-                                                         (message "js2-format server exit %s" _event)))
+                                                         (setf js-format-proc-port nil)
+                                                         (message "js-format server exit %s" _event)))
                             (set-process-filter proc nil)
                             (funcall cb-success))))))
 
 
 
 
-(provide 'js2-format)
+(provide 'js-format)
+;;; js-format.el ends here

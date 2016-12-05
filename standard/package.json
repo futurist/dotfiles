@@ -1,17 +1,16 @@
 {
-  "name": "standard",
+  "name": "js-format",
   "version": "1.0.0",
-  "description": "",
+  "description": "Format js code from emacs, using node and custom formatter",
   "main": "standard.js",
   "dependencies": {
-    "escodegen": "^1.8.0",
-    "esprima": "^2.7.2",
-    "standard-format": "^2.1.1"
+    "src-location": "^1.0.0",
+    "standard": "^8.6.0"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "James Yang <jamesyang999@gmail.com>",
+  "license": "MIT"
 }
