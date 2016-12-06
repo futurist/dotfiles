@@ -754,6 +754,10 @@ Typically used in CSS and JS."
   :init (setq markdown-command "multimarkdown"))
 
 
+;; package from github/hniksic
+
+(require-package 'htmlize)
+
 ;; package from github/xahlee
 (require-package 'xah-find)
 (defun xah-toggle-line-spacing ()
@@ -1579,8 +1583,10 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
       (if is-forward (backward-char)))))
 (bind-key "C-' C-l" 'mark-current-indentation)
 
-(add-to-list 'load-path (expand-file-name "standard" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "js-format.el" user-emacs-directory))
 (require 'js-format)
+(after-load 'js-format
+  (setq js-format-setup-command "cnpm install"))
 
 
 (require-package 'powerline)
