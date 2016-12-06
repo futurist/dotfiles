@@ -1077,6 +1077,7 @@ Including indent-buffer, which should not be called automatically on save."
             (set (make-local-variable 'page-delimiter) "//\f")
             ;; (tern-mode +1)
             (form-feed-mode t)
+            (prettify-symbols-mode -1)
             (define-key js2-mode-map "\C-ci" 'js-doc-insert-function-doc)
             (define-key js2-mode-map "@" 'js-doc-insert-tag)
             (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)

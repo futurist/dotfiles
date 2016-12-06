@@ -3,9 +3,9 @@ const standard = require('standard')
 
 /**
  * format js code using standard, then response back to user
- * @param {String} code
- * @param {HTTPResponse} response
- * @returns {void}
+ * @param {string} code the string of code to format
+ * @param {function} cb callback to call when format finished: (err, out)->any
+ * @returns {any}
  */
 function format(code, cb) {
 	standard.lintText(code, {fix: true}, (err, out) => {
