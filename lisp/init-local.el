@@ -2207,9 +2207,9 @@ from Google syntax-forward-syntax func."
 
 
 ;; (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
-
-(defun osx-open-terminal (&optional dir file)
-  (interactive)
+(defun osx-open-terminal (&optional dir file new-window)
+  "Open terminal of current file buffer."
+  (interactive (list nil nil current-prefix-arg))
   (let ((filename (buffer-file-name)))
     (if (and filename (null dir)) (setq dir (file-name-directory filename)))
     (if (and filename (null file)) (setq file (file-name-nondirectory filename)))
@@ -2218,8 +2218,14 @@ from Google syntax-forward-syntax func."
                (concat
                 ;; "delay 1\n"
                 "tell application \"Terminal\"\n"
-                " activate\n"
-                " do script \"cd '" dir "'\" in front window \n"
+                (if new-window
+                    "do script \"\"\n"
+                  "")
+                "if (exists window 1) and not busy of window 1 then\n"
+                " do script \"cd '" dir "' \" in front window \n"
+                "else\n"
+                " do script \"cd '" dir "' \" \n"
+                "end if\n"
                 " activate\n"
                 "end tell\n")))
           (start-process "osascript-getinfo" nil "osascript" "-e" script)))))
@@ -2230,7 +2236,7 @@ from Google syntax-forward-syntax func."
   (bash-completion-setup)
 
   ;; (advice-add 'reveal-in-osx-finder-as :after 'osx-open-terminal)
-  (bind-key "C-' d" 'osx-open-terminal)
+  (bind-key "C-' t" 'osx-open-terminal)
 
   ;; when in graphic GUI, set proper window size
   (when (display-graphic-p)
@@ -2257,40 +2263,24 @@ from Google syntax-forward-syntax func."
   (setq w32-lwindow-modifier 'meta)
   (setq w32-rwindow-modifier 'meta)
 
-  (defvar au3-last-window nil
-    "Last activated widnow from autoit3.")
-
-  (defun au3-command-winactivate (arg)
+  (defun windows-run-au3-command (cmd &optional dos hide)
+    "Run CMD in windows using AutoIt3.
+It's a DOS command if t, and HIDE then exit if t."
     ;; (start-process "nircmd" nil (expand-file-name "~/win32/nircmd.exe") "win" "activate" "ititle" (concat "" arg  ""))
-    (start-process "autoit3" nil (expand-file-name "~/win32/AutoIt3.exe") "/AutoIt3ExecuteLine" (concat "WinActivate('[REGEXPTITLE:" arg  "]')"))
-    arg
-    )
+    (let ((file (make-temp-file "au3")))
+      (when dos
+        (if hide
+            (setq cmd (concat "Run(@ComSpec & \" /c \" & '" cmd "', '', @SW_HIDE)"))
+          (setq cmd (concat "Run(@ComSpec & \" /k \" & '" cmd "', '', @SW_SHOW)"))))
+      (setq cmd (concat cmd "\r\nFileDelete(\"" file "\")"))
+      (write-region cmd nil file)
+      (start-process "autoit3" nil (expand-file-name "~/.emacs.d/download/AutoIt3.exe") file)))
 
-  (defun au3-activate-last()
-    (interactive)
-    (when au3-last-window
-      (au3-command-winactivate au3-last-window))
-    )
-
-  (defun au3-activate-tc()
-    (interactive)
-    (setq au3-last-window
-          (au3-command-winactivate "Total Commander")) )
-
-  (defun au3-activate-chrome()
-    (interactive)
-    (setq au3-last-window
-          (au3-command-winactivate "- Google Chrome$") ))
-
-  (defun au3-activate-cmd()
-    (interactive)
-    (setq au3-last-window
-          (au3-command-winactivate "cmd.exe|sh.exe") ))
-
-  (defun au3-activate-xshell()
-    (interactive)
-    (setq au3-last-window
-          (au3-command-winactivate "Xshell") ))
+  (defun windows-open-buffer-dir-in-cmd (path)
+    (interactive (list (if (buffer-file-name)
+                           (file-name-directory (buffer-file-name)) nil)))
+    (when path
+      (windows-run-au3-command (concat (substring path 0 2) " && cd \"" path "\"") t)))
 
   (defun e-maximize ()
     "Maximize emacs window in windows os"
@@ -2310,7 +2300,7 @@ from Google syntax-forward-syntax func."
     (interactive)
     (e-normal) (e-maximize))    ; #xf120 normalimize
 
-  ;; (define-key global-map (kbd "C-' C-' d") 'au3-activate-cmd)
+  (define-key global-map (kbd "C-' t") 'windows-open-buffer-dir-in-cmd)
   ;; (define-key global-map (kbd "C-' C-' t") 'au3-activate-tc)
   ;; (define-key global-map (kbd "C-' C-' c") 'au3-activate-chrome)
   ;; (define-key global-map (kbd "C-' C-' s") 'au3-activate-xshell)
