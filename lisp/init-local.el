@@ -2267,14 +2267,15 @@ from Google syntax-forward-syntax func."
     "Run CMD in windows using AutoIt3.
 It's a DOS command if t, and HIDE then exit if t."
     ;; (start-process "nircmd" nil (expand-file-name "~/win32/nircmd.exe") "win" "activate" "ititle" (concat "" arg  ""))
-    (let ((file (make-temp-file "au3")))
+    (let ((file (make-temp-file "au3")) proc)
       (when dos
         (if hide
             (setq cmd (concat "Run(@ComSpec & \" /c \" & '" cmd "', '', @SW_HIDE)"))
           (setq cmd (concat "Run(@ComSpec & \" /k \" & '" cmd "', '', @SW_SHOW)"))))
-      (setq cmd (concat cmd "\r\nFileDelete(\"" file "\")"))
+      ;; (setq cmd (concat cmd "\r\nFileDelete(\"" file "\")"))
       (write-region cmd nil file)
-      (start-process "autoit3" nil (expand-file-name "~/.emacs.d/download/AutoIt3.exe") file)))
+      (setq proc (start-process "autoit3" nil (expand-file-name "~/.emacs.d/download/AutoIt3.exe") file))
+      (set-process-sentinel proc `(lambda (proc event) (delete-file ,file)))))
 
   (defun windows-open-buffer-dir-in-cmd (path)
     (interactive (list (if (buffer-file-name)
