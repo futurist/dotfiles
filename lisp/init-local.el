@@ -111,6 +111,7 @@
                         (point-max)))
                 (apply oldfun args)))
 (global-set-key "\C-cr" 'my-query-replace-all)
+(global-set-key (kbd "M-%") 'query-replace-from-region)
 
 ;; Github/better-defaults
 
@@ -2247,6 +2248,24 @@ from Google syntax-forward-syntax func."
       (setq initial-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))
       (setq default-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))))
   )
+
+(defun send-buffer-to-execute (execute &optional keep-output)
+  "EXECUTE is string of command to run with current buffer."
+  (let ((file (make-temp-file execute))
+        (keep (not (null keep-output))) proc name)
+    (write-region (point-min) (point-max) file)
+    (setq name (concat "*" execute (format-time-string "@%H:%M:%S") "*"))
+    (setq proc (start-process execute name (executable-find execute) file))
+    (set-process-sentinel proc `(lambda (proc event)
+                                  (when (eq (process-status proc) 'exit)
+                                    (unless ,keep (kill-buffer ,name))
+                                    (delete-file ,file))))))
+
+(defun send-buffer-to-electron (keep)
+  (interactive "P")
+  (send-buffer-to-execute "electron" keep))
+
+(bind-key "C-' r e" 'send-buffer-to-electron)
 
 (when *is-a-windows*
   ;; (defcustom gnutls-trustfiles "./cacert.pem"
