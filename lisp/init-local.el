@@ -95,6 +95,19 @@
 
 ;; native function enhancement
 
+;; easy kill buffer
+(global-set-key (kbd "C-c C-d") 'ido-kill-buffer)
+
+(defun minibuffer-clear ()
+  (interactive)
+  (move-beginning-of-line nil)
+  (kill-line-or-region nil))
+
+;; clear minibuffer
+(add-hook 'minibuffer-setup-hook
+          (lambda()
+            (define-key (current-local-map) (kbd "C-c C-d") 'minibuffer-clear)))
+
 ;; query replace all from buffer start
 (require-package 'replace-from-region)
 (fset 'my-query-replace-all 'query-replace-from-region)
@@ -154,9 +167,8 @@
 (add-hook 'isearch-mode-hook
           (lambda ()
             (define-key isearch-mode-map "\C-h" 'isearch-mode-help)
-            (define-key isearch-mode-map "\C-t" 'isearch-toggle-regexp)
-            (define-key isearch-mode-map "\C-c" 'isearch-toggle-case-fold)
-            (define-key isearch-mode-map "\C-j" 'isearch-edit-string)))
+            (define-key isearch-mode-map "\C-t" 'isearch-toggle-regexp)))
+
 ;; space will match any string
 (setq search-whitespace-regexp ".*?")
 ;; show case-fold status, CFS if case-insensitive
@@ -2256,6 +2268,7 @@ from Google syntax-forward-syntax func."
     (write-region (point-min) (point-max) file)
     (setq name (concat "*" execute (format-time-string "@%H:%M:%S") "*"))
     (setq proc (start-process execute name (executable-find execute) file))
+    (pop-to-buffer name)
     (set-process-sentinel proc `(lambda (proc event)
                                   (when (eq (process-status proc) 'exit)
                                     (unless ,keep (kill-buffer ,name))
