@@ -96,7 +96,7 @@
 ;; native function enhancement
 
 ;; easy kill buffer
-(global-set-key (kbd "C-c C-d") 'ido-kill-buffer)
+(global-set-key (kbd "C-c C-d") 'kill-this-buffer)
 
 (defun minibuffer-clear ()
   (interactive)
@@ -623,6 +623,9 @@ Typically used in CSS and JS."
 
 
 ;;; Different mode hooks
+
+;; Temp-mode to make key bind local to each buffer
+(require 'temp-mode)
 
 ;; Run C programs directly from within emacs
 (defun execute-c-program ()
@@ -2262,13 +2265,26 @@ from Google syntax-forward-syntax func."
   )
 
 (defun send-buffer-to-execute (execute &optional keep-output)
-  "EXECUTE is string of command to run with current buffer."
-  (let ((file (make-temp-file execute))
-        (keep (not (null keep-output))) proc name)
-    (write-region (point-min) (point-max) file)
+  "EXECUTE string of command with current buffer or region."
+  (let* ((file (make-temp-file execute))
+         (keep (not (null keep-output)))
+         (start (if (use-region-p) (region-beginning) (point-min)))
+         (end (if (use-region-p) (region-end) (point-max)))
+         proc name)
+    (write-region start end file)
     (setq name (concat "*" execute (format-time-string "@%H:%M:%S") "*"))
     (setq proc (start-process execute name (executable-find execute) file))
     (pop-to-buffer name)
+    (temp-mode 1)
+    ;; without ask kill process on exit
+    (set-process-query-on-exit-flag proc nil)
+    ;; Open the temp file in new buffer
+    (define-key temp-mode-map (kbd "C-o") `(lambda() (interactive)
+                                             (find-file ,file)))
+    ;; C-d quickly close the buffer
+    (define-key temp-mode-map (kbd "C-d") '(lambda() (interactive)
+                                             (kill-this-buffer)
+                                             (winner-undo)))
     (set-process-sentinel proc `(lambda (proc event)
                                   (when (eq (process-status proc) 'exit)
                                     (unless ,keep (kill-buffer ,name))
