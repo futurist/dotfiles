@@ -2264,16 +2264,18 @@ from Google syntax-forward-syntax func."
       (setq default-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))))
   )
 
-(defun send-buffer-to-execute (execute &optional keep-output)
+(defun send-to-execute (execute &optional args keep-output)
   "EXECUTE string of command with current buffer or region."
-  (let* ((file (make-temp-file execute))
+  (let* ((execute-path (or (executable-find execute)
+                           (error "send-to-execute: cannot find %s, make sure it's exists.\n" execute)))
+         (file (make-temp-file execute))
          (keep (not (null keep-output)))
          (start (if (use-region-p) (region-beginning) (point-min)))
          (end (if (use-region-p) (region-end) (point-max)))
          proc name)
     (write-region start end file)
     (setq name (concat "*" execute (format-time-string "@%H:%M:%S") "*"))
-    (setq proc (start-process execute name (executable-find execute) file))
+    (setq proc (start-process execute name execute-path (if args (replace-regexp-in-string "\\[FILENAME\\]" file args) file)))
     (pop-to-buffer name)
     (temp-mode 1)
     ;; without ask kill process on exit
@@ -2290,9 +2292,13 @@ from Google syntax-forward-syntax func."
                                     (unless ,keep (kill-buffer ,name))
                                     (delete-file ,file))))))
 
-(defun send-buffer-to-electron (keep)
+(defun send-to-node (keep)
   (interactive "P")
-  (send-buffer-to-execute "electron" keep))
+  (send-to-execute "cmd" "/k node [FILENAME]" keep))
+
+(defun send-to-electron (keep)
+  (interactive "P")
+  (send-to-execute "electron" nil keep))
 
 (bind-key "C-' r e" 'send-buffer-to-electron)
 
