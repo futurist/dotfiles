@@ -624,9 +624,6 @@ Typically used in CSS and JS."
 
 ;;; Different mode hooks
 
-;; Temp-mode to make key bind local to each buffer
-(require 'temp-mode)
-
 ;; Run C programs directly from within emacs
 (defun execute-c-program ()
   (interactive)
@@ -1105,6 +1102,7 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map (kbd "M-.") 'js2-jump-to-definition)
             (define-key js2-mode-map (kbd "M-,") 'js-format-mark-statement)
             (define-key js2-mode-map (kbd "C-' c") 'js-format-buffer)
+            (define-key js2-mode-map (kbd "C-' s") 'js-format-setup)
             (define-key js2-mode-map (kbd "C-M-]") 'js2-insert-comma-new-line)
             (define-key js2-mode-map (kbd "<M-return>") 'js-comment-block-newline)
             (flycheck-select-checker 'javascript-standard)
@@ -2221,6 +2219,9 @@ from Google syntax-forward-syntax func."
 ;; (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-kill-word)
 
+;; send-to-execute.el
+(add-to-list 'load-path "~/.emacs.d/send-to-execute.el")
+(require 'send-to-execute)
 
 ;; (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
 (defun osx-open-terminal (&optional dir file new-window)
@@ -2261,46 +2262,7 @@ from Google syntax-forward-syntax func."
           (setq initial-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48)))
           (setq default-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48))))
       (setq initial-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))
-      (setq default-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))))
-  )
-
-(defun send-to-execute (execute &optional args keep-output)
-  "EXECUTE string of command with current buffer or region."
-  (let* ((execute-path (or (executable-find execute)
-                           (error "send-to-execute: cannot find %s, make sure it's exists.\n" execute)))
-         (file (make-temp-file execute))
-         (keep (not (null keep-output)))
-         (start (if (use-region-p) (region-beginning) (point-min)))
-         (end (if (use-region-p) (region-end) (point-max)))
-         proc name)
-    (write-region start end file)
-    (setq name (concat "*" execute (format-time-string "@%H:%M:%S") "*"))
-    (setq proc (start-process execute name execute-path (if args (replace-regexp-in-string "\\[FILENAME\\]" file args) file)))
-    (pop-to-buffer name)
-    (temp-mode 1)
-    ;; without ask kill process on exit
-    (set-process-query-on-exit-flag proc nil)
-    ;; Open the temp file in new buffer
-    (define-key temp-mode-map (kbd "C-o") `(lambda() (interactive)
-                                             (find-file ,file)))
-    ;; C-d quickly close the buffer
-    (define-key temp-mode-map (kbd "C-d") '(lambda() (interactive)
-                                             (kill-this-buffer)
-                                             (winner-undo)))
-    (set-process-sentinel proc `(lambda (proc event)
-                                  (when (eq (process-status proc) 'exit)
-                                    (unless ,keep (kill-buffer ,name))
-                                    (delete-file ,file))))))
-
-(defun send-to-node (keep)
-  (interactive "P")
-  (send-to-execute "cmd" "/k node [FILENAME]" keep))
-
-(defun send-to-electron (keep)
-  (interactive "P")
-  (send-to-execute "electron" nil keep))
-
-(bind-key "C-' r e" 'send-buffer-to-electron)
+      (setq default-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32))))))
 
 (when *is-a-windows*
   ;; (defcustom gnutls-trustfiles "./cacert.pem"
