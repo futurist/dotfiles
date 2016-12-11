@@ -2220,37 +2220,29 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "M-h") 'backward-kill-word)
 
 ;; send-to-execute.el
-(add-to-list 'load-path "~/.emacs.d/send-to-execute.el")
-(require 'send-to-execute)
-
-;; (setq-default custom-enabled-themes '(sanityinc-solarized-dark))
-(defun osx-open-terminal (&optional dir file new-window)
-  "Open terminal of current file buffer."
-  (interactive (list nil nil current-prefix-arg))
-  (let ((filename (buffer-file-name)))
-    (if (and filename (null dir)) (setq dir (file-name-directory filename)))
-    (if (and filename (null file)) (setq file (file-name-nondirectory filename)))
-    (if dir
-        (let ((script         ; Define script variable using revealpath and text.
-               (concat
-                ;; "delay 1\n"
-                "tell application \"Terminal\"\n"
-                (if new-window
-                    "do script \"\"\n"
-                  "")
-                "if (exists window 1) and not busy of window 1 then\n"
-                " do script \"cd '" dir "' \" in front window \n"
-                "else\n"
-                " do script \"cd '" dir "' \" \n"
-                "end if\n"
-                " activate\n"
-                "end tell\n")))
-          (start-process "osascript-getinfo" nil "osascript" "-e" script)))))
+(add-to-list 'load-path "~/.emacs.d/temp-execute.el")
+(require 'temp-execute)
 
 (when *is-a-mac*
   ;; bash complete not run on windows
   (require-package 'bash-completion)
   (bash-completion-setup)
+
+  (defun osx-open-terminal (&optional dir)
+    "Open new Terminal window with current DIR of buffer file.
+With DIR set to HOME if buffer have no file."
+    (interactive)
+    (let* ((filename (buffer-file-name))
+           (dir (if filename (file-name-directory filename) "~"))
+           script)
+      (setq script
+            (concat
+             ;; "delay 1\n"
+             "tell application \"Terminal\"\n"
+             "  do script \"cd '" dir "'; clear; pwd\"\n"
+             "  activate\n"
+             "end tell\n"))
+      (start-process "osascript-getinfo" nil "osascript" "-e" script)))
 
   ;; (advice-add 'reveal-in-osx-finder-as :after 'osx-open-terminal)
   (bind-key "C-' t" 'osx-open-terminal)
