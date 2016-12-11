@@ -2291,6 +2291,7 @@ It's a DOS command if t, and HIDE then exit if t."
       ;; (setq cmd (concat cmd "\r\nFileDelete(\"" file "\")"))
       (write-region cmd nil file)
       (setq proc (start-process "autoit3" nil (expand-file-name "~/.emacs.d/download/AutoIt3.exe") file))
+      (set-process-query-on-exit-flag proc nil)
       (set-process-sentinel proc `(lambda (proc event) (delete-file ,file)))))
 
   (defun windows-open-buffer-dir-in-cmd (path)
