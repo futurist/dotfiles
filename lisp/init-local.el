@@ -96,7 +96,11 @@
 ;; native function enhancement
 
 ;; easy kill buffer
-(global-set-key (kbd "C-c C-d") 'kill-this-buffer)
+(global-set-key (kbd "C-c d d") '(lambda()
+                                   (interactive)
+                                   (kill-this-buffer)
+                                   ;; (winner-undo)
+                                   ))
 
 (defun minibuffer-clear ()
   (interactive)
