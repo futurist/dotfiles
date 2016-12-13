@@ -91,6 +91,8 @@
 ;; set emtpy scratch message
 (setq initial-scratch-message "")
 ;; (setq initial-major-mode 'js2-mode)
+;; set whitespace-mode visible char
+(setq whitespace-style '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab space-mark tab-mark newline-mark))
 
 
 ;; native function enhancement
@@ -2228,7 +2230,7 @@ from Google syntax-forward-syntax func."
 ;; (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-kill-word)
 
-;; send-to-execute.el
+;; temp-execute.el
 (add-to-list 'load-path "~/.emacs.d/temp-execute.el")
 (require 'temp-execute)
 
