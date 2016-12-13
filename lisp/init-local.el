@@ -1605,6 +1605,11 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 (require 'js-format)
 (after-load 'js-format
   (setq js-format-setup-command "cnpm install"))
+;; automatically switch to JSB-CSS style using jsbeautify-css as formatter
+(after-load 'css-mode
+  (add-hook 'css-mode-hook
+            (lambda()
+              (js-format-setup "jsb-css"))))
 
 
 (require-package 'powerline)
