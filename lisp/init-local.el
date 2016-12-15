@@ -346,7 +346,7 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
                                  (defvar markdown-earmuff-char-list '("*" "_" "\`" "~")
                                    "Earmuff chars for Org-mode.")
                                  (dolist (char markdown-earmuff-char-list)
-                                   (define-key markdown-mode-map (kbd char) `(lambda (arg) (interactive "P") (insert-earmuffs ,char nil arg))))
+                                   (define-key markdown-mode-map (kbd char) `(lambda (arg) (interactive "P") (insert-earmuffs ,char arg nil nil))))
                                  (define-key markdown-mode-map (kbd "<backspace>") '(lambda () (interactive) (delete-earmuffs nil markdown-earmuff-char-list)))
 
                                  (define-key markdown-mode-map
@@ -582,8 +582,10 @@ Typically used in CSS and JS."
   (eval (car (read-from-string (format "(progn %s)" string)))))
 
 ;; Some short cuts function
-(defun insert-earmuffs (char &optional with-space insert-normal-p)
+(defun insert-earmuffs (char &optional count with-space insert-normal-p)
   "Insert earmuffs for char."
+  (setq count (if count 2 1))
+  (setq char (s-repeat count char))
   (if (use-region-p)
       (let ((start (region-beginning))
             (end (region-end)))
@@ -597,11 +599,11 @@ Typically used in CSS and JS."
              (or (not with-space)
                  (and (> (current-column) 0)
                       (looking-back "[ \t\n]" 1))))
-        (let ((space 1))
+        (let ((space count))
           (progn
             (insert char)
             ;; you can just UNDO the insert, back to normal char
-            (undo-boundary)
+            ;; (undo-boundary)
             (insert char)
             (when with-space
               (insert " ")
@@ -656,7 +658,7 @@ Typically used in CSS and JS."
             (defvar org-earmuff-char-list '("*" "=" "/" "~" "+" "_")
               "Earmuff chars for Org-mode.")
             (dolist (char org-earmuff-char-list)
-              (define-key org-mode-map (kbd char) `(lambda (arg) (interactive "P") (insert-earmuffs ,char t arg))))
+              (define-key org-mode-map (kbd char) `(lambda (arg) (interactive "P") (insert-earmuffs ,char arg t nil))))
             (define-key org-mode-map (kbd "<backspace>") '(lambda () (interactive) (delete-earmuffs t org-earmuff-char-list)))
             (define-key global-map (kbd "<M-return>") nil)
             (setq-default org-display-custom-times t)
@@ -1108,7 +1110,6 @@ Including indent-buffer, which should not be called automatically on save."
             (define-key js2-mode-map (kbd "M-.") 'js2-jump-to-definition)
             (define-key js2-mode-map (kbd "M-,") 'js-format-mark-statement)
             (define-key js2-mode-map (kbd "C-' c") 'js-format-buffer)
-            (define-key js2-mode-map (kbd "C-' s") 'js-format-setup)
             (define-key js2-mode-map (kbd "C-M-]") 'js2-insert-comma-new-line)
             (define-key js2-mode-map (kbd "<M-return>") 'js-comment-block-newline)
             (flycheck-select-checker 'javascript-standard)
@@ -1608,10 +1609,18 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 (after-load 'js-format
   (setq js-format-setup-command "cnpm install"))
 ;; automatically switch to JSB-CSS style using jsbeautify-css as formatter
+(after-load 'js2-mode
+  (add-hook 'js2-mode-hook
+            (lambda()
+              (js-format-setup "standard"))))
 (after-load 'css-mode
   (add-hook 'css-mode-hook
             (lambda()
               (js-format-setup "jsb-css"))))
+(after-load 'html-mode
+  (add-hook 'html-mode-hook
+            (lambda()
+              (js-format-setup "jsb-html"))))
 
 
 (require-package 'powerline)
@@ -2097,7 +2106,9 @@ from Google syntax-forward-syntax func."
             (define-key js2-mode-map (kbd "C-' a") 'align)
             ))
 
-(define-key global-map (kbd "C-x j") 'js-format-region)
+(define-key global-map (kbd "C-x j j") 'js-format-region)
+(define-key global-map (kbd "C-x j b") 'js-format-buffer)
+(define-key global-map (kbd "C-x j s") 'js-format-setup)
 ;; (global-set-key (kbd "C-c C-k") 'copy-line)
 ;; (global-set-key (kbd "C-x C-k") 'whole-line-or-region-kill-region)
 ;; (global-set-key (kbd "C-S-k") 'whole-line-or-region-kill-region)
