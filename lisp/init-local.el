@@ -1133,7 +1133,8 @@ Including indent-buffer, which should not be called automatically on save."
 (add-to-list 'recentf-exclude "\\.tidyrc")
 (add-hook 'recentf-dialog-mode-hook 'trigger-isearch-when-focus)
 (add-hook 'find-file-hook '(lambda()
-                             (recentf-save-list)
+                             (let ((inhibit-message t))
+                               (recentf-save-list))
                              ))
 (add-hook 'focus-in-hook '(lambda()
                             (when (boundp 'tern-idle-time)
@@ -1605,22 +1606,17 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 (bind-key "C-' C-l" 'mark-current-indentation)
 
 (add-to-list 'load-path (expand-file-name "js-format.el" user-emacs-directory))
-(require 'js-format)
-(after-load 'js-format
-  (setq js-format-setup-command "cnpm install"))
+;; (require-package 'js-format)
 ;; automatically switch to JSB-CSS style using jsbeautify-css as formatter
-(after-load 'js2-mode
-  (add-hook 'js2-mode-hook
-            (lambda()
-              (js-format-setup "standard"))))
-(after-load 'css-mode
-  (add-hook 'css-mode-hook
-            (lambda()
-              (js-format-setup "jsb-css"))))
-(after-load 'html-mode
-  (add-hook 'html-mode-hook
-            (lambda()
-              (js-format-setup "jsb-html"))))
+(add-hook 'js2-mode-hook
+          #'(lambda()
+             (js-format-setup "standard")))
+(add-hook 'css-mode-hook
+          #'(lambda()
+            (js-format-setup "jsb-css")))
+(add-hook 'html-mode-hook
+          #'(lambda()
+            (js-format-setup "jsb-html")))
 
 
 (require-package 'powerline)
