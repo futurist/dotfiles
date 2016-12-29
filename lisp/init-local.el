@@ -1606,6 +1606,7 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 (bind-key "C-' C-l" 'mark-current-indentation)
 
 (add-to-list 'load-path (expand-file-name "js-format.el" user-emacs-directory))
+(require 'js-format)
 ;; (require-package 'js-format)
 ;; automatically switch to JSB-CSS style using jsbeautify-css as formatter
 (add-hook 'js2-mode-hook
@@ -2004,6 +2005,7 @@ from Google syntax-forward-syntax func."
 ;; multiple-cursors keybinding
 ;; (global-set-key (kbd "C-0") 'mc/mark-next-like-this)
 ;; (global-set-key (kbd "C-9") 'mc/skip-to-next-like-this)
+(global-set-key (kbd "C-c C-=") 'mc/mark-all-like-this)
 
 (defun my-indent-region (N)
   "Forward indent N*tab."
@@ -2237,9 +2239,9 @@ from Google syntax-forward-syntax func."
 ;; (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-kill-word)
 
-;; temp-execute.el
-(add-to-list 'load-path "~/.emacs.d/temp-execute.el")
-(require 'temp-execute)
+;; temp-run.el
+(add-to-list 'load-path "~/.emacs.d/temp-run.el")
+(require 'temp-run)
 
 (when *is-a-mac*
   ;; bash complete not run on windows
