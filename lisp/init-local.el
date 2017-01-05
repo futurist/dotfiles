@@ -142,6 +142,8 @@
 (setq save-place-forget-unreadable-files nil)
 
 (setq visible-bell t
+      ;; disable macOS select copy
+      x-select-enable-primary nil
       load-prefer-newer t
       ediff-window-setup-function 'ediff-setup-windows-plain
       save-place-file (concat user-emacs-directory "places")
