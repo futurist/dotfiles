@@ -10,9 +10,6 @@
 
 ;; Disable below line in purcell's init.el
 ;; (require 'init-themes)
-;; (require 'init-sessions)
-;; (require 'init-paredit)
-;; (require 'init-lisp)
 
 ;; default fg color: #E5E5DE
 
@@ -72,8 +69,13 @@
 (when *is-a-mac*
   (setq default-font-family "Source Code Pro")
   (setq default-font-size 164)
-  (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier 'meta))
+
+  ;; set keys for Apple keyboard, for emacs in OS X
+  (setq mac-command-modifier 'meta) ; make cmd key do Meta
+  (setq mac-option-modifier 'super) ; make opt key do Super
+  (setq mac-control-modifier 'control) ; make Control key do Control
+  (setq ns-function-modifier 'hyper)  ; make Fn key do Hyper
+  )
 
 (defvar line-height-base 0.5
   "Line height increment value.")
@@ -633,6 +635,11 @@ Typically used in CSS and JS."
 
 
 ;;; Different mode hooks
+
+;; save sessions next time startup
+(desktop-save-mode 1)
+;; don't restore frames
+(setq desktop-save t)
 
 ;; Run C programs directly from within emacs
 (defun execute-c-program ()
@@ -2290,8 +2297,15 @@ With DIR set to HOME if buffer have no file."
 
   (setq tramp-default-method "plinkx")
 
-  (setq w32-lwindow-modifier 'meta)
-  (setq w32-rwindow-modifier 'meta)
+  ;; make PC keyboard's Win key or other to type Super or Hyper, for emacs running on Windows.
+  (setq w32-pass-lwindow-to-system nil)
+  (setq w32-lwindow-modifier 'super) ; Left Windows key
+
+  (setq w32-pass-rwindow-to-system nil)
+  (setq w32-rwindow-modifier 'super) ; Right Windows key
+
+  (setq w32-pass-apps-to-system nil)
+  (setq w32-apps-modifier 'hyper) ; Menu/App key
 
   (defun windows-run-au3-command (cmd &optional dos hide)
     "Run CMD in windows using AutoIt3.
@@ -2339,7 +2353,10 @@ It's a DOS command if t, and HIDE then exit if t."
   ;; (define-key global-map (kbd "C-' C-' '") 'au3-activate-last)
 
   ;; Start maximised (cross-platf)
-  (add-hook 'window-setup-hook 'toggle-frame-maximized t)
+  ;; use init-session to restore full frame, don't need below anymore
+  (add-hook 'after-init-hook '(lambda()
+                                ;; (toggle-frame-maximized)
+                                ))
 
   ;; (global-set-key (kbd "M-SPC M-x") 'emacs-maximize)
 
