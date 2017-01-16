@@ -1137,6 +1137,7 @@ Including indent-buffer, which should not be called automatically on save."
     )
   )
 
+(setq recentf-exclude nil)
 (add-to-list 'recentf-exclude "/recentf\\'")
 (add-to-list 'recentf-exclude "ido\\.last\\'")
 (add-to-list 'recentf-exclude "\\.tidyrc")
@@ -2251,6 +2252,10 @@ from Google syntax-forward-syntax func."
 ;; temp-run.el
 (add-to-list 'load-path "~/.emacs.d/temp-run.el")
 (require 'temp-run)
+(global-set-key (kbd "C-' r l") 'temp-run-electron)
+(global-set-key (kbd "C-' r n") 'temp-run-node)
+(global-set-key (kbd "C-' r g") 'temp-run-gcc)
+
 
 (when *is-a-mac*
   ;; bash complete not run on windows
