@@ -765,6 +765,7 @@ Typically used in CSS and JS."
 (require-package 'yasnippet)
 (require-package 'react-snippets)
 (yas-global-mode 1)
+(yas-reload-all)
 ;; yasnippet <tab> conflict with ac, change below
 (define-key yas-minor-mode-map (kbd "<tab>") nil)
 (define-key yas-minor-mode-map (kbd "TAB") nil)
@@ -900,6 +901,14 @@ Version 2015-06-12"
     (goto-char (1- (te/get (te/current-tag) :end)))
     )
 
+  (defun te/mark-current-tag()
+    (interactive)
+    (te/goto-tag-begging)
+    (set-mark-command nil)
+    (transient-mark-mode '(4))
+    (te/goto-tag-end)
+    (forward-char))
+
   (defun te/goto-tag-match()
     (interactive)
     (let* ((tag (te/current-tag))
@@ -929,6 +938,7 @@ Version 2015-06-12"
   (define-key tagedit-mode-map (kbd "C-%") 'te/goto-tag-match)
   (define-key tagedit-mode-map (kbd "C-^") 'te/goto-tag-begging)
   (define-key tagedit-mode-map (kbd "C-$") 'te/goto-tag-end)
+  (define-key global-map (kbd "M-,") 'te/mark-current-tag)
   )
 (use-package js2-refactor
   :defer t
@@ -1621,13 +1631,13 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 ;; automatically switch to JSB-CSS style using jsbeautify-css as formatter
 (add-hook 'js2-mode-hook
           #'(lambda()
-             (js-format-setup "standard")))
+              (js-format-setup "standard")))
 (add-hook 'css-mode-hook
           #'(lambda()
-            (js-format-setup "jsb-css")))
+              (js-format-setup "jsb-css")))
 (add-hook 'html-mode-hook
           #'(lambda()
-            (js-format-setup "jsb-html")))
+              (js-format-setup "jsb-html")))
 
 
 (require-package 'powerline)
@@ -2033,8 +2043,8 @@ from Google syntax-forward-syntax func."
              (setq deactivate-mark nil))
     (self-insert-command N)))
 
-  (global-set-key ">" 'my-indent-region)
-  (global-set-key "<" 'my-unindent-region)
+(global-set-key ">" 'my-indent-region)
+(global-set-key "<" 'my-unindent-region)
 
 (defun my-max-window-size (restore)
   "Max window size of window."
@@ -2167,7 +2177,7 @@ from Google syntax-forward-syntax func."
                                           ))
   (define-key global-map (kbd "C-;") 'avy-goto-word-or-subword-1)
   (after-load 'guide-key
-    (guide-key-mode -1))
+    (setq guide-key/idle-delay 999))
   (after-load 'indent-guide
     (indent-guide-mode -1))
   (cua-selection-mode -1)
