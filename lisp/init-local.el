@@ -219,7 +219,6 @@
   ;; using TCP instead of UNIX socket to start server
   (setq server-auth-dir "/tmp/emacsserver")
   (setq server-use-tcp t)
-  (toggle-frame-fullscreen)
   ;; ;; set below in your .bash_profile
   ;; export EMACS_SERVER_FILE=/tmp/emacsserver/server
   ;; alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -f $EMACS_SERVER_FILE -a "/Applications/Emacs.app/Contents/MacOS/Emacs" '
@@ -728,7 +727,7 @@ Typically used in CSS and JS."
 
 (defvar html-file-extensions "\\.\\(aspx\\|php\\|\\sw*html*\\)\\'")
 (setq mmm-global-mode nil)
-(after-load 'init-mmm
+(defun init-mmm-mode()
   (mmm-add-classes
    '((html-js2
       :submode js-mode
@@ -749,6 +748,7 @@ Typically used in CSS and JS."
                 (define-key mmm-mode-map (kbd "C-' r") '(lambda()(interactive) (mmm-parse-buffer)))
                 ))
   )
+(add-hook 'mmm-mode-hook 'init-mmm-mode)
 (defvar browse-url-filename-alist nil
   "Default mapping for preview html file to http host.")
 
@@ -856,7 +856,7 @@ Version 2015-06-12"
 (require-package 's)
 (require-package 'dash)
 (require-package 'tagedit)
-(after-load 'tagedit
+(defun init-tagedit()
 
   (defun te/my-forward-tag ()
     "Alway goto the end tag of currnet scope."
@@ -945,6 +945,8 @@ Version 2015-06-12"
   (define-key tagedit-mode-map (kbd "C-$") 'te/goto-tag-end)
   (define-key global-map (kbd "M-,") 'te/mark-current-tag)
   )
+(add-hook 'tagedit-mode-hook 'init-tagedit)
+
 (use-package js2-refactor
   :defer t
   :diminish js2-refactor-mode
@@ -991,7 +993,7 @@ Including indent-buffer, which should not be called automatically on save."
 
 (require-package 'company)
 (require-package 'company-flx)
-;; (require-package 'company-tern)
+(require-package 'company-tern)
 (require-package 'company-quickhelp)
 (require-package 'company-dict)
 (require-package 'company-restclient)
@@ -1002,7 +1004,7 @@ Including indent-buffer, which should not be called automatically on save."
 (setq company-echo-delay 0)                          ; remove annoying blinking
 ;; (setq company-begin-commands '(self-insert-command)) ; start autocompletion only after typing
 (setq company-minimum-prefix-length 1)
-(after-load 'company
+(defun init-company-mode()
   (company-flx-mode +1)
   ;; use <tab> as complete, unset <tab> bind
   (setq company-auto-complete-chars '(?\t))
@@ -1030,6 +1032,8 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key company-active-map "\C-n" 'company-select-next-or-abort)
   (define-key company-active-map "\C-p" 'company-select-previous-or-abort)
   )
+(add-hook 'company-mode-hook 'init-company-mode)
+
 ;; (after-load 'company-tern
 ;;   (add-to-list 'company-backends 'company-tern)
 ;;   ;; (setq company-tern-property-marker "")
@@ -1123,12 +1127,16 @@ Including indent-buffer, which should not be called automatically on save."
 
 (defun init-js2-mode ()
   (interactive)
-  (js2-refactor-mode 1)
-  (yas-reload-all)
+  ;; (js2-refactor-mode 1)
+  ;; (yas-reload-all)
   (set (make-local-variable 'page-delimiter) "//\f")
   ;; (tern-mode +1)
   (form-feed-mode t)
   (prettify-symbols-mode -1)
+  (when (boundp 'flycheck-select-checker)
+    (flycheck-select-checker 'javascript-standard))
+  (flycheck-mode -1)
+  (js2-mode-hide-warnings-and-errors)
   (define-key js2-mode-map "\C-ci" 'js-doc-insert-function-doc)
   (define-key js2-mode-map "@" 'js-doc-insert-tag)
   (define-key js2-mode-map (kbd "C-c C-m be") 'web-beautify-js)
@@ -1138,8 +1146,6 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key js2-mode-map (kbd "C-' c") 'js-format-buffer)
   (define-key js2-mode-map (kbd "C-M-]") 'js2-insert-comma-new-line)
   (define-key js2-mode-map (kbd "<M-return>") 'js-comment-block-newline)
-  (when (boundp 'flycheck-select-checker)
-    (flycheck-select-checker 'javascript-standard))
   (advice-add 'js2-jump-to-definition
               :after
               '(lambda(&optional ARG)
@@ -1408,7 +1414,7 @@ TODO: save mark position for each buffer.")
 
 
 ;; (require-package 'paredit)
-(after-load 'paredit-everywhere
+(defun init-paredit-everywhere()
   (advice-add 'paredit-splice-sexp :before '(lambda(&optional arg)
                                               "If in begin of sexp delimiter, then forward-char"
                                               (if (= ?\( (char-syntax (char-after)))
@@ -1426,6 +1432,7 @@ TODO: save mark position for each buffer.")
   (define-key paredit-everywhere-mode-map (kbd "C-M-n") 'paredit-forward-up)
   (define-key paredit-everywhere-mode-map (kbd "C-M-d") 'paredit-forward-down)
   )
+(add-hook 'paredit-everywhere-mode-hook 'init-paredit-everywhere)
 
 (dolist (mode '(web html xhtml xml nxml sgml))
   (add-hook (intern (format "%s-mode-hook" mode))
@@ -2295,14 +2302,16 @@ With DIR set to HOME if buffer have no file."
   ;; (advice-add 'reveal-in-osx-finder-as :after 'osx-open-terminal)
   (bind-key "C-' t" 'osx-open-terminal)
 
+  ;; when using desktop.el, below should be removed
   ;; when in graphic GUI, set proper window size
-  (when (display-graphic-p)
-    (if (> (x-display-pixel-width) 1280)
-        (progn
-          (setq initial-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48)))
-          (setq default-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48))))
-      (setq initial-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))
-      (setq default-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32))))))
+  ;; (when (display-graphic-p)
+  ;;   (if (> (x-display-pixel-width) 1280)
+  ;;       (progn
+  ;;         (setq initial-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48)))
+  ;;         (setq default-frame-alist '((top . 0) (left . 280) (width . 143) (height . 48))))
+  ;;     (setq initial-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))
+  ;;     (setq default-frame-alist '((top . 0) (left . 80) (width . 112) (height . 32)))))
+  )
 
 (when *is-a-windows*
   ;; (defcustom gnutls-trustfiles "./cacert.pem"
