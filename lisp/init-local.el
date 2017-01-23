@@ -11,6 +11,11 @@
 ;; Disable below line in purcell's init.el
 ;; (require 'init-themes)
 
+;; Change below lines:
+;; (add-hook 'after-init-hook
+;;          (lambda ()
+;;            (require 'init-local nil t)))
+
 ;; default fg color: #E5E5DE
 
 ;; May need to cleanup .elc file and re-compile:
