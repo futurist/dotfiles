@@ -1118,6 +1118,8 @@ Including indent-buffer, which should not be called automatically on save."
 
 (defun init-js2-mode ()
   (interactive)
+  (js2-refactor-mode 1)
+  (yas-reload-all)
   (set (make-local-variable 'page-delimiter) "//\f")
   ;; (tern-mode +1)
   (form-feed-mode t)
@@ -1131,7 +1133,32 @@ Including indent-buffer, which should not be called automatically on save."
   (define-key js2-mode-map (kbd "C-' c") 'js-format-buffer)
   (define-key js2-mode-map (kbd "C-M-]") 'js2-insert-comma-new-line)
   (define-key js2-mode-map (kbd "<M-return>") 'js-comment-block-newline)
-  (flycheck-select-checker 'javascript-standard))
+  (when (boundp 'flycheck-select-checker)
+    (flycheck-select-checker 'javascript-standard))
+  (advice-add 'js2-jump-to-definition
+              :after
+              '(lambda(&optional ARG)
+                 "Move to function name when jump to definition."
+                 (when (js2r--is-function-declaration (js2-node-at-point))
+                   (forward-word 2)
+                   )
+                 ))
+  (advice-add 'js2r-expand-call-args
+              :after
+              '(lambda()
+                 "Format for compact expand call args."
+                 (when (consp current-prefix-arg)
+                   ;; (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space)
+                   )))
+  (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-expand-node-at-point)
+  (define-key js2-mode-map (kbd "C-c C-m C-c") 'js2r-contract-node-at-point)
+  (define-key js2-mode-map (kbd "C-c C-m C-.") 'js2-mark-parent-statement)
+  (define-key paredit-everywhere-mode-map (kbd "M-]") nil)
+  (define-key js2-mode-map (kbd "M-]") '(lambda()(interactive)(call-interactively 'paredit-current-sexp-end) (forward-char) (newline-and-indent)))
+  (define-key js2-mode-map (kbd "C-,") '(lambda()(interactive)(call-interactively 'move-end-of-line) (insert ",") (newline-and-indent)))
+  (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
+  (define-key js2-mode-map (kbd "C-' ;") 'remove-add-last-comma)
+  (define-key js2-mode-map (kbd "C-' a") 'align))
 (add-hook 'js2-mode-hook 'init-js2-mode)
 
 ;; save buffer when outof focus
@@ -2095,34 +2122,6 @@ from Google syntax-forward-syntax func."
                   (interactive)
                   (when fill-prefix (insert-and-inherit fill-prefix))
                   ))
-
-(add-hook 'js2-mode-hook
-          (lambda()
-            (advice-add 'js2-jump-to-definition
-                        :after
-                        '(lambda(&optional ARG)
-                           "Move to function name when jump to definition."
-                           (when (js2r--is-function-declaration (js2-node-at-point))
-                             (forward-word 2)
-                             )
-                           ))
-            (advice-add 'js2r-expand-call-args
-                        :after
-                        '(lambda()
-                           "Format for compact expand call args."
-                           (when (consp current-prefix-arg)
-                             ;; (js2r--goto-closest-call-start) (forward-char) (js2r--ensure-just-one-space)
-                             )))
-            (define-key js2-mode-map (kbd "C-c C-m C-e") 'js2r-expand-node-at-point)
-            (define-key js2-mode-map (kbd "C-c C-m C-c") 'js2r-contract-node-at-point)
-            (define-key js2-mode-map (kbd "C-c C-m C-.") 'js2-mark-parent-statement)
-            (define-key paredit-everywhere-mode-map (kbd "M-]") nil)
-            (define-key js2-mode-map (kbd "M-]") '(lambda()(interactive)(call-interactively 'paredit-current-sexp-end) (forward-char) (newline-and-indent)))
-            (define-key js2-mode-map (kbd "C-,") '(lambda()(interactive)(call-interactively 'move-end-of-line) (insert ",") (newline-and-indent)))
-            (define-key js2-mode-map (kbd "C-M-h") 'js2-mark-defun)
-            (define-key js2-mode-map (kbd "C-' ;") 'remove-add-last-comma)
-            (define-key js2-mode-map (kbd "C-' a") 'align)
-            ))
 
 (define-key global-map (kbd "C-x j j") 'js-format-region)
 (define-key global-map (kbd "C-x j b") 'js-format-buffer)
