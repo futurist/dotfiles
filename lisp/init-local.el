@@ -302,9 +302,12 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
                           (setenv "GOPATH" GO-MODE-GOPATH)
                           (setq compilation-environment (list (concat "GOPATH=" GO-MODE-GOPATH)))
                           (setq compile-command "go build -v && go test -v && go vet")
-                          (define-key (current-local-map) "\C-c\C-c" '(lambda(arg)(interactive "P") (if arg
-                                                                                                   (compile compile-command)
-                                                                                                 (shell-command (format "go run %s" (shell-quote-argument buffer-file-name))))))
+                          (define-key (current-local-map) "\C-c\C-c"
+                            '(lambda(arg)
+                               (interactive "P")
+                               (if arg
+                                   (compile compile-command)
+                                 (shell-command (format "go run %s" (shell-quote-argument buffer-file-name))))))
                           ;; disable company-mode and use ac-mode for go
                           ;; (set (make-local-variable 'company-backends) '(company-go)) ;only load go backends
                           (company-mode -1)
@@ -2284,6 +2287,8 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "C-' r n") 'temp-run-node)
 (global-set-key (kbd "C-' r g") 'temp-run-gcc)
 
+(require-package 'quickrun)
+(global-set-key (kbd "C-' q") 'quickrun)
 
 (when *is-a-mac*
   ;; bash complete not run on windows
