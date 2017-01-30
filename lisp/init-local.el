@@ -303,8 +303,8 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
                           (setq compilation-environment (list (concat "GOPATH=" GO-MODE-GOPATH)))
                           (setq compile-command "go build -v && go test -v && go vet")
                           (define-key (current-local-map) "\C-c\C-c" '(lambda(arg)(interactive "P") (if arg
-                                                                                                        (compile compile-command)
-                                                                                                      (shell-command (format "go run %s" (shell-quote-argument buffer-file-name))))))
+                                                                                                   (compile compile-command)
+                                                                                                 (shell-command (format "go run %s" (shell-quote-argument buffer-file-name))))))
                           ;; disable company-mode and use ac-mode for go
                           ;; (set (make-local-variable 'company-backends) '(company-go)) ;only load go backends
                           (company-mode -1)
@@ -639,6 +639,13 @@ Typically used in CSS and JS."
 
 
 ;;; Different mode hooks
+
+(defun init-c-mode ()
+  (add-hook 'before-save-hook
+            '(lambda ()
+               (when (eq major-mode 'c-mode)
+                 (clang-format-buffer)))))
+(add-hook 'c-mode-hook 'init-c-mode)
 
 ;; save sessions next time startup
 (desktop-save-mode 1)
