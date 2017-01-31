@@ -2103,13 +2103,10 @@ from Google syntax-forward-syntax func."
                (get-buffer-window "*Ido Completions*")
                (get-buffer-window nil))) size)
     (when win
-      (if restore
+      (setq size (window-resizable win 2000))
+      (if (or restore (= size 0))
           (balance-windows nil)
-        (setq size (window-resizable win 200))
-        (window-resize win size))
-      )
-    )
-  )
+        (window-resize win size)))))
 
 
 ;; custom functions
