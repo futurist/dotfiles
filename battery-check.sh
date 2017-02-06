@@ -4,7 +4,7 @@
 # */2 * * * * /Users/pro/battery-check.sh > /dev/null 2>&1
 
 MODE=`/usr/bin/pmset -g | awk '/hibernatemode/ { print $2 }'` 
-LEFT=`/usr/bin/pmset -g batt | grep Internal | awk '{ print $2 }' | awk -F % '{ print $1 }'`
+LEFT=`/usr/bin/pmset -g batt | grep Internal | awk '{ print $3 }' | awk -F % '{ print $1 }'`
 
 if [ $LEFT -lt 30 ] && [ $MODE != 3 ] ; then 
   { 
