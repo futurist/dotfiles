@@ -73,7 +73,7 @@
 ;; when it's mac, setting below
 (when *is-a-mac*
   (setq default-font-family "Source Code Pro")
-  (setq default-font-size 164)
+  (setq default-font-size 184)
 
   ;; set keys for Apple keyboard, for emacs in OS X
   (setq mac-command-modifier 'meta) ; make cmd key do Meta
@@ -755,7 +755,7 @@ Typically used in CSS and JS."
                   '(lambda()(interactive)
                      (save-buffer)
                      (browse-url-of-buffer)))
-                (define-key mmm-mode-map (kbd "C-' r") '(lambda()(interactive) (mmm-parse-buffer)))
+                (define-key mmm-mode-map (kbd "C-' r r") '(lambda()(interactive) (mmm-parse-buffer)))
                 ))
   )
 (add-hook 'mmm-mode-hook 'init-mmm-mode)
