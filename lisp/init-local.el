@@ -36,6 +36,9 @@
 (defconst *is-a-windows* (eq system-type 'windows-nt))
 
 (when *is-a-windows*
+  ;; change MinGW to your path
+  (setq shell-file-name "D:/MinGW/msys/1.0/bin/bash")
+  (setq explicit-shell-file-name shell-file-name)
 
   ;; UTF-8 settings
   ;; (set-language-environment "UTF-8")
@@ -61,6 +64,7 @@
   (add-hook 'shell-mode-hook '(lambda()
                                 (set-buffer-process-coding-system 'gbk-dos 'gbk-dos)
                                 ))
+
 
   )
 
