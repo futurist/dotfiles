@@ -126,30 +126,30 @@
             (define-key (current-local-map) (kbd "C-c C-d") 'minibuffer-clear)))
 
 ;; query replace all from buffer start
-;; (require-package 'replace-from-region)
-;; (fset 'my-query-replace-all 'query-replace-from-region)
-;; (advice-add 'my-query-replace-all
-;;             :around
-;;             #'(lambda(oldfun &rest args)
-;;                 "Query replace the whole buffer."
-;;                 ;; set start pos
-;;                 (unless (nth 3 args)
-;;                   (setf (nth 3 args)
-;;                         (point-min)))
-;;                 (unless (nth 4 args)
-;;                   (setf (nth 4 args)
-;;                         (point-max)))
-;;                 (apply oldfun args)))
-;; (global-set-key "\C-cr" 'my-query-replace-all)
-;; (global-set-key (kbd "M-%") 'query-replace-from-region)
+(require-package 'replace-from-region)
+(fset 'my-query-replace-all 'query-replace-from-region)
+(advice-add 'my-query-replace-all
+            :around
+            #'(lambda(oldfun &rest args)
+                "Query replace the whole buffer."
+                ;; set start pos
+                (unless (nth 3 args)
+                  (setf (nth 3 args)
+                        (point-min)))
+                (unless (nth 4 args)
+                  (setf (nth 4 args)
+                        (point-max)))
+                (apply oldfun args)))
+(global-set-key "\C-cr" 'my-query-replace-all)
+(global-set-key (kbd "M-%") 'query-replace-from-region)
 
 ;; Github/better-defaults
 
-;; (require 'saveplace)
-;; (if (version< emacs-version "25")
-;;     (setq-default save-place t)
-;;   (save-place-mode 1))
-;; ;; exit fast by not check saveplace
+(require 'saveplace)
+(if (version< emacs-version "25")
+    (setq-default save-place t)
+  (save-place-mode 1))
+;; exit fast by not check saveplace
 (setq save-place-forget-unreadable-files nil)
 
 (setq visible-bell t
