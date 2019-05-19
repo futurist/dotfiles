@@ -396,7 +396,6 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
 ;; http://www.holgerschurig.de/en/emacs-blog-from-org-to-hugo/
 (defun hugo-ensure-property (property)
   "Make sure that a property exists. If not, it will be created.
-
 Returns the property name if the property has been created,
 otherwise nil."
   (if (org-entry-get nil property)
@@ -409,7 +408,6 @@ otherwise nil."
 properties will be created in an empty form. In this case, the
 drawer will also be opened and the cursor will be positioned
 at the first element that needs to be filled.
-
 Returns list of properties that still must be filled in"
   (require 'dash)
   (let ((current-time (format-time-string (org-time-stamp-format t t) (org-current-time)))
@@ -486,11 +484,9 @@ Returns list of properties that still must be filled in"
 
 (defun gp-org-gfm-publish-to-md (plist filename pub-dir)
   "Publish an org file to Github Flavoured Markdown.
-
 FILENAME is the filename of the Org file to be published.  PLIST
 is the property list for the given project.  PUB-DIR is the
 publishing directory.
-
 Return output file name."
   (org-publish-org-to 'gfm filename ".md" plist pub-dir))
 
@@ -540,7 +536,6 @@ Return output file name."
 (defun un-camelcase-string (s &optional sep start)
   "Convert CamelCase string S to lower case with word separator SEP.
 Default for SEP is a hyphen \"-\".
-
 If third argument START is non-nil, convert words after that
 index in STRING."
   (let ((case-fold-search nil))
@@ -1682,15 +1677,15 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 ;; (require 'js-format)
 ;; ;; (require-package 'js-format)
 ;; automatically switch to JSB-CSS style using jsbeautify-css as formatter
-(add-hook 'js2-mode-hook
-          #'(lambda()
-              (js-format-setup "standard")))
-(add-hook 'css-mode-hook
-          #'(lambda()
-              (js-format-setup "jsb-css")))
-(add-hook 'html-mode-hook
-          #'(lambda()
-              (js-format-setup "jsb-html")))
+;; (add-hook 'js2-mode-hook
+;;           #'(lambda()
+;;               (js-format-setup "standard")))
+;; (add-hook 'css-mode-hook
+;;           #'(lambda()
+;;               (js-format-setup "jsb-css")))
+;; (add-hook 'html-mode-hook
+;;           #'(lambda()
+;;               (js-format-setup "jsb-html")))
 
 
 (require-package 'powerline)
@@ -2422,3 +2417,4 @@ It's a DOS command if t, and HIDE then exit if t."
 ;; no-byte-compile: t
 ;; End:
 ;;; init-local.el ends here
+
