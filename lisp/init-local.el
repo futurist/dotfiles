@@ -109,7 +109,7 @@
 ;; native function enhancement
 
 ;; easy kill buffer
-(global-set-key (kbd "C-c d d") '(lambda()
+(global-set-key (kbd "C-' d d") '(lambda()
                                    (interactive)
                                    (kill-this-buffer)
                                    ;; (winner-undo)
