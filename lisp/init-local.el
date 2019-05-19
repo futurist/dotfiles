@@ -126,30 +126,30 @@
             (define-key (current-local-map) (kbd "C-c C-d") 'minibuffer-clear)))
 
 ;; query replace all from buffer start
-(require-package 'replace-from-region)
-(fset 'my-query-replace-all 'query-replace-from-region)
-(advice-add 'my-query-replace-all
-            :around
-            #'(lambda(oldfun &rest args)
-                "Query replace the whole buffer."
-                ;; set start pos
-                (unless (nth 3 args)
-                  (setf (nth 3 args)
-                        (point-min)))
-                (unless (nth 4 args)
-                  (setf (nth 4 args)
-                        (point-max)))
-                (apply oldfun args)))
-(global-set-key "\C-cr" 'my-query-replace-all)
-(global-set-key (kbd "M-%") 'query-replace-from-region)
+;; (require-package 'replace-from-region)
+;; (fset 'my-query-replace-all 'query-replace-from-region)
+;; (advice-add 'my-query-replace-all
+;;             :around
+;;             #'(lambda(oldfun &rest args)
+;;                 "Query replace the whole buffer."
+;;                 ;; set start pos
+;;                 (unless (nth 3 args)
+;;                   (setf (nth 3 args)
+;;                         (point-min)))
+;;                 (unless (nth 4 args)
+;;                   (setf (nth 4 args)
+;;                         (point-max)))
+;;                 (apply oldfun args)))
+;; (global-set-key "\C-cr" 'my-query-replace-all)
+;; (global-set-key (kbd "M-%") 'query-replace-from-region)
 
 ;; Github/better-defaults
 
-(require 'saveplace)
-(if (version< emacs-version "25")
-    (setq-default save-place t)
-  (save-place-mode 1))
-;; exit fast by not check saveplace
+;; (require 'saveplace)
+;; (if (version< emacs-version "25")
+;;     (setq-default save-place t)
+;;   (save-place-mode 1))
+;; ;; exit fast by not check saveplace
 (setq save-place-forget-unreadable-files nil)
 
 (setq visible-bell t
@@ -349,7 +349,7 @@ Name should be AppData, Cache, Desktop, Personal, Programs, Start Menu, Startup 
   (setq expand-region-fast-keys-enabled nil)
   )
 
-(require-package 'ascii)
+;; (require-package 'ascii)
 
 ;; markdown mode
 (require-package 'markdown-toc)
@@ -1204,10 +1204,10 @@ Including indent-buffer, which should not be called automatically on save."
 (add-to-list 'recentf-exclude "ido\\.last\\'")
 (add-to-list 'recentf-exclude "\\.tidyrc")
 (add-hook 'recentf-dialog-mode-hook 'trigger-isearch-when-focus)
-(add-hook 'find-file-hook '(lambda()
-                             (let ((inhibit-message t))
-                               (recentf-save-list))
-                             ))
+;; (add-hook 'find-file-hook '(lambda()
+;;                              (let ((inhibit-message t))
+;;                                (recentf-save-list))
+;;                              ))
 (add-hook 'focus-in-hook '(lambda()
                             (when (boundp 'tern-idle-time)
                               (setf tern-idle-time 2.5))
@@ -1678,9 +1678,9 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
       (if is-forward (backward-char)))))
 (bind-key "C-' C-l" 'mark-current-indentation)
 
-(add-to-list 'load-path (expand-file-name "js-format.el" user-emacs-directory))
-(require 'js-format)
-;; (require-package 'js-format)
+;; (add-to-list 'load-path (expand-file-name "js-format.el" user-emacs-directory))
+;; (require 'js-format)
+;; ;; (require-package 'js-format)
 ;; automatically switch to JSB-CSS style using jsbeautify-css as formatter
 (add-hook 'js2-mode-hook
           #'(lambda()
@@ -1694,7 +1694,7 @@ The same result can also be be achieved by \\[universal-argument] \\[unhighlight
 
 
 (require-package 'powerline)
-(powerline-default-theme)
+;; (powerline-default-theme)
 
 
 
@@ -2282,11 +2282,11 @@ from Google syntax-forward-syntax func."
 (global-set-key (kbd "M-h") 'backward-kill-word)
 
 ;; temp-run.el
-(add-to-list 'load-path "~/.emacs.d/temp-run.el")
-(require 'temp-run)
-(global-set-key (kbd "C-' r l") 'temp-run-electron)
-(global-set-key (kbd "C-' r n") 'temp-run-node)
-(global-set-key (kbd "C-' r g") 'temp-run-gcc)
+;; (add-to-list 'load-path "~/.emacs.d/temp-run.el")
+;; (require 'temp-run)
+;; (global-set-key (kbd "C-' r l") 'temp-run-electron)
+;; (global-set-key (kbd "C-' r n") 'temp-run-node)
+;; (global-set-key (kbd "C-' r g") 'temp-run-gcc)
 
 (require-package 'quickrun)
 (global-set-key (kbd "C-' q") 'quickrun)
